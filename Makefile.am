@@ -1,1 +1,1 @@
-SUBDIRS = TPSA scsi_src
+SUBDIRS = scsi_src

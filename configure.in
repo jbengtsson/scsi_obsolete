@@ -26,5 +26,4 @@ AC_TYPE_SIZE_T
 
 # Checks for library functions.
 AC_OUTPUT(Makefile
-          TPSA/Makefile
-	  scsi_src/Makefile scsi_src/src/Makefile)
+	  scsi_src/Makefile scsi_src/src/Makefile scsi_src/TPSA/Makefile)
