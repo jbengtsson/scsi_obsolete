@@ -9,18 +9,13 @@ Author: Johan Bengtsson
 
 Requirements:
 
-  1. GNU autoconf and automake environment.
-
-  2. GNU C++ and GFORTRAN compiler: gcc and gfortran
+   GNU autoconf and automake environments.
+   GNU C++ and FORTRAN-95 compilers: gcc and gfortran.
 
 To install:
 
-  1. tar -xvzf <tar ball name> 
-
-  2. cd scsi 
-
-  3. ./bootstrap
-
-  4. ./configure
-
-  5. make install
+   mkdir git_repos
+   cd git_repos
+   git clone git@github.com:jbengtsson/scsi.git
+   cd scsi
+   ./make_scsi.sh
