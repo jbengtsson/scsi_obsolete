@@ -1,4 +1,4 @@
-Tracy-3
+scsi
 
 Author: Johan Bengtsson
 
@@ -6,30 +6,16 @@ Requirements:
 
   1. GNU autoconf and automake environment.
 
-  2. GNU C++ compiler: gcc
-
-  3. Numerical Recipes in C (with support for "double").
-     Assumed directory structure:
-
-       $NUM_REC/lib		libnum_rec.a
-       $NUM_REC/inc		nrutil.h, nr.h
+  2. GNU C++ and GFORTRAN compiler: gcc and gfortran
 
 To install:
 
-  1. Define the environment variable:
+  1. tar -xvzf <tar ball name> 
 
-       $NUM_REC = <path to Numerical Recipes library>
+  2. cd scsi 
 
-  2. tar -xvzf <tar ball name> 
+  3. ./bootstrap
 
-  3. cd tracy-3.0
+  4. ./configure
 
-  4. ./bootstrap
-
-  5. ./configure
-
-  6.  cd tracy/wrk
-
-  7. make
-
-  8. ./main lattice/ALBA
+  5. make install
