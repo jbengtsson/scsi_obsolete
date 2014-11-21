@@ -1,0 +1,69 @@
+//Nothing was removed from orginal version Tracy-3.5
+//The orginal nr code is in block comments starting with /*Orginal
+//The GSL adds are marked by '//GSL add' for beginign and '//end GSL add' at the end of chagnes 
+
+1.
+In file: tracy/src/Makefile.am
+at the end of line 7 was added -I/usr (for gsl libraries)
+
+2.
+In file: tracy/src/tracy_lib.h
+added lines 32-40, GSL headers
+
+3.
+In file: tracy/inc/tracy_global.h
+added lines 163-167
+added line 134-136
+
+4.
+In folder tracy/inc/
+added header file gslport.h
+
+5. 
+In file: tracy/src/t2lat.cc
+in function Lat_DealElement()
+
+6. 
+In file: tracy/src/rdmfile.cc
+in function rdmfile()
+
+7.
+In file: tracy/src/nsls-ii_lib.cc
+added lines 81,84 
+in function FindSQ_SVDmat() 
+in function FindMatrix() 
+in function ini_skew_cor() 
+in function FindCoupVector() 
+in function corr_eps_y() 
+in function SVD() 
+in function ini_ID_corr()  
+in function ID_corr()
+in functions Touschek()
+in function f_bend() 
+in function bend_cal_Fam()
+
+8.
+In file: tracy/src/t2elem.cc
+added function det_mat_gsl()
+added function trace_mat_gsl()
+in function det_mat()
+in function do_IBS()
+in function K_fun()
+in function get_B_DIAMOND()
+in function get_B_NSLS_II ()
+in function get_B_Oleg1 ()
+in function get_B_Oleg2 ()
+in template splint_ 
+
+9.
+In file tracy/src/lsoc.cc
+added lines 18, 19
+in function gcmat()
+in function lsoc()
+in function lsoc1() 
+in function gcmat1()
+
+10.
+In file tracy/src/physlib.cc
+in function Newton_RaphsonS(), starting from line 3010
+in functions sin_FFT() (two functions)
