@@ -15,11 +15,6 @@ ElemFamType   ElemFam[Elem_nFamMax];
 CellType      Cell[Cell_nLocMax+1];
 ofstream      outf_;
 
-// for IBS
-int     i_, j_;
-double  **C_;
-gsl_matrix *mC_;
-
 // for FieldMap
 bool  sympl             = true;
 int   FieldMap_filetype = 2;
@@ -127,24 +122,9 @@ void identity_mat(const int n, double** A)
       A[i][j] = (i == j)? 1.0 : 0.0;
 }
 
-//GSL add
-double det_mat_gsl(const int n, gsl_matrix *tmpA){
- 
-   double det;
-   int signum;
-   gsl_permutation *p = gsl_permutation_alloc(n);
-
-   gsl_linalg_LU_decomp(tmpA , p , &signum);
-   det = gsl_linalg_LU_det(tmpA , signum);
-   gsl_permutation_free(p);
-   gsl_matrix_free(tmpA);
-   
-   return det;
-}
-//end GSL add
 
 double det_mat(const int n, double **A)
-{ /* Orginal
+{
   int     i, *indx;
   double  **U, d;
 
@@ -158,22 +138,8 @@ double det_mat(const int n, double **A)
   free_dmatrix(U, 1, n, 1, n); free_ivector(indx, 1, n);
 
   return d;
-  */
-   
-   //GSL add
-   gsl_matrix *tmpA = gsl_matrix_alloc(n,n);
-   int ii,jj;
-   for (ii=1; ii <=n; ii++) {
-		for (jj=1; jj <=n; jj++){
-			gsl_matrix_set (tmpA, ii-1, jj-1, A[ii][jj]);
-		}
-	}
-	
-	double d = det_mat_gsl(n,tmpA);
-	return d;
-	//end GSL add
-   
 }
+
 
 double trace_mat(const int n, double **A)
 {
@@ -185,95 +151,6 @@ double trace_mat(const int n, double **A)
     d += A[i][i];
 
   return d;
-}
-
-//GSL add
-double trace_mat_gsl(const int n, gsl_matrix *m)
-{
-  int     i;
-  double  d;
-
-  d = 0.0;
-  for (i=0; i <n; i++)
-    d += gsl_matrix_get(m, i, i);
-
-  return d;
-}//end GSL add
-
-/*Orginal
-float K_fun(float lambda)
-*/
-//GSL add
-double K_fun(double lambda, void  *params)
-{
-//end GSL add
-  
-  /*Orginal
-  double  **Id, **Lambda, **Lambda_inv, **U, **V, **K_int;
-
-  Id = dmatrix(1, DOF, 1, DOF); Lambda = dmatrix(1, DOF, 1, DOF);
-  Lambda_inv = dmatrix(1, DOF, 1, DOF); U = dmatrix(1, DOF, 1, DOF);
-  V = dmatrix(1, DOF, 1, DOF); K_int = dmatrix(1, DOF, 1, DOF);
-
-  identity_mat(DOF, Id);
-
-  dmsmy(Id, DOF, DOF, lambda, U);
-//  dmsub(C_, DOF, DOF, U, Lambda);
-  dmadd(C_, DOF, DOF, U, Lambda);
-  dinverse(Lambda, DOF, Lambda_inv);
-
-  dmsmy(Id, DOF, DOF, trace_mat(DOF, Lambda_inv), U);
-  dmsmy(Lambda_inv, DOF, DOF, 3.0, V);
-  dmsub(U, DOF, DOF, V, K_int);
-  dmsmy(K_int, DOF, DOF, 2.0*sqr(M_PI)*sqrt(lambda/det_mat(DOF, Lambda)),
-	K_int);
-
-  free_dmatrix(Id, 1, DOF, 1, DOF); free_dmatrix(Lambda, 1, DOF, 1, DOF);
-  free_dmatrix(Lambda_inv, 1, DOF, 1, DOF); free_dmatrix(U, 1, DOF, 1, DOF);
-  free_dmatrix(V, 1, DOF, 1, DOF); free_dmatrix(K_int, 1, DOF, 1, DOF);
-
-  return K_int[i_][j_];
-  */
-  //GSL add
-    double alpha = *(double *) params;
-	
-	gsl_matrix *Lambda = gsl_matrix_alloc(DOF, DOF);
-	gsl_matrix *U = gsl_matrix_alloc(DOF, DOF);
-	gsl_matrix *Lambda_inv = gsl_matrix_alloc(DOF, DOF);
-	
-    int i,j;
-    for (i=1; i <=DOF; i++)
-		for (j=1; j <=DOF; j++)
-			gsl_matrix_set (Lambda, i-1, j-1, C_[i][j]);
-	
-	gsl_matrix_set_identity(U);
-	gsl_matrix_scale(U, lambda);
-	gsl_matrix_add(Lambda, U);
-	
-	gsl_permutation * perm = gsl_permutation_alloc (DOF);
-	int s;
-	gsl_linalg_LU_decomp(Lambda, perm, &s);
-	gsl_linalg_LU_invert(Lambda, perm, Lambda_inv);
-	gsl_permutation_free(perm);
-	
-	double detLambda = det_mat_gsl(DOF, Lambda);
-	//gsl_matrix_free(Lambda);
-	
-	gsl_matrix_set_identity(U);
-	gsl_matrix_scale(U, trace_mat_gsl(DOF, Lambda_inv));
-	gsl_matrix_scale(Lambda_inv, 3);
-	
-	//Now U is refers to K_int 
-	gsl_matrix_sub(U, Lambda_inv);
-	gsl_matrix_scale(U, 2.0*sqr(M_PI)*sqrt(lambda/detLambda));
-	
-	double result = gsl_matrix_get(U, i_-1,j_-1);
-	
-	gsl_matrix_free(Lambda_inv);
-	gsl_matrix_free(U);
-		
-	return alpha*result;
-	//end GSL add
 }
 
 // partial template-class specialization
@@ -308,8 +185,6 @@ class is_tps<double> {
   static inline void emittance(const double B2, const double u,
 			       const double ps0, const ss_vect<double> &xp) { }
 
-  static inline void do_IBS(const double L, const ss_vect<double> &A_tps) { }
-
   static inline void diff_mat(const double B2, const double u,
 			      const double ps0, const ss_vect<double> &xp) { }
 
@@ -321,7 +196,9 @@ template<>
 class is_tps<tps> {
  public:
   static inline void get_ps(const ss_vect<tps> &x, CellType &Cell)
-  { getlinmat(6, x, Cell.A); }
+  {
+    Cell.BeamPos = x.cst(); getlinmat(6, x, Cell.A);
+  }
 
   static inline tps set_prm(const int k) { return tps(0.0, k); }
 
@@ -342,14 +219,18 @@ class is_tps<tps> {
 
   static inline double get_dI4(const ss_vect<tps> &A) { return A[x_][delta_]; }
 
-  static inline void emittance(const tps &B2, const tps &ds, const tps &ps0,
+  static inline void emittance(const tps &B2_perp, const tps &ds, const tps &ps0,
 			       const ss_vect<tps> &A) {
+    // M. Sands "The Physics of Electron Storage Rings" SLAC-121, p. 118.
+    // d<delta^2>/ds = 3*C_U*C_gamma*h_bar*c*E_0^5*(1+delta)^4*(B_perp/(Brho))^3
+    //                 /(4*pi*m_e^3)
+    // A contains the eigenvectors.
     int           j;
     double        B_66;
     ss_vect<tps>  A_inv;
 
-    if (B2 > 0.0) {
-      B_66 = (q_fluct*pow(B2.cst(), 1.5)*pow(ps0, 4)*ds).cst();
+    if (B2_perp > 0.0) {
+      B_66 = (q_fluct*pow(B2_perp.cst(), 1.5)*pow(ps0, 4)*ds).cst();
       A_inv = Inv(A);
       // D_11 = D_22 = curly_H_x,y * B_66 / 2,
       // curly_H_x,y = eta_Fl^2 + etap_Fl^2
@@ -359,410 +240,7 @@ class is_tps<tps> {
     }
   }
 
-  static void do_IBS(const double L, const ss_vect<tps> &A_tps)
-  { 
-    /* A is passed, compute the invariants and emittances,
-       The invariants for the uncoupled case are:
-
-                       [gamma alpha]
-       Sigma     ^-1 = [           ]
-            x,y,z      [alpha beta ]
-
-       Note, ps = [x, y, ct, p_x, p_y, delta]                                */
-  
-    int     i, j, k;
-    double  **A, **Ainv, **Ainv_tp, **Ainv_tp_Ainv, **Boost, **Boost_tp;
-    double  **G[DOF], **M_a, **U, **C_a[DOF], **K, dln_eps[DOF];
-    double  beta_x, beta_y, sigma_y, a_cst, two_Lc;
-	
-	gsl_matrix *mA, *mAinv, *mAinv_tp, *mAinv_tp_Ainv, *mBoost, *mBoost_tp;
-	gsl_matrix *mG[DOF], *mM_a, *mU, *mC_a[DOF], *mK;
-
-    const int     n      = 2*DOF;
-    const int     indx[] = { 1, 4, 2, 5, 6, 3 };
-
-    const double  P0    = 1e9*globval.Energy*q_e/c0;
-    const double  gamma = 1e9*globval.Energy/m_e;
-    const double  beta  = sqrt(1.0-1.0/sqr(gamma));
-
-    const double  N_e   = globval.Qb/q_e;
-
-	/*Orginal
-    A = dmatrix(1, n, 1, n); Ainv = dmatrix(1, n, 1, n);
-    Ainv_tp = dmatrix(1, n, 1, n); Ainv_tp_Ainv = dmatrix(1, n, 1, n);
-    Boost = dmatrix(1, n, 1, n); Boost_tp = dmatrix(1, n, 1, n);
-    U = dmatrix(1, n, 1, n); M_a = dmatrix(1, n, 1, n);
-    for (i = 0; i < DOF; i++)
-      G[i] = dmatrix(1, n, 1, n);
-    for (i = 0; i < DOF; i++)
-      C_a[i] = dmatrix(1, DOF, 1, DOF);
-    C_ = dmatrix(1, DOF, 1, DOF); K = dmatrix(1, DOF, 1, DOF);
-	*/
-	
-	//GSL add
-	 mA = gsl_matrix_alloc(n, n); 
-	 GSL2NRDM2(pmA,mA,A,0);
-	 
-	 mAinv = gsl_matrix_alloc(n, n);
-	 GSL2NRDM2(pmAinv,mAinv,Ainv,0);
-	 
-    mAinv_tp = gsl_matrix_alloc(n, n); 
-	GSL2NRDM2(pmAinv_tp,mAinv_tp,Ainv_tp,0);
-	
-	mAinv_tp_Ainv = gsl_matrix_alloc(n, n);
-	GSL2NRDM2(pmAinv_tp_Ainv,mAinv_tp_Ainv,Ainv_tp_Ainv,0);
-	
-    mBoost = gsl_matrix_alloc(n, n); 
-	GSL2NRDM2(pmBoost,mBoost,Boost,0);
-	
-	mBoost_tp = gsl_matrix_alloc(n, n);
-	GSL2NRDM2(pmBoost_tp,mBoost_tp,Boost_tp,0);
-	
-    mU = gsl_matrix_alloc(n, n);
-	GSL2NRDM2(pmU,mU,U,0);
-	
-	mM_a = gsl_matrix_alloc(n, n);
-	GSL2NRDM2(pmM_a,mM_a,M_a,0);
-	//end GSL add
-	
-	//GSL add
-	/*Needs imporovements
-    for (i = 0; i < DOF; i++) {
-      mG[i] = gsl_matrix_alloc(n, n);
-	  double* d[mG[i]->size1+1]; 		
-		int port_i;
-			for(port_i=0;port_i<=mG[i]->size1;port_i++) {
-				d[port_i+1] = mG[i]->data + port_i*mG[i]->size2 - 1;
-			}		
-		G[i] = d;
-	}
-	
-	for (i = 0; i < DOF; i++) {
-      mC_a[i] = gsl_matrix_alloc(DOF, DOF);
-	  GSL2NRDM2(pmA[i],mC_a[i],C_a[i],0);
-	 }	
-	*/
-	//end GSL add
-	
-	//GSL add
-	//In future if DOF changes, these lines below may cause problems
-	mG[0] = gsl_matrix_alloc(n, n);
-	GSL2NRDM2(pmG_0,mG[0],G[0],0);
-	
-	mG[1] = gsl_matrix_alloc(n, n);
-	GSL2NRDM2(pmG_1,mG[1],G[1],0);
-	
-	mG[2] = gsl_matrix_alloc(n, n);
-	GSL2NRDM2(pmG_2,mG[2],G[2],0);
-	
-	
-	mC_a[0] = gsl_matrix_alloc(DOF, DOF);
-	GSL2NRDM2(pmA_0,mC_a[0],C_a[0],0);
-	
-	mC_a[1] = gsl_matrix_alloc(DOF, DOF);
-	GSL2NRDM2(pmA_1,mC_a[1],C_a[1],0);
-	
-	mC_a[2] = gsl_matrix_alloc(DOF, DOF);
-	GSL2NRDM2(pmA_2,mC_a[2],C_a[2],0);	
-	//Until here
-	   
-		
-    mC_ = gsl_matrix_alloc(DOF, DOF);
-	GSL2NRDM2(pmC_,mC_,C_,0);
-	
-	mK = gsl_matrix_alloc(DOF, DOF);
-	GSL2NRDM2(pmK,mK,K,0);
-	//end GSL add
-    // Compute invariants (in Floquet space): Sigma^-1 = (A^-1)^tp * A^-1
-    
-    for (i = 1; i <= n; i++) 
-      for(j = 1; j <= n; j++ ) 
-		A[i][j] = A_tps[i-1][j-1]; 
-
-	/*Orginal
-    dmcopy(A, n, n, U); dinverse(U, n, Ainv);
-    dmtranspose(Ainv, n, n, Ainv_tp);
-    dmmult(Ainv_tp, n, n, Ainv, n, n, Ainv_tp_Ainv);
-	*/
-	
-	//GSL add
-	gsl_matrix_memcpy(mU,mA);
-	
-	//inverse mU
-	gsl_permutation * perm = gsl_permutation_alloc(n);
-	int s;
-	gsl_linalg_LU_decomp(mU, perm, &s);
-	gsl_linalg_LU_invert(mU, perm, mAinv);
-	gsl_permutation_free(perm);
-	//end inverse mU
-	
-	//Looks strange, but unfortunately during gsl matrices operations always one matrix is overwritten
-	gsl_matrix_memcpy(mAinv, mU);
-	gsl_matrix_memcpy(mAinv_tp, mU);
-	gsl_matrix_transpose(mAinv_tp);
-	
-	gsl_matrix *temp;
-	temp = gsl_matrix_alloc(n,n);
-	
-	gsl_matrix_memcpy(temp, mAinv);
-	
-	gsl_matrix_mul_elements(mAinv, mAinv_tp);
-	
-	gsl_matrix_memcpy(mAinv_tp_Ainv, mAinv);
-	gsl_matrix_memcpy(mAinv, temp);
-	//end GSL add
-
-    for (i = 0; i < DOF; i++)
-      for(j = 1; j <= n; j++ )
-	for (k = 1; k <= n; k++)
-	  G[i][indx[j-1]][indx[k-1]] =
-	    Ainv[2*i+1][j]*Ainv[2*i+1][k] + Ainv[2*i+2][j]*Ainv[2*i+2][k];
-		
-	/*Orginal
-    dmadd(G[0], n, n, G[1], U); dmadd(U, n, n, G[2], U);
-	*/
-	
-	//GSL add
-	gsl_matrix_memcpy(temp,mG[0]);
-	gsl_matrix_add(temp,mG[1]);
-	gsl_matrix_memcpy(mU, temp);
-	gsl_matrix_add(mU,mG[2]);
-	//end GSL add
-    if (trace) {
-      printf("\n");
-	  
-	  /*Orginal
-      dmdump(stdout, "G_1:", G[0], n, n, "%11.3e");
-      dmdump(stdout, "G_2:", G[1], n, n, "%11.3e");
-      dmdump(stdout, "G_3:", G[2], n, n, "%11.3e");
-      dmdump(stdout, "Ainv_tp*Ainv:", Ainv_tp_Ainv, n, n, "%11.3e");
-      dmdump(stdout, "Sum_a G_a", U, n, n, "%11.3e");
-	  */
-	  //GSL add
-	  gslport_matrixdump(stdout, "G_1:", mG[0], "%11.3e");
-	  gslport_matrixdump(stdout, "G_2:", mG[1], "%11.3e");
-	  gslport_matrixdump(stdout, "G_3:", mG[2], "%11.3e");	  
-	  gslport_matrixdump(stdout, "Ainv_tp*Ainv:", mAinv_tp_Ainv, "%11.3e");
-	  gslport_matrixdump(stdout, "Sum_a G_a", mU, "%11.3e");
-	  //end GSL add
-    }
-
-    /* Transform from the co-moving to COM frame:
-
-        [ 1 0    0     0    0      0     ] 
-        [ 0 1    0     0    0      0     ] 
-        [ 0 0 1/gamma  0    0      0     ] 
-        [ 0 0    0    1/P0  0      0     ] 
-        [ 0 0    0     0   1/P0    0     ] 
-        [ 0 0    0     0    0   gamma/P0 ]                                  */
-
-    identity_mat(n, Boost);
-    Boost[3][3] /= gamma; Boost[4][4] /= P0; Boost[5][5] /= P0;
-    Boost[6][6] *= gamma/P0;
-
-	/*Orginal
-    dmtranspose(Boost, n, n, Boost_tp);
-	*/
-	
-	//GSL add
-	gsl_matrix_memcpy(mBoost_tp, mBoost);
-	gsl_matrix_transpose(mBoost_tp);
-	//end GSL add
-	
-    zero_mat(DOF, C_);
-	
-	//GSL add
-	//Need in line around 595
-	gsl_matrix *sub_mU = gsl_matrix_alloc(DOF,DOF);
-	//end GSL add
-	
-    for (i = 0; i < DOF; i++) {
-	/*Orginal
-      dmmult(Boost_tp, n, n, G[i], n, n, U);
-      dmmult(U, n, n, Boost, n, n, M_a);
-	  
-      if (trace) dmdump(stdout, "M_a:", M_a, n, n, "%11.3e");
-      */
-	  
-	  //GSL add
-	  gsl_matrix_memcpy(mU, mBoost_tp);
-	  gsl_matrix_mul_elements(mU, mG[i]);
-	  //gsl_matrix_memcpy(mU, temp);
-	  
-	  gsl_matrix_mul_elements(mU, mBoost);
-	  gsl_matrix_memcpy(mM_a, mU);
-	  
-	  if (trace) gslport_matrixdump(stdout, "M_a:", mM_a, "%11.3e");
-	  //end GSL add
-	  
-      // Extract the C_a matrices from the momentum components of M_a
-      for(j = 1; j <= DOF; j++)
-		for(k = 1; k <= DOF; k++)
-			C_a[i][j][k] = M_a[DOF+j][DOF+k];
-
-	  /*Orginal
-      dmsmy(C_a[i], DOF, DOF, sqr(P0), C_a[i]);
-	  */
-	  
-	  //GSL add
-	  gsl_matrix_scale(mC_a[i], sqr(P0));
-	  //end GSL add
-	  
-      if (globval.eps[i] != 0.0) {
-	  /*Orginal
-			dmsmy(C_a[i], DOF, DOF, 1.0/globval.eps[i], U);
-			*/
-			
-			//GSL add
-			gsl_matrix_memcpy(mU, mC_a[i]);
-			gsl_matrix_scale(mU, 1.0/globval.eps[i]);
-			//end GSL add
-		}
-      else {
-	cout << "*** do_IBS: zero emittance for plane " << i+1 << endl;
-	//exit(1);
-      }
-	  /*Orginal
-      dmadd(C_, DOF, DOF, U, C_);
-	  */
-	  	  
-	  //GSL add
-	  GSLSET2(U,sub_mU, 0,0,DOF,DOF);
-	  gsl_matrix_add(mC_,sub_mU);
-	  //end GSL add
-	 	  
-    }
-	
-	//GSL add
-	gsl_matrix_free(sub_mU);
-	//end GSL add
-
-    if (trace) {
-      /*Orginal
-	  dmdump(stdout, "C_1:", C_a[0], DOF, DOF, "%11.3e");
-      dmdump(stdout, "C_2:", C_a[1], DOF, DOF, "%11.3e");
-      dmdump(stdout, "C_3:", C_a[2], DOF, DOF, "%11.3e");
-      dmdump(stdout, "C:", C_, DOF, DOF, "%11.3e");
-	  */
-	  
-	  //GSL add
-	  gslport_matrixdump(stdout, "C_1:", mC_a[0], "%11.3e");
-	  gslport_matrixdump(stdout, "C_2:", mC_a[1], "%11.3e");
-	  gslport_matrixdump(stdout, "C_3:", mC_a[2], "%11.3e");
-	  
-	  gslport_matrixdump(stdout, "C:", mC_, "%11.3e");
-	  //end GSL add
-	  	  
-    }
-
-	//GSL add	
-	double result, error;
-	double alpha = 1.0;
-    gsl_function F;
-    F.function = &K_fun;
-    F.params = &alpha;
-    gsl_integration_workspace * w = gsl_integration_workspace_alloc (1000);	
-	//end GSL add
-	
-    for(i = 1; i <= DOF; i++)
-      for(j = 1; j <= DOF; j++) {
-	// upper bound is infinity
-	i_ = i; j_ = j;
-	
-	/*Orgial
-	K[i][j] = qromb(K_fun, 0.0, 1e8);
-	*/
-	//Add
-	
-	//GSL add
-	gsl_integration_qags (&F, 0, 1e8, 0, 1e-7, 1000, w, &result, &error);
-	
-	K[i][j] = result;
-		
-	//end GSL add
-      }
-	  
-	  //GSL add
-	  gsl_integration_workspace_free (w);	
-	  //end GSL add
-	  
-	/*Orginal
-    if (trace) dmdump(stdout, "K:", K, DOF, DOF, "%11.3e");
-    */
-	
-	//GSL add
-	if (trace) gslport_matrixdump(stdout, "K:", mK, "%11.3e");
-	//end GSL add
-	
-    // Compute the Coulomb logarithm
-    beta_x = C_a[0][1][1]; beta_y = C_a[1][2][2];
-    sigma_y = sqrt(beta_y*globval.eps[Y_]);
-    two_Lc = log(sqr(gamma*globval.eps[X_]*sigma_y/(r_e*beta_x)));
-
-    if (trace) printf("2(log) = %11.3e\n", two_Lc);
-
-    // include time dilatation and scaling of C matrix
-    a_cst =
-       L*two_Lc*N_e*sqr(r_e)*c0/(64.0*cube(M_PI*beta)*pow(gamma, 4)
-      *globval.eps[X_]*globval.eps[Y_]*globval.eps[Z_]);
-
-    // dSigma_ab/dt = a_cst * K_ab, e.g. d<delta^2>/dt = a_cst K_33.
-    // deps is obtained from C.
-
-    if (trace) printf("dln_eps:");
-    for(i = 0; i < DOF; i++) {
-	/*Orginal
-      dmmult(C_a[i], DOF, DOF, K, DOF, DOF, U);
-	  */
-	  
-	  //GSL add
-	  gsl_matrix_memcpy(mU, mC_a[i]);
-	  gsl_matrix_mul_elements(mU,mK);
-	  //end GSL add
-	  
-      // Dt = L/c0
-//      dln_eps[i] = a_cst/globval.eps[i]*trace_mat(DOF, U);
-      globval.D_IBS[i] += a_cst*trace_mat(DOF, U);
-      if (trace) printf("%11.3e", dln_eps[i]);
-    }
-    if (trace) printf("\n");
-
-	/*Orginal
-    free_dmatrix(A, 1, n, 1, n); free_dmatrix(Ainv, 1, n, 1, n);
-    free_dmatrix(Ainv_tp, 1, n, 1, n); free_dmatrix(Ainv_tp_Ainv, 1, n, 1, n);
-    free_dmatrix(Boost, 1, n, 1, n); free_dmatrix(Boost_tp, 1, n, 1, n);
-    free_dmatrix(U, 1, n, 1, n); free_dmatrix(M_a, 1, n, 1, n);
-    for (i = 0; i < DOF; i++)
-      free_dmatrix(G[i], 1, n, 1, n);
-    for (i = 0; i < DOF; i++)
-      free_dmatrix(C_a[i], 1, DOF, 1, DOF);
-    free_dmatrix(C_, 1, DOF, 1, DOF); free_dmatrix(K, 1, DOF, 1, DOF);
-	*/
-		
-	//GSL add
-	gsl_matrix_free(temp);
-	
-	gsl_matrix_free(mA);
-	gsl_matrix_free(mAinv);
-	gsl_matrix_free(mAinv_tp);
-	gsl_matrix_free(mAinv_tp_Ainv);
-	gsl_matrix_free(mBoost);
-	gsl_matrix_free(mBoost_tp);
-	gsl_matrix_free(mU);
-	gsl_matrix_free(mM_a);
-	
-	for (i = 0; i < DOF; i++)
-      gsl_matrix_free(mG[i]);
-    for (i = 0; i < DOF; i++)
-      gsl_matrix_free(mC_a[i]);
-	  
-    gsl_matrix_free(mC_);
-    gsl_matrix_free(mK);
-	//end GSL add
-	
-  }
-
-  static inline void diff_mat(const tps &B2, const tps &ds, const tps &ps0,
+  static inline void diff_mat(const tps &B2_perp, const tps &ds, const tps &ps0,
 			      ss_vect<tps> &x) { }
 
 };
@@ -772,15 +250,16 @@ template<typename T>
 void get_B2(const double h_ref, const T B[], const ss_vect<T> &xp,
 	    T &B2_perp, T &B2_par)
 {
-  // compute |B|^2_perpendicular and |B|^2_parallel
+  // compute B_perp^2 and B_par^2
   T  xn, e[3];
 
   xn = 1.0/sqrt(sqr(1.0+xp[x_]*h_ref)+sqr(xp[px_])+sqr(xp[py_]));
   e[X_] = xp[px_]*xn; e[Y_] = xp[py_]*xn; e[Z_] = (1e0+xp[x_]*h_ref)*xn;
 
   // left-handed coordinate system
-  B2_perp = sqr(B[Y_]*e[Z_]-B[Z_]*e[Y_]) + sqr(B[X_]*e[Y_]-B[Y_]*e[X_])
-            + sqr(B[Z_]*e[X_]-B[X_]*e[Z_]);
+  B2_perp =
+    sqr(B[Y_]*e[Z_]-B[Z_]*e[Y_]) + sqr(B[X_]*e[Y_]-B[Y_]*e[X_])
+    + sqr(B[Z_]*e[X_]-B[X_]*e[Z_]);
 
 //  B2_par = sqr(B[X_]*e[X_]+B[Y_]*e[Y_]+B[Z_]*e[Z_]);
 }
@@ -789,10 +268,12 @@ void get_B2(const double h_ref, const T B[], const ss_vect<T> &xp,
 template<typename T>
 void radiate(ss_vect<T> &x, const double L, const double h_ref, const T B[])
 {
+  // M. Sands "The Physics of Electron Storage Rings" SLAC-121, p. 98.
+  // ddelta/d(ds) = -C_gamma*E_0^3*(1+delta)^2*(B_perp/(Brho))^2/(2*pi)
   T           ps0, ps1, ds, B2_perp = 0.0, B2_par = 0.0;
   ss_vect<T>  xp;
 
-  // large ring: conservation of x' and y'
+  // large ring: x' and y' unchanged
   xp = x; ps0 = get_p_s(x); xp[px_] /= ps0; xp[py_] /= ps0;
 
   // H = -p_s => ds = H*L
@@ -809,12 +290,12 @@ void radiate(ss_vect<T> &x, const double L, const double h_ref, const T B[])
 
 
 template<typename T>
-void radiate_ID(ss_vect<T> &x, const double L, const T B2_perp)
+void radiate_ID(ss_vect<T> &x, const double L, const T &B2_perp)
 {
   T           ps0, ps1, ds;
   ss_vect<T>  xp;
 
-  // large ring: conservation of x' and y'
+  // large ring: x' and y' unchanged
   xp = x; ps0 = get_p_s(x); xp[px_] /= ps0; xp[py_] /= ps0;
 
   // H = -p_s => ds = H*L
@@ -1667,16 +1148,40 @@ void f_FM(const CellType &Cell, const double z, const ss_vect<T> &ps,
 
   if (kz == 0) {
     cout << fixed << setprecision(10)
-	 << "z = " << setw(12) << z << " outside table" << endl;
-    exit(1);
+	 << "z = " << setw(12) << z << " undefined" << endl;
+
+    for (j = 0; j < ss_dim; j++)
+      Dps[j] = NAN;
+
+    return;
   }
 
   splin2_(FM->x[X_], FM->x[Y_], FM->BoBrho[X_][kz], FM->BoBrho2[X_][kz],
 	   FM->n[X_], FM->n[Y_], ps[x_], ps[y_], BoBrho[X_]);
+
+  if (BoBrho[X_] == NAN) {
+    for (j = 0; j < ss_dim; j++)
+      Dps[j] = NAN;
+    return;
+  }
+
   splin2_(FM->x[X_], FM->x[Y_], FM->BoBrho[Y_][kz], FM->BoBrho2[Y_][kz],
 	   FM->n[X_], FM->n[Y_], ps[x_], ps[y_], BoBrho[Y_]);
+
+  if (BoBrho[Y_] == NAN) {
+    for (j = 0; j < ss_dim; j++)
+      Dps[j] = NAN;
+    return;
+  }
+
   splin2_(FM->x[X_], FM->x[Y_], FM->BoBrho[Z_][kz], FM->BoBrho2[Z_][kz],
 	   FM->n[X_], FM->n[Y_], ps[x_], ps[y_], BoBrho[Z_]);
+
+  if (BoBrho[Z_] == NAN) {
+    for (j = 0; j < ss_dim; j++)
+      Dps[j] = NAN;
+    return;
+  }
 
   p_s = get_p_s_cs(ps);
 
@@ -1745,12 +1250,28 @@ void FieldMap_pass_RK(CellType &Cell, ss_vect<T> &ps, int k)
 	  << endl;
   for(i = 1+FM->cut; i < FM->n[Z_]-FM->cut; i += n_step) {
     if (i <= FM->n[Z_]-FM->cut-2) {
-      f_FM(Cell, z, ps, Dps); rk4_(Cell, ps, Dps, FM->x[Z_][i], h, ps, f_FM);
+      f_FM(Cell, z, ps, Dps);
+
+      if (Dps[x_] == NAN) {
+	cout << "FieldMap_pass_RK: particle lost" << endl;
+	cout << ps;
+	return;
+      }
+
+      rk4_(Cell, ps, Dps, FM->x[Z_][i], h, ps, f_FM);
 
       z += h; FM->Lr += h; s_FM += h;
     } else {
       // Use 2nd order Runge-Kutta (aka Midpoint method)
-      f_FM(Cell, z, ps, Dps); ps += h/2.0*Dps;
+      f_FM(Cell, z, ps, Dps);
+
+      if (Dps[x_] == NAN) {
+	cout << "FieldMap_pass_RK: particle lost" << endl;
+	cout << ps;
+	return;
+      }
+
+      ps += h/2.0*Dps;
 
       z += h/2.0; FM->Lr += h/2.0; s_FM += h/2.0;
     }
@@ -1831,25 +1352,57 @@ void FieldMap_pass_SI(CellType &Cell, ss_vect<T> &ps, int k)
     splin2_(FM->x[X_], FM->x[Y_], FM->AoBrho[Y_][j], FM->AoBrho2[Y_][j],
 	    FM->n[X_], FM->n[Y_], ps[x_], ps[y_], AoBrho[0]);
 
+    if (AoBrho[0] == NAN) {
+      for (j = 0; j < ss_dim; j++)
+	ps[j] = NAN;
+      return;
+    }
+
     ps1[y_] += (ps[py_]-AoBrho[0])*0.5*hd;
     ps1[ct_] += sqr(0.5)*hd*sqr(ps[py_]-AoBrho[0])/(1.0+ps[delta_]);
 
     splin2_(FM->x[X_], FM->x[Y_], FM->AoBrho[Y_][j], FM->AoBrho2[Y_][j],
 	    FM->n[X_], FM->n[Y_], ps[x_]+d_diff*FM->dx[X_], ps[y_],
 	    dAoBrho[1]);
+
+    if (dAoBrho[1] == NAN) {
+      for (j = 0; j < ss_dim; j++)
+	ps[j] = NAN;
+      return;
+    }
+
     splin2_(FM->x[X_], FM->x[Y_], FM->AoBrho[Y_][j], FM->AoBrho2[Y_][j],
 	    FM->n[X_], FM->n[Y_], ps[x_]-d_diff*FM->dx[X_], ps[y_],
 	    dAoBrho[0]);
     
+    if (dAoBrho[0] == NAN) {
+      for (j = 0; j < ss_dim; j++)
+	ps[j] = NAN;
+      return;
+    }
+
     AoBrho_int = (dAoBrho[1]-dAoBrho[0])/(2.0*d_diff*FM->dx[X_]);
 
     splin2_(FM->x[X_], FM->x[Y_], FM->AoBrho[Y_][j], FM->AoBrho2[Y_][j],
 	    FM->n[X_], FM->n[Y_], ps1[x_]+d_diff*FM->dx[X_], ps1[y_], 
 	    dAoBrho[1]);
+
+    if (dAoBrho[1] == NAN) {
+      for (j = 0; j < ss_dim; j++)
+	ps[j] = NAN;
+      return;
+    }
+
     splin2_(FM->x[X_], FM->x[Y_], FM->AoBrho[Y_][j], FM->AoBrho2[Y_][j],
 	    FM->n[X_], FM->n[Y_], ps1[x_]-d_diff*FM->dx[X_], ps1[y_],
 	    dAoBrho[0]);
     
+    if (dAoBrho[0] == NAN) {
+      for (j = 0; j < ss_dim; j++)
+	ps[j] = NAN;
+      return;
+    }
+
     AoBrho_int += (dAoBrho[1]-dAoBrho[0])/(2.0*d_diff*FM->dx[X_]);
 
     // Trapezoidal rule
@@ -1858,6 +1411,12 @@ void FieldMap_pass_SI(CellType &Cell, ss_vect<T> &ps, int k)
 
     splin2_(FM->x[X_], FM->x[Y_], FM->AoBrho[Y_][j], FM->AoBrho2[Y_][j],
 	    FM->n[X_], FM->n[Y_], ps1[x_], ps1[y_], AoBrho[1]);
+
+    if (AoBrho[1] == NAN) {
+      for (j = 0; j < ss_dim; j++)
+	ps[j] = NAN;
+      return;
+    }
 
     ps1[py_] += AoBrho[1] - AoBrho[0];
 
@@ -1869,30 +1428,68 @@ void FieldMap_pass_SI(CellType &Cell, ss_vect<T> &ps, int k)
     splin2_(FM->x[X_], FM->x[Y_], FM->AoBrho[X_][j], FM->AoBrho2[X_][j],
 	    FM->n[X_], FM->n[Y_], ps[x_], ps[y_], AoBrho[0]);
 
+    if (AoBrho[0] == NAN) {
+      for (j = 0; j < ss_dim; j++)
+	ps[j] = NAN;
+      return;
+    }
+
     ps1[x_] += (ps[px_]-AoBrho[0])*hd;
     ps1[ct_] += 0.5*hd*sqr(ps[px_]-AoBrho[0])/(1.0+ps[delta_]);
 
     splin2_(FM->x[X_], FM->x[Y_], FM->AoBrho[X_][j], FM->AoBrho2[X_][j],
 	    FM->n[X_], FM->n[Y_], ps1[x_], ps1[y_], AoBrho[1]);
 
+    if (AoBrho[1] == NAN) {
+      for (j = 0; j < ss_dim; j++)
+	ps[j] = NAN;
+      return;
+    }
+
     ps1[px_] += AoBrho[1] - AoBrho[0];
 
     splin2_(FM->x[X_], FM->x[Y_], FM->AoBrho[X_][j], FM->AoBrho2[X_][j],
 	    FM->n[X_], FM->n[Y_], ps[x_], ps[y_]+d_diff*FM->dx[Y_],
 	    dAoBrho[1]);
+
+    if (dAoBrho[1] == NAN) {
+      for (j = 0; j < ss_dim; j++)
+	ps[j] = NAN;
+      return;
+    }
+
     splin2_(FM->x[X_], FM->x[Y_], FM->AoBrho[X_][j], FM->AoBrho2[X_][j],
 	    FM->n[X_], FM->n[Y_], ps[x_], ps[y_]-d_diff*FM->dx[Y_],
 	    dAoBrho[0]);
     
+    if (dAoBrho[0] == NAN) {
+      for (j = 0; j < ss_dim; j++)
+	ps[j] = NAN;
+      return;
+    }
+
     AoBrho_int = (dAoBrho[1]-dAoBrho[0])/(2.0*d_diff*FM->dx[Y_]);
 
     splin2_(FM->x[X_], FM->x[Y_], FM->AoBrho[X_][j], FM->AoBrho2[X_][j],
 	    FM->n[X_], FM->n[Y_], ps1[x_], ps1[y_]+d_diff*FM->dx[Y_],
 	    dAoBrho[1]);
+
+    if (dAoBrho[1] == NAN) {
+      for (j = 0; j < ss_dim; j++)
+	ps[j] = NAN;
+      return;
+    }
+
     splin2_(FM->x[X_], FM->x[Y_], FM->AoBrho[X_][j], FM->AoBrho2[X_][j],
 	    FM->n[X_], FM->n[Y_], ps1[x_], ps1[y_]-d_diff*FM->dx[Y_],
 	    dAoBrho[0]);
     
+    if (dAoBrho[0] == NAN) {
+      for (j = 0; j < ss_dim; j++)
+	ps[j] = NAN;
+      return;
+    }
+
     AoBrho_int += (dAoBrho[1]-dAoBrho[0])/(2.0*d_diff*FM->dx[Y_]);
 
     // Trapezoidal rule
@@ -1907,25 +1504,57 @@ void FieldMap_pass_SI(CellType &Cell, ss_vect<T> &ps, int k)
     splin2_(FM->x[X_], FM->x[Y_], FM->AoBrho[Y_][j], FM->AoBrho2[Y_][j],
 	    FM->n[X_], FM->n[Y_], ps[x_], ps[y_], AoBrho[0]);
 
+    if (AoBrho[0] == NAN) {
+      for (j = 0; j < ss_dim; j++)
+	ps[j] = NAN;
+      return;
+    }
+
     ps1[y_] += (ps[py_]-AoBrho[0])*0.5*hd;
     ps1[ct_] += sqr(0.5)*hd*sqr(ps[py_]-AoBrho[0])/(1.0+ps[delta_]);
 
     splin2_(FM->x[X_], FM->x[Y_], FM->AoBrho[Y_][j], FM->AoBrho2[Y_][j],
 	    FM->n[X_], FM->n[Y_], ps[x_]+d_diff*FM->dx[X_], ps[y_],
 	    dAoBrho[1]);
+
+    if (dAoBrho[1] == NAN) {
+      for (j = 0; j < ss_dim; j++)
+	ps[j] = NAN;
+      return;
+    }
+
     splin2_(FM->x[X_], FM->x[Y_], FM->AoBrho[Y_][j], FM->AoBrho2[Y_][j],
 	    FM->n[X_], FM->n[Y_], ps[x_]-d_diff*FM->dx[X_], ps[y_],
 	    dAoBrho[0]);
     
+    if (dAoBrho[0] == NAN) {
+      for (j = 0; j < ss_dim; j++)
+	ps[j] = NAN;
+      return;
+    }
+
     AoBrho_int = (dAoBrho[1]-dAoBrho[0])/(2.0*d_diff*FM->dx[X_]);
 
     splin2_(FM->x[X_], FM->x[Y_], FM->AoBrho[Y_][j], FM->AoBrho2[Y_][j],
 	    FM->n[X_], FM->n[Y_], ps1[x_]+d_diff*FM->dx[X_], ps1[y_],
 	    dAoBrho[1]);
+
+    if (dAoBrho[1] == NAN) {
+      for (j = 0; j < ss_dim; j++)
+	ps[j] = NAN;
+      return;
+    }
+
     splin2_(FM->x[X_], FM->x[Y_], FM->AoBrho[Y_][j], FM->AoBrho2[Y_][j],
 	    FM->n[X_], FM->n[Y_], ps1[x_]-d_diff*FM->dx[X_], ps1[y_],
 	    dAoBrho[0]);
     
+    if (dAoBrho[0] == NAN) {
+      for (j = 0; j < ss_dim; j++)
+	ps[j] = NAN;
+      return;
+    }
+
     AoBrho_int += (dAoBrho[1]-dAoBrho[0])/(2.0*d_diff*FM->dx[X_]);
 
     // Trapezoidal rule
@@ -1934,6 +1563,12 @@ void FieldMap_pass_SI(CellType &Cell, ss_vect<T> &ps, int k)
 
     splin2_(FM->x[X_], FM->x[Y_], FM->AoBrho[Y_][j], FM->AoBrho2[Y_][j],
 	    FM->n[X_], FM->n[Y_], ps1[x_], ps1[y_], AoBrho[1]);
+
+    if (AoBrho[1] == NAN) {
+      for (j = 0; j < ss_dim; j++)
+	ps[j] = NAN;
+      return;
+    }
 
     ps1[py_] += AoBrho[1] - AoBrho[0];
 
@@ -1978,9 +1613,24 @@ void FieldMap_pass_SI(CellType &Cell, ss_vect<T> &ps, int k)
   // Change of gauge
   splin2_(FM->x[X_], FM->x[Y_], FM->AoBrho[X_][j], FM->AoBrho2[X_][j],
 	  FM->n[X_], FM->n[Y_], ps[x_], ps[y_], AoBrho[0]);
+
+  if (AoBrho[0] == NAN) {
+    for (j = 0; j < ss_dim; j++)
+      ps[j] = NAN;
+    return;
+  }
+
   ps[px_] -= AoBrho[0];
+
   splin2_(FM->x[X_], FM->x[Y_], FM->AoBrho[Y_][j], FM->AoBrho2[Y_][j],
 	  FM->n[X_], FM->n[Y_], ps[x_], ps[y_], AoBrho[0]);
+
+  if (AoBrho[0] == NAN) {
+    for (j = 0; j < ss_dim; j++)
+      ps[j] = NAN;
+    return;
+  }
+
   ps[py_] -= AoBrho[0];
 
   switch (FieldMap_filetype) {
@@ -2090,8 +1740,6 @@ void Insertion_Pass(CellType &Cell, ss_vect<T> &x)
 
   elemtype  *elemp;
   double    LN = 0.0;
-  T         tx1, tz1;      /* thetax and thetaz retrieved from
-			      interpolation routine */
   T         tx2, tz2;      /* thetax and thetaz retrieved from
 			      interpolation routine */
   T         d, B2_perp;
@@ -2102,50 +1750,49 @@ void Insertion_Pass(CellType &Cell, ss_vect<T> &x)
   bool      outoftable = false;
      
   elemp  = &Cell.Elem; Nslice = elemp->ID->PN;
-  alpha0 = c0/globval.Energy*1E-9*elemp->ID->scaling; alpha02= alpha0*alpha0;
-  
+
+  if (elemp->ID->linear) {
+    alpha0 = c0/globval.Energy*1E-9*elemp->ID->scaling; alpha02 = alpha0*alpha0;
+  } else
+    alpha02 = 1e-6*elemp->ID->scaling;
+
 //  /* Global -> Local */
 //  GtoL(X, Cell->dS, Cell->dT, 0.0, 0.0, 0.0);
 
   // (Nslice+1) drifts, nslice kicks
-  LN = elemp->PL/(Nslice+1);
-  Drift(LN, x);
+  // LN = elemp->PL/(Nslice+1);
+
+  // Nslice drifts and kicks.
+  LN = elemp->PL/Nslice;
+  Drift(LN/2e0, x);
 
   for (i = 1; i <= Nslice; i++) {
-    // First order kick
-    if (elemp->ID->firstorder) {
-      if (!elemp->ID->linear)
-        SplineInterpolation2(x[x_], x[y_], tx1, tz1, Cell, outoftable);
-      else
-        LinearInterpolation2(x[x_], x[y_], tx1, tz1, B2_perp, Cell,
-			     outoftable, 1);
-      if (outoftable) {
-	x[x_] = 1e30;
-        return;
-      }
-
-      d = alpha0/Nslice/(1.0+x[delta_]); x[px_] += d*tx1; x[py_] += d*tz1;
-    } 
-      
     // Second order kick
     if (elemp->ID->secondorder){
-      if (!elemp->ID->linear)
-        SplineInterpolation2(x[x_], x[y_], tx2, tz2, Cell, outoftable);
-      else {
+      // if (!elemp->ID->linear)
+      //   SplineInterpolation2(x[x_], x[y_], tx2, tz2, Cell, outoftable);
+      // else {
         LinearInterpolation2(x[x_], x[y_], tx2, tz2, B2_perp, Cell,
 			     outoftable, 2);
 
-	if (globval.radiation || globval.emittance) radiate_ID(x, LN, B2_perp);
-      }
+	// Scale locally with (Brho) (as above) instead of when the file
+	// is read; since the beam energy might not be known at that time.
+	if (globval.radiation || globval.emittance)
+	  radiate_ID(x, LN, elemp->ID->scaling*B2_perp);
+      // }
+
       if (outoftable) {
-	x[x_] = 1e30;
+	x[x_] = NAN;
         return;
       }
 
       d = alpha02/Nslice/(1.0+x[delta_]); x[px_] += d*tx2; x[py_] += d*tz2;
     }  
-    Drift(LN, x);
+    if (i != Nslice) Drift(LN, x);
   }
+
+  Drift(LN/2e0, x);
+
 //  CopyVec(6L, x, Cell->BeamPos);
   
 //  /* Local -> Global */
@@ -2942,6 +2589,8 @@ static double thirdroot(double a)
 
 void SI_init(void)
 {
+  // SI units are used internally
+  // apart from globval.energy [GeV]
   /*  c_1 = 1/(2*(2-2^(1/3))),    c_2 = (1-2^(1/3))/(2*(2-2^(1/3)))
       d_1 = 1/(2-2^(1/3)),        d_2 = -2^(1/3)/(2-2^(1/3))                 */
 
@@ -2951,17 +2600,14 @@ void SI_init(void)
   d_1 = 2e0*c_1; d_2 = 1e0 - 2e0*d_1;
 
   // classical radiation
-//  C_gamma = 8.846056192e-05;
-  // C_gamma = 4 * pi * r_e [m] / ( 3 * (m_e [GeV/c^2] * c^2)^3 )
+  // C_gamma = 4*pi*r_e [m]/(3*(m_e [GeV/c^2] *c^2)^3)
   C_gamma = 4.0*M_PI*r_e/(3.0*cube(1e-9*m_e));
-  // P_gamma = e^2 c^3 / 2 / pi * C_gamma (E [GeV])^2 (B [T])^2
+  // P_gamma = e^2*c^3/(2*pi)*C_gamma*(E [GeV])^2*(B [T])^2
   // p_s = P_s/P, E = P*c, B/(Brho) = p/e
   cl_rad = C_gamma*cube(globval.Energy)/(2.0*M_PI);
 
   // eletron rest mass [GeV]: slightly off???
 //  m_e_ = 0.5110034e-03;
-  // h_bar times c [GeV m]
-//  hbar_t_c = 1.9732858e-16;
   // quantum fluctuations
   C_u = 55.0/(24.0*sqrt(3.0));
   q_fluct =
@@ -3213,9 +2859,11 @@ void Wiggler_Alloc(elemtype *Elem)
   }
   W->PdTpar = 0.0; W->PdTsys = 0.0; W->PdTrnd = 0.0;
   W->n_harm = 0;
+  // 2/21/12 J.B. & J.C.
+  W->lambda = 0.0;
   for (j = 0; j < n_harm_max; j++) {
     W->BoBrhoV[j] = 0.0; W->BoBrhoH[j] = 0.0; W->kxV[j] = 0.0; W->kxH[j] = 0.0;
-    W->lambda = 0.0; W->phi[j] = 0.0;
+    W->phi[j] = 0.0;
   }
   for (j = 0; j <= HOMmax; j++)
     W->PBW[j+HOMmax] = 0.0;
@@ -3250,7 +2898,7 @@ void Insertion_Alloc(elemtype *Elem)
   if (ID->firstorder){
     for (i = 0; i < IDZMAX; i++){
       for (j = 0; j < IDXMAX; j++) {
-	ID->thetax1[i][j] = 0.0; ID->thetaz1[i][j] = 0.0;
+	ID->thetax1[i][j] = 0.0; ID->thetaz1[i][j] = 0.0; ID->B2[i][j] = 0.0;
       }
     }
   }
@@ -3259,7 +2907,7 @@ void Insertion_Alloc(elemtype *Elem)
   if (ID->secondorder) {
     for (i = 0; i < IDZMAX; i++) {
       for (j = 0; j < IDXMAX; j++) {
-          ID->thetax[i][j] = 0.0; ID->thetaz[i][j] = 0.0;
+          ID->thetax[i][j] = 0.0; ID->thetaz[i][j] = 0.0; ID->B2[i][j] = 0.0;
       }
     }
   }
@@ -3435,8 +3083,11 @@ void Wiggler_Init(int Fnum1)
     *cellp->Elem.W = *elemfamp->ElemF.W;
 
     elemp = &cellp->Elem;
-    cellp->dT[0] = cos(dtor(elemp->M->PdTpar));
-    cellp->dT[1] = sin(dtor(elemp->M->PdTpar));
+    // 2/21/12 JB & JC
+//     cellp->dT[0] = cos(dtor(elemp->M->PdTpar));
+//     cellp->dT[1] = sin(dtor(elemp->M->PdTpar));
+    cellp->dT[0] = cos(dtor(elemp->W->PdTpar));
+    cellp->dT[1] = sin(dtor(elemp->W->PdTpar));
 
     cellp->dS[0] = 0.0; cellp->dS[1] = 0.0;
     Wiggler_Setmatrix(Fnum1, i, cellp->Elem.PL,
@@ -3506,17 +3157,7 @@ void splint_(const double xa[], const U ya[], const U y2a[],
     else klo = k;
   }
   h = xa[khi]-xa[klo];
-  if (h == 0.0) 
-			/*Orginal 
-			nrerror("Bad xa input to routine splint_");
-			*/
-	//GSL add
-	{
-		printf("Bad xa input to routine splint_\n");
-		exit(1);	
-	}
-	//end GSL add
-	
+  if (h == 0.0) nrerror("Bad xa input to routine splint_");
   a = (xa[khi]-x)/h;
   b = (x-xa[klo])/h;
   y = a*ya[klo]+b*ya[khi]+((a*a*a-a)*y2a[klo]+(b*b*b-b)*y2a[khi])*(h*h)/6.0;
@@ -3532,18 +3173,24 @@ void splin2_(const double x1a[], const double x2a[], double **ya, double **y2a,
 
   if ((x1 < x1a[1]) || (x1 > x1a[m])) {
     cout << fixed << setprecision(8)
-	 << "splin2_: x = " << setw(10) << is_double<T>::cst(x1)
-	 << " outside table (["
+	 << "splin2_: x undefined ["
+	 << is_double<T>::cst(x1) << ", " << is_double<T>::cst(x2) << "] (["
 	 << x1a[1] << ", " << x1a[m] << "])" << endl;
-    exit(1);
+
+    y = NAN;
+
+    return;
   }
 
   if ((x2 < x2a[1]) || (x2 > x2a[n])) {
     cout << fixed << setprecision(8)
-	 << "splin2_: y = " << setw(10) << is_double<T>::cst(x2)
-	 << " outside table (["
+	 << "splin2_: y undefined ["
+	 << is_double<T>::cst(x1) << ", " << is_double<T>::cst(x2) << "] (["
 	 << x2a[1] << ", " << x2a[n] << "])" << endl;
-    exit(1);
+
+    y = NAN;
+
+    return;
   }
 
   for (j = 1; j<= m; j++)
@@ -3611,23 +3258,9 @@ void get_B_DIAMOND(const char *filename, FieldMapType *FM)
 
   FM->n[Y_] = 2*ny - 1;
 
-  /*Orginal
   FM->x[X_] = dvector(1, FM->n[X_]); FM->x[Y_] = dvector(1, FM->n[Y_]);
   FM->x[Z_] = dvector(1, FM->n[Z_]);
-   */
-   
-   //GSL add
-  FM->vx[X_] = gsl_vector_alloc(FM->n[X_]); 
-  GSL2NRDV2(FM->vx[X_],FM->x[X_]);
-  
-  FM->vx[Y_] = gsl_vector_alloc(FM->n[Y_]);
-  GSL2NRDV2(FM->vx[Y_],FM->x[Y_]);
-  
-  FM->vx[Z_] = gsl_vector_alloc(FM->n[Z_]);
-  GSL2NRDV2(FM->vx[Z_],FM->x[Z_]);
-  //end GSL add
-   
-  /*Orginal
+    
   FM->BoBrho[X_]  = df3tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
   FM->BoBrho[Y_]  = df3tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
   FM->BoBrho[Z_]  = df3tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
@@ -3639,22 +3272,7 @@ void get_B_DIAMOND(const char *filename, FieldMapType *FM)
   FM->AoBrho[Y_]  = df3tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
   FM->AoBrho2[X_] = df3tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
   FM->AoBrho2[Y_] = df3tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  */
-  
-  //GSL add
-  FM->BoBrho[X_]  = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  FM->BoBrho[Y_]  = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  FM->BoBrho[Z_]  = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  FM->BoBrho2[X_] = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  FM->BoBrho2[Y_] = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  FM->BoBrho2[Z_] = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
 
-  FM->AoBrho[X_]  = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  FM->AoBrho[Y_]  = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  FM->AoBrho2[X_] = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  FM->AoBrho2[Y_] = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  //end GSL add
-  
   for (i = 1; i <= 2; i++)
     inf.getline(line, max_str);
 
@@ -3671,9 +3289,9 @@ void get_B_DIAMOND(const char *filename, FieldMapType *FM)
 	// convert from cm to m
 	FM->x[X_][i] *= 1e-2; FM->x[Y_][ny-1+j] *= 1e-2; FM->x[Z_][n] *= 1e-2;
 	// convert from Gauss to Tesla
-	FM->BoBrho[X_][n][i][ny-1+j] *= 1e-4*FM->scl/Brho;
-	FM->BoBrho[Y_][n][i][ny-1+j] *= 1e-4*FM->scl/Brho;
-	FM->BoBrho[Z_][n][i][ny-1+j] *= 1e-4*FM->scl/Brho;
+	FM->BoBrho[X_][n][i][ny-1+j] /= 1e+4*Brho;
+	FM->BoBrho[Y_][n][i][ny-1+j] /= 1e+4*Brho;
+	FM->BoBrho[Z_][n][i][ny-1+j] /= 1e+4*Brho;
 
 	// Compute vector potential (axial gauge) by extended trapezodial rule
 	if (n == 1) {
@@ -3803,23 +3421,9 @@ void get_B_NSLS_II(const char *filename, FieldMapType *FM)
 	 &x_min[Z_], &x_max[Z_], &FM->dx[Z_], &FM->n[Z_]);
   x_min[Z_] *= 1e-2; x_max[Z_] *= 1e-2; FM->dx[Z_] *= 1e-2;
 
-  /*Orginal
   FM->x[X_] = dvector(1, FM->n[X_]); FM->x[Y_] = dvector(1, FM->n[Y_]);
   FM->x[Z_] = dvector(1, FM->n[Z_]);
-   */
-   
-   //GSL add
-   FM->vx[X_] = gsl_vector_alloc(FM->n[X_]); 
-  GSL2NRDV2(FM->vx[X_],FM->x[X_]);
-  
-  FM->vx[Y_] = gsl_vector_alloc(FM->n[Y_]);
-  GSL2NRDV2(FM->vx[Y_],FM->x[Y_]);
-  
-  FM->vx[Z_] = gsl_vector_alloc(FM->n[Z_]);
-  GSL2NRDV2(FM->vx[Z_],FM->x[Z_]);
-  //end GSL add
-   
-/*Orginal  
+    
   FM->BoBrho[X_]  = df3tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
   FM->BoBrho[Y_]  = df3tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
   FM->BoBrho[Z_]  = df3tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
@@ -3831,22 +3435,7 @@ void get_B_NSLS_II(const char *filename, FieldMapType *FM)
   FM->AoBrho[Y_]  = df3tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
   FM->AoBrho2[X_] = df3tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
   FM->AoBrho2[Y_] = df3tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-*/
 
-  //GSL add
-  FM->BoBrho[X_]  = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  FM->BoBrho[Y_]  = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  FM->BoBrho[Z_]  = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  FM->BoBrho2[X_] = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  FM->BoBrho2[Y_] = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  FM->BoBrho2[Z_] = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-
-  FM->AoBrho[X_]  = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  FM->AoBrho[Y_]  = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  FM->AoBrho2[X_] = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  FM->AoBrho2[Y_] = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  //end GSL add
-  
   for (i = 1; i <= FM->n[X_]; i++)
     for (j = 1; j <= FM->n[Y_]; j++)
       for (n = 1; n <= FM->n[Z_]; n++) {
@@ -3860,9 +3449,9 @@ void get_B_NSLS_II(const char *filename, FieldMapType *FM)
 	// convert from cm to m
 	FM->x[X_][i] *= 1e-2; FM->x[Y_][j] *= 1e-2; FM->x[Z_][n] *= 1e-2;
 
-	FM->BoBrho[X_][n][i][j] *= FM->scl/Brho;
-	FM->BoBrho[Y_][n][i][j] *= FM->scl/Brho;
-	FM->BoBrho[Z_][n][i][j] *= FM->scl/Brho;
+	FM->BoBrho[X_][n][i][j] = Brho;
+	FM->BoBrho[Y_][n][i][j] = Brho;
+	FM->BoBrho[Z_][n][i][j] = Brho;
 
 	// Compute vector potential (axial gauge) by extended trapezodial rule
  	if (n == 1) {
@@ -3958,24 +3547,10 @@ void get_B_Oleg1(const char *filename, FieldMapType *FM)
   sscanf(line, "#%lf <= z <= %lf, dz = %lf, nz = %d",
 	 &x_min[Z_], &x_max[Z_], &FM->dx[Z_], &FM->n[Z_]);
   FM->dx[Z_] *= 1e-3;
-  
-/*Orginal
+
   FM->x[X_] = dvector(1, FM->n[X_]); FM->x[Y_] = dvector(1, FM->n[Y_]);
   FM->x[Z_] = dvector(1, FM->n[Z_]);
-  */
-
-  //GSL add
-  FM->vx[X_] = gsl_vector_alloc(FM->n[X_]); 
-  GSL2NRDV2(FM->vx[X_],FM->x[X_]);
-  
-  FM->vx[Y_] = gsl_vector_alloc(FM->n[Y_]);
-  GSL2NRDV2(FM->vx[Y_],FM->x[Y_]);
-  
-  FM->vx[Z_] = gsl_vector_alloc(FM->n[Z_]);
-  GSL2NRDV2(FM->vx[Z_],FM->x[Z_]);
-  //end GSL add
-  
-/*Orginal   
+    
   FM->BoBrho[X_]  = df3tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
   FM->BoBrho[Y_]  = df3tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
   FM->BoBrho[Z_]  = df3tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
@@ -3987,21 +3562,6 @@ void get_B_Oleg1(const char *filename, FieldMapType *FM)
   FM->AoBrho[Y_]  = df3tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
   FM->AoBrho2[X_] = df3tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
   FM->AoBrho2[Y_] = df3tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-*/
-
-  //GSL add
-  FM->BoBrho[X_]  = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  FM->BoBrho[Y_]  = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  FM->BoBrho[Z_]  = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  FM->BoBrho2[X_] = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  FM->BoBrho2[Y_] = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  FM->BoBrho2[Z_] = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-
-  FM->AoBrho[X_]  = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  FM->AoBrho[Y_]  = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  FM->AoBrho2[X_] = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  FM->AoBrho2[Y_] = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  //end GSL add
 
   for (n = 1; n <= FM->n[Z_]; n++)
     for (j = 1; j <= FM->n[Y_]; j++)
@@ -4016,9 +3576,9 @@ void get_B_Oleg1(const char *filename, FieldMapType *FM)
 	// convert from mm to m
 	FM->x[X_][i] *= 1e-3; FM->x[Y_][j] *= 1e-3; FM->x[Z_][n] *= 1e-3;
 
-	FM->BoBrho[X_][n][i][j] *= FM->scl/Brho;
-	FM->BoBrho[Y_][n][i][j] *= FM->scl/Brho;
-	FM->BoBrho[Z_][n][i][j] *= FM->scl/Brho;
+	FM->BoBrho[X_][n][i][j] /= Brho;
+	FM->BoBrho[Y_][n][i][j] /= Brho;
+	FM->BoBrho[Z_][n][i][j] /= Brho;
 
 	// Compute vector potential (axial gauge) by extended trapezodial rule
  	if (n == 1) {
@@ -4116,48 +3676,29 @@ void get_B_Oleg2(const char *filename, FieldMapType *FM)
   inf.getline(line, max_str); sscanf(line, "#%d", &FM->n[Z_]);
 
   cout << fixed << setprecision(5)
-       << setw(10) << FM->dx[X_] << setw(10) << FM->dx[Y_]
-       << setw(10) << FM->dx[Z_] << endl;
+       << setw(10) << 1e3*FM->dx[X_] << setw(10) << 1e3*FM->dx[Y_]
+       << setw(10) << 1e3*FM->dx[Z_] << endl;
   cout << setw(10) << FM->n[X_] << setw(10) << FM->n[Y_]
        << setw(10) << FM->n[Z_] << endl;
   cout << fixed << setprecision(3)
        << setw(10) << x_min[X_] << setw(10) << x_min[Y_]
        << setw(10) << x_min[Z_] << endl;
 
-  /*Orginal
   FM->x[X_] = dvector(1, FM->n[X_]); FM->x[Y_] = dvector(1, FM->n[Y_]);
   FM->x[Z_] = dvector(1, FM->n[Z_]);
-   */
-	
-  //GSL add
-  FM->vx[X_] = gsl_vector_alloc(FM->n[X_]); 
-  GSL2NRDV2(FM->vx[X_],FM->x[X_]);
-  
-  FM->vx[Y_] = gsl_vector_alloc(FM->n[Y_]);
-  GSL2NRDV2(FM->vx[Y_],FM->x[Y_]);
-  
-  FM->vx[Z_] = gsl_vector_alloc(FM->n[Z_]);
-  GSL2NRDV2(FM->vx[Z_],FM->x[Z_]);
-  //end GSL add
-	
-/*Orginal
+    
   FM->BoBrho[X_]  = df3tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
   FM->BoBrho[Y_]  = df3tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
   FM->BoBrho[Z_]  = df3tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
   FM->BoBrho2[X_] = df3tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
   FM->BoBrho2[Y_] = df3tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
   FM->BoBrho2[Z_] = df3tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-*/
 
-  //GSL add
-  FM->BoBrho[X_]  = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  FM->BoBrho[Y_]  = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  FM->BoBrho[Z_]  = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  FM->BoBrho2[X_] = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  FM->BoBrho2[Y_] = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  FM->BoBrho2[Z_] = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  //end GSL add
-  
+  FM->AoBrho[X_]  = df3tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
+  FM->AoBrho[Y_]  = df3tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
+  FM->AoBrho2[X_] = df3tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
+  FM->AoBrho2[Y_] = df3tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
+
   for (n = 1; n <= FM->n[Z_]; n++) {
     FM->x[Z_][n] = (n == 1)? x_min[Z_] : FM->x[Z_][n-1] + FM->dx[Z_];
 
@@ -4172,9 +3713,9 @@ void get_B_Oleg2(const char *filename, FieldMapType *FM)
 	       &FM->BoBrho[X_][n][i][j], &FM->BoBrho[Y_][n][i][j],
 	       &FM->BoBrho[Z_][n][i][j]);
 
-	FM->BoBrho[X_][n][i][j] *= FM->scl/Brho;
-	FM->BoBrho[Y_][n][i][j] *= FM->scl/Brho;
-	FM->BoBrho[Z_][n][i][j] *= FM->scl/Brho;
+	FM->BoBrho[X_][n][i][j] /= Brho;
+	FM->BoBrho[Y_][n][i][j] /= Brho;
+	FM->BoBrho[Z_][n][i][j] /= Brho;
 
 	// Compute vector potential (axial gauge) by extended trapezodial rule
  	if (n == 1) {
@@ -4242,6 +3783,8 @@ void get_B_Oleg2(const char *filename, FieldMapType *FM)
 
 void get_B(const char *filename, FieldMapType *FM)
 {
+  // Do not scale fieldmaps only Hamiltonians, i.e., the kick.  Note that RADIA
+  // (2nd order) kick maps are quadratic in the field, and 1st order linear. 
 
   switch (FieldMap_filetype) {
   case 1:

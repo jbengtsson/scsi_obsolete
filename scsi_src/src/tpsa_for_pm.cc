@@ -121,8 +121,8 @@ void TPSA_Ini(void)
 
   cout << endl;
   cout << scientific << "initializing TPSA library: no = " << no_tps
-       << ", nv = " << nv_tps
-       << ", eps = " << eps_tps << endl;
+       << ", nv = " << nv_tps << ", nd = " << nd_tps
+       << ", ndpt = " << ndpt_tps << ", eps = " << eps_tps << endl;
 
   // Initialize Fortran I/O
 //  f_init();
@@ -605,6 +605,20 @@ tps LieExp(const tps &H, const tps &x)
 }
 
 
+tps LieFlo(const ss_vect<tps> &H, const tps &x)
+{
+  int  i, Hintptrs[nv_tps];
+  tps  y;
+
+  for (i = 0; i < nv_tps; i++) {
+    Hintptrs[i] = H[i].intptr;
+  }
+
+  daflo_(Hintptrs, x.intptr, y.intptr);
+  return y;
+}
+
+
 ss_vect<tps> FExpo(const tps &H, const ss_vect<tps> &x,
 		   const int k0, const int k1, const int k)
 {
@@ -630,6 +644,22 @@ ss_vect<tps> LieExp(const tps &H, const ss_vect<tps> &x)
     xintptrs[i] = x[i].intptr; mapintptrs[i] = map[i].intptr;
   }
   expnd2_(H.intptr, xintptrs, mapintptrs, eps_tps, n_max);
+  for (i = 2*nd_tps; i < nv_tps; i++)
+    map[i] = tps(0.0, i+1);
+  return map;
+}
+
+
+ss_vect<tps> LieFlo(const ss_vect<tps> &H, const ss_vect<tps> &x)
+{
+  int           i, Hintptrs[nv_tps], xintptrs[nv_tps], mapintptrs[nv_tps];
+  ss_vect<tps>  map;
+
+  for (i = 0; i < nv_tps; i++) {
+    Hintptrs[i] = H[i].intptr; xintptrs[i] = x[i].intptr;
+    mapintptrs[i] = map[i].intptr;
+  }
+  daflod_(Hintptrs, xintptrs, mapintptrs);
   for (i = 2*nd_tps; i < nv_tps; i++)
     map[i] = tps(0.0, i+1);
   return map;

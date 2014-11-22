@@ -21,6 +21,7 @@ void Cell_GetABGN(Matrix &M,
 
 void Cell_Geteta(long i0, long i1, bool ring, double dP);
 
+void Ring_Getchrom(double dP);
 
 void Ring_GetTwiss(bool chroma, double dP);
 

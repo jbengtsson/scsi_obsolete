@@ -411,8 +411,9 @@ void Cell_Twiss(long i0, long i1, ss_vect<tps> &Ascr, bool chroma, bool ring,
     dagetprm(Ascr1, cellp->Alpha, cellp->Beta);
     for (j = 0; j <= 1; j++) {
       k = (j+1)*2 - 1;
-      dnu[j] = (GetAngle(getmat(Ascr1, k, k), getmat(Ascr1, k, k+1)) -
-      GetAngle(getmat(Ascr0, k, k), getmat(Ascr0, k, k+1)))/(2.0*M_PI);
+      dnu[j] =
+	(GetAngle(getmat(Ascr1, k, k), getmat(Ascr1, k, k+1)) -
+	 GetAngle(getmat(Ascr0, k, k), getmat(Ascr0, k, k+1)))/(2.0*M_PI);
 
       if ((cellp->Elem.PL >= 0.0) && (dnu[j] < -1e-16))
 	dnu[j] += 1.0;
@@ -422,10 +423,12 @@ void Cell_Twiss(long i0, long i1, ss_vect<tps> &Ascr, bool chroma, bool ring,
       nu1[j] += dnu[j];
 
       cellp->Nu[j] = nu1[j];
-      cellp->Eta[j] = getmat(Ascr1, k, 5)*getmat(Ascr1, 6, 6) -
-                     getmat(Ascr1, k, 6)*getmat(Ascr1, 6, 5);
-      cellp->Etap[j] = getmat(Ascr1, k+1, 5)*getmat(Ascr1, 6, 6) -
-                      getmat(Ascr1, k+1, 6)*getmat(Ascr1, 6, 5);
+      // cellp->Eta[j] = getmat(Ascr1, k, 5)*getmat(Ascr1, 6, 6) -
+      //                getmat(Ascr1, k, 6)*getmat(Ascr1, 6, 5);
+      // cellp->Etap[j] = getmat(Ascr1, k+1, 5)*getmat(Ascr1, 6, 6) -
+      //                 getmat(Ascr1, k+1, 6)*getmat(Ascr1, 6, 5);
+      cellp->Eta[j] = getmat(Ascr1, k, 5);
+      cellp->Etap[j] = getmat(Ascr1, k+1, 5);
     }
     Ascr0 = Ascr1;
   }
@@ -562,7 +565,7 @@ void Ring_Getchrom(double dP)
 ****************************************************************************/
 #define n 4
 void Ring_Twiss_M(bool chroma, double dP)
-{  
+{
   long int  lastpos = 0;
   int       j;
   Vector2   alpha={0.0,0.0}, beta={0.0,0.0}, gamma={0.0,0.0}, nu={0.0,0.0};
@@ -642,7 +645,6 @@ void Ring_Twiss_M(bool chroma, double dP)
 ****************************************************************************/
 void Ring_Twiss(bool chroma, double dP)
 {
-
   long int      lastpos = 0;
   int           n = 0;
   Vector2       alpha={0.0, 0.0}, beta={0.0, 0.0};
@@ -708,6 +710,7 @@ void Ring_Twiss(bool chroma, double dP)
 ****************************************************************************/
 void Ring_GetTwiss(bool chroma, double dP)
 {
+
   if (trace) printf("enter ring_gettwiss\n");
   if (globval.MatMeth)  /* matrix method */
     Ring_Twiss_M(chroma, dP);

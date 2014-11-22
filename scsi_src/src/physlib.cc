@@ -1109,104 +1109,40 @@ void sin_FFT(int n, double xr[])
 {
   /* DFT with sine window */
   int     i;
-  
- /*Orginal
- double  *xi;
-  xi = dvector(1, 2*n);
-  */
-  
-  //GSL add
-  double data_xi[2*n+1];
-  //end GSL add
+  double  *xi;
 
-  /*Orginal
+  xi = dvector(1, 2*n);
+
   for (i = 1; i <= n; i++) {
     xi[2*i-1] = sin((double)i/n*M_PI)*xr[i-1]; xi[2*i] = 0.0;
-  }*/
-  
-  //GSL add
-  for(i=0;i<n;i++){
-	data_xi[2*i] = sin((double)i/n*M_PI)*xr[i];
-	data_xi[2*i+1] = 0.0;
   }
-  //end GSL add
-  
-  /*Orginal
   dfour1(xi, (unsigned long)n, 1);
-  */
-  //GSL add
-  gsl_fft_complex_radix2_forward(data_xi, 1, n);
-  //end add
-  
-  /*Orginal
   for (i = 1; i <= n; i++)
     xr[i-1] = sqrt(pow(xi[2*i-1], 2)+pow(xi[2*i], 2))*2.0/n;
-  */
-  
-  //GSL add
-  for(i=0;i<n;i++){
-	xr[i] = sqrt(pow(data_xi[2*i],2)+pow(data_xi[2*i+1],2))*2.0/n;
-  }
-  //end GSL add
 
-  /*Orginal
   free_dvector(xi, 1, 2*n);
-  */
-  
 }
+
 
 void sin_FFT(int n, double xr[], double xi[])
 {
   /* DFT with sine window */
   int      i;
-  
-  /*Orginal
   double  *xri;
-  xri = dvector(1, 2*n);
-  */
-  
-  //GSL add
-  double data_xri[2*n+1];
-  //end GSL add
 
-  /*Orginal
+  xri = dvector(1, 2*n);
+
   for (i = 1; i <= n; i++) {
     xri[2*i-1] = sin((double)i/n*M_PI)*xr[i-1];
     xri[2*i] = sin((double)i/n*M_PI)*xi[i-1];
   }
-  */
-  
-  //GSL add
-  for(i=0;i<n;i++){
-	data_xri[2*i] = sin((double)i/n*M_PI)*xr[i];
-	data_xri[2*i+1] = sin((double)i/n*M_PI)*xi[i];
-  }
-  //end GSL add
-  
-  /*Orginal
   dfour1(xri, (unsigned long)n, 1);
-  */
-  
-  //GSL add
-  gsl_fft_complex_radix2_forward(data_xri,1,n);
-  //end GSL add
-  
-  /*Orginal
   for (i = 1; i <= n; i++) {
     xr[i-1] = sqrt(pow(xri[2*i-1], 2)+pow(xri[2*i], 2))*2.0/n;
     xi[i-1] = atan2(xri[2*i], xri[2*i-1]);
-  }*/
-  
-  //GSL add
-  for(i=0;i<n;i++) {
-	xr[i] = sqrt(pow(data_xri[2*i],2)+pow(data_xri[2*i],2))*2.0/n;
-	xr[i] = atan2(data_xri[2*i+1], data_xri[2*i]);
   }
-  //end GSL add
 
-  /*Orginal
   free_dvector(xri, 1, 2*n);
-  */
 }
 
 
@@ -2686,19 +2622,9 @@ void findcodS(double dP)
   int          k;
   int          dim;    // 4D or 6D tracking
   long         lastpos;
-  
-  //Add
-  gsl_vector *vvcod;
-  //end add
-  
-  /*Orginal
+
   vcod = dvector(1, 6);
-   */
-   //Add
-   vvcod = gsl_vector_alloc(6);
-   GSL2NRDV2(vvcod,vcod);
-   //end add
-	  
+      
   // starting point
   for (k = 1; k <= 6; k++)
     vcod[k] = 0.0;  
@@ -2730,14 +2656,7 @@ void findcodS(double dP)
 	    x0[0], x0[1], x0[2], x0[3], x0[4], x0[5]);
     Cell_Pass(0, globval.Cell_nLoc, x0, lastpos);
   }
-  /*Orginal
   free_dvector(vcod,1,6);
-  */
-  
-  //Add
-  gsl_vector_free(vvcod);
-  //end add
-  
 }
 
 /****************************************************************************/
@@ -3009,37 +2928,15 @@ void computeFandJ(int n, Vector &x, Matrix &fjac, Vector &fvect)
 
 void Newton_RaphsonS(int ntrial, double x[], int n, double tolx)
 {
-  int    k, i /*Orginal *indx */;
-  double  errx, /*Orginal d, */ *bet, *fvect, **alpha;
-  
-  //GSL add
-  gsl_vector *vbet;
-  gsl_vector *vfvect;
-  gsl_vector *vx;
-  gsl_matrix *malpha;
-  //end GSL add
+  int    k, i, *indx;
+  double  errx, d, *bet, *fvect, **alpha;
 
   errx = 0.0;
-  // NR arrays start from 1 and not 0 !!!     
-  /*Orginal  
+  // NR arrays start from 1 and not 0 !!!       
   indx = ivector(1, n);
   bet = dvector(1, n);
   fvect = dvector(1, n);
   alpha = dmatrix(1, n, 1, n);
-  */
-  
-  //GSL add
-  vbet = gsl_vector_alloc(n);
-  GSL2NRDV2(vbet,bet);
-  
-  vfvect = gsl_vector_alloc(n);
-  GSL2NRDV2(vfvect,fvect);
-  
-  vx = gsl_vector_alloc(n);
-  
-  malpha = gsl_matrix_alloc(n,n);
-  GSL2NRDM2(dmalpha,malpha,alpha,0); 
-  //end GSL add
 
   for (k = 1; k <= ntrial; k++) {      // loop over number of iterations
     // supply function values at x in fvect and Jacobian matrix in fjac
@@ -3050,24 +2947,9 @@ void Newton_RaphsonS(int ntrial, double x[], int n, double tolx)
       alpha[i][i] -= 1.0;
     for (i = 1; i <= n; i++)
       bet[i] = x[i] - fvect[i];  // right side of linear equation
-	  
-	/*Orginal
     // solve linear equations using LU decomposition using NR routines
     dludcmp(alpha, n, indx, &d);
     dlubksb(alpha, n, indx, bet);
-	*/
-	
-	//GSL add
-	int is;
-	 gsl_permutation * p = gsl_permutation_alloc (n);
-     gsl_linalg_LU_decomp (malpha, p, &is);
-     gsl_linalg_LU_solve (malpha, p, vbet, vx);
-	 
-	 gsl_vector_memcpy(vbet, vx);
-  
-     gsl_permutation_free(p);
-	//end GSL add
-	
     errx = 0.0;  // check root convergence
     for (i = 1; i <= n; i++) {    // update solution
       errx += fabs(bet[i]);
@@ -3086,18 +2968,8 @@ void Newton_RaphsonS(int ntrial, double x[], int n, double tolx)
   // check whever closed orbit found out
   if ((k >= ntrial) && (errx >= tolx * 100)) status.codflag = false;
 
-  /*Orginal
   free_dmatrix(alpha,1,n,1,n); free_dvector(bet,1,n); free_dvector(fvect,1,n);
   free_ivector(indx,1,n);
-  */
-  
-  //GSL add
-  gsl_matrix_free(malpha);
-  gsl_vector_free(vbet);
-  gsl_vector_free(vx);
-  gsl_vector_free(vfvect);
-  //end GSL add
- 
 }
 
 

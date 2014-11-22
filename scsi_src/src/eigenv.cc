@@ -170,8 +170,8 @@ static void Swap(double *x, double *y)
        17/07/03 use M_PI instead of pi
 
 ****************************************************************************/
-static void geigen(int n, Matrix &fm, Matrix &Vre, Matrix &Vim,
-                   Vector &wr, Vector &wi)
+void geigen(int n, Matrix &fm, Matrix &Vre, Matrix &Vim,
+	    Vector &wr, Vector &wi)
 {
   int info, i, j, k, c;
   Vector ort, cosfm, sinfm, nufm1, nufm2, nu1, nu2;
@@ -211,7 +211,7 @@ static void geigen(int n, Matrix &fm, Matrix &Vre, Matrix &Vim,
     cosfm[i] = (fm[j - 1][j - 1] + fm[j][j]) / 2;
     if (fabs(cosfm[i]) > (double)1.0)
     {
-      printf("geigen: cosfm[%d]=% .13E > 1.0!\n", i + 1, cosfm[i]);
+//      printf("geigen: cosfm[%d]=% .13E > 1.0!\n", i + 1, cosfm[i]);
       globval.stable = false;
 //      goto _L999;
       return;
@@ -549,25 +549,18 @@ void GDiag(int n_, double C, Matrix &A, Matrix &Ainv_, Matrix &R,
   double x1, x2;
   Vector wr, wi, eta;
   Matrix fm, B, Binv;
-  int FORLIM;
-  double TEMP, TEMP1;
 
-  V.n    = n_;
-  V.Ainv = &Ainv_;
-  InitJJ(V);
+  V.n = n_; V.Ainv = &Ainv_; InitJJ(V);
   CopyMat(V.n, M, fm); /* fm<-M */
   TpMat(V.n, fm);  /* fm <- transpose(fm) */
   /* look for eigenvalues and eigenvectors of fm */
   geigen(V.n, fm, V.Vre, V.Vim, wr, wi);
-  FORLIM = V.n/2;
-  for (j = 1; j <= FORLIM; j++)
-  {
-    TEMP  = wr[j*2-2]; TEMP1 = wi[j*2-2];
-    x1 = sqrt(sqr(TEMP)+sqr(TEMP1));
-    TEMP  = wr[j*2-1]; TEMP1 = wi[j*2-1];
-    x2 = sqrt(sqr(TEMP)+sqr(TEMP1));
-    globval.alpha_rad[j-1] = log(sqrt(x1*x2));
-  }
+  if (globval.radiation)
+    for (j = 1; j <=  V.n/2; j++) {
+      x1 = sqrt(sqr(wr[j*2-2])+sqr(wi[j*2-2]));
+      x2 = sqrt(sqr(wr[j*2-1])+sqr(wi[j*2-1]));
+      globval.alpha_rad[j-1] = log(sqrt(x1*x2));
+    }
 
   CopyMat(V.n, M, fm);
   geigen(V.n, fm, globval.Vr, globval.Vi, globval.wr, globval.wi);
@@ -580,34 +573,25 @@ void GDiag(int n_, double C, Matrix &A, Matrix &Ainv_, Matrix &R,
   UnitMat(6, *V.Ainv);
   GetAinv(V);
   CopyMat(6, *V.Ainv, A);
-  if (!InvMat(6, A))
-    printf("A^-1 script is singular\n");
-  if (V.n == 4)
-  {
+  if (!InvMat(6, A)) printf("A^-1 script is singular\n");
+  if (V.n == 4) {
     GetEta(6, M, eta, V);
     GenB(6, B, Binv, eta, V);
     MulLMat(6, B, A);
     MulLMat(6, *V.Ainv, Binv);
     CopyMat(6, Binv, *V.Ainv);
   }
-  CopyMat(6, A, R);
-  MulLMat(6, M, R);
-  MulLMat(6, *V.Ainv, R);
-  if (V.n == 4)
-  {
-    Omega = 0.0;
-    alphac = R[5][4] / C;
+  CopyMat(6, A, R); MulLMat(6, M, R); MulLMat(6, *V.Ainv, R);
+  if (V.n == 4) {
+    Omega = 0.0; alphac = R[5][4]/C;
   }
   if (V.n != 6)
     return;
-  if (globval.Cavity_on)
-  {
-    Omega = GetAngle(R[4][4], R[4][5]) / (2.0 * M_PI);
+  if (globval.Cavity_on) {
+    Omega = GetAngle(R[4][4], R[4][5])/(2.0 * M_PI);
     alphac = 0.0;
-  } else
-  {
-    Omega = 0.0;
-    alphac = R[5][4] / C;
+  } else {
+    Omega = 0.0; alphac = R[5][4]/C;
   }
 }
 

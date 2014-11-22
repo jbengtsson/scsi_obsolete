@@ -210,6 +210,8 @@ void rdmfile(const char *mfile_dat)
 	       &Cell[i].Elem.M->PdTpar, &dTerror);
 	Cell[i].dT[X_] = cos(dtor(dTerror+Cell[i].Elem.M->PdTpar));
 	Cell[i].dT[Y_] = sin(dtor(dTerror+Cell[i].Elem.M->PdTpar));
+	Cell[i].Elem.M->PdTrms = dTerror - Cell[i].Elem.M->PdTpar;
+	Cell[i].Elem.M->PdTrnd = 1e0;
 
 	inf.getline(line, max_str);
 	if (prt) printf("%s\n", line);
@@ -225,6 +227,7 @@ void rdmfile(const char *mfile_dat)
 	       &Cell[i].dS[X_], &Cell[i].dS[Y_], &dTerror); 
 	Cell[i].dT[X_] = cos(dtor(dTerror));
 	Cell[i].dT[Y_] = sin(dtor(dTerror));
+	Cell[i].Elem.M->PdTrms = dTerror; Cell[i].Elem.M->PdTrnd = 1e0;
       }
 
       Cell[i].Elem.M->Pc0 = sin(Cell[i].Elem.PL*Cell[i].Elem.M->Pirho/2.0);
@@ -310,7 +313,6 @@ void rdmfile(const char *mfile_dat)
 	Cell[i].Elem.ID->linear = false;
 
       if (!Cell[i].Elem.ID->linear) {
-	  /*Original
 	Cell[i].Elem.ID->tx = dmatrix(1, Cell[i].Elem.ID->nz,
 				      1, Cell[i].Elem.ID->nx);
 	Cell[i].Elem.ID->tz = dmatrix(1, Cell[i].Elem.ID->nz,
@@ -323,29 +325,7 @@ void rdmfile(const char *mfile_dat)
 				       1, Cell[i].Elem.ID->nx);
 	Cell[i].Elem.ID->f2z = dmatrix(1, Cell[i].Elem.ID->nz,
 				       1, Cell[i].Elem.ID->nx);
-	*/
-	
-	//GSL add
-	Cell[i].Elem.ID->mtx = gsl_matrix_alloc(Cell[i].Elem.ID->nz, Cell[i].Elem.ID->nx);
-	GSL2NRDM2(pmtx, Cell[i].Elem.ID->mtx, Cell[i].Elem.ID->tx, 0);	
-	
-	Cell[i].Elem.ID->mtz = gsl_matrix_alloc(Cell[i].Elem.ID->nz, Cell[i].Elem.ID->nx);
-	GSL2NRDM2(pmtz, Cell[i].Elem.ID->mtz, Cell[i].Elem.ID->tz, 0);
-	//end GSL add
-	
-	Cell[i].Elem.ID->tab1 = (double *)malloc((Cell[i].Elem.ID->nx)*sizeof(double));
-	Cell[i].Elem.ID->tab2 = (double *)malloc((Cell[i].Elem.ID->nz)*sizeof(double));
-	
-	//GSL add
-	Cell[i].Elem.ID->mf2x = gsl_matrix_alloc(Cell[i].Elem.ID->nz, Cell[i].Elem.ID->nx);
-	GSL2NRDM2(pmf2x, Cell[i].Elem.ID->mf2x, Cell[i].Elem.ID->f2x, 0);
-	
-	Cell[i].Elem.ID->mf2z = gsl_matrix_alloc(Cell[i].Elem.ID->nz, Cell[i].Elem.ID->nx);
-	GSL2NRDM2(pmf2z, Cell[i].Elem.ID->mf2z, Cell[i].Elem.ID->f2z, 0);
-	//end GSL add
-		
 	Matrices4Spline(Cell[i].Elem.ID);
-	
       }
 
 /*      free_matrix(tx, 1, nz, 1, nx); free_matrix(tz, 1, nz, 1, nx);
@@ -373,7 +353,9 @@ void rdmfile(const char *mfile_dat)
   SI_init();
 
   cout << endl;
-  cout << "rdmfile: read " << globval.Cell_nLoc << " elements" << endl;
+  cout  << fixed << setprecision(5)
+	<< "rdmfile: read " << globval.Cell_nLoc << " elements, C = "
+	<< Cell[globval.Cell_nLoc].S << endl;
 
   inf.close();
 }

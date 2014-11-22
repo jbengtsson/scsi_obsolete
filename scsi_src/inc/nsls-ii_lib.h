@@ -29,6 +29,9 @@ extern double   betas0_[max_elem][2], nus0_[max_elem][2], nu0_[2];
 extern ss_vect<tps>  map;
 extern MNF_struct    MNF;
 
+extern double   chi_m;
+
+
 void lwr_case(char str[]);
 
 void upr_case(char str[]);
@@ -72,6 +75,10 @@ double get_eps_x(void);
 void GetEmittance(const int Fnum, const bool prt);
 
 void prt_lat(const char *fname, const int Fnum, const bool all);
+
+void Cell_Twiss(const long int i0, const long int i1);
+
+void prt_lat(const char *fname, const int Fnum, const bool all, const int n);
 
 void prt_chrom_lat(void);
 
@@ -136,6 +143,8 @@ void set_L(const int Fnum, const int Knum, const double L);
 void set_L(const int Fnum, const double L);
 
 void set_dL(const int Fnum, const int Knum, const double dL);
+
+void set_dL(const int Fnum, const double dL);
 
 void get_bn_design_elem(const int Fnum, const int Knum,
 			const int n, double &bn, double &an);
@@ -275,7 +284,7 @@ void prt_codcor_lat(void);
 void prt_beamsizes();
 
 double Touschek(const double Qb, const double delta_RF,
-	      const double eps_x, const double eps_y,
+		const double eps_x, const double eps_y,
 		const double sigma_delta, const double sigma_s);
 
 double Touschek(const double Qb, const double delta_RF,const bool consistent,
@@ -284,13 +293,17 @@ double Touschek(const double Qb, const double delta_RF,const bool consistent,
 		const int n_turn, const bool aper_on,
 		double sum_delta[][2], double sum2_delta[][2]);
 
-void IBS(const double Qb,
-	 const double eps_SR[], double eps[],
-	 const double alpha_z, const double beta_z);
+double f_IBS(const double chi_m);
+
+double get_int_IBS(void);
+
+void IBS(const double Qb, const double eps_SR[], double eps[]);
+
+void IBS_BM(const double Qb, const double eps_SR[], double eps[]);
 
 void rm_space(char *name);
 
-void get_bn(char file_name[], int n, const bool prt);
+void get_bn(const char file_name[], int n, const bool prt);
 
 double get_dynap(const double delta);
 
@@ -300,6 +313,8 @@ void pol_fit(int n, double x[], double y[], int order, Vector &b,
 	     double &sigma);
 
 void get_ksi2(const double d_delta);
+
+bool find_nu(const int n, const double nus[], const double eps, double &nu);
 
 bool get_nu(const double Ax, const double Ay, const double delta,
 	    double &nu_x, double &nu_y);
@@ -326,7 +341,8 @@ ss_vect<tps> get_A(const double alpha[], const double beta[],
 
 
 void get_ab(const ss_vect<tps> &A,
-	    double alpha[], double beta[], double eta[], double etap[]);
+	    double alpha[], double beta[], double nu[],
+	    double eta[], double etap[]);
 
 void set_tune(const char file_name1[], const char file_name2[], const int n);
 

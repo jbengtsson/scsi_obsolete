@@ -97,6 +97,7 @@ class tps {
 
   friend tps Der(const tps &, const int);
   friend tps LieExp(const tps &, const tps &);
+  friend tps LieFlo(const ss_vect<tps> &, const tps &);
   friend tps PB(const tps &, const tps &);
   friend tps Take(const tps &, const int);
 
@@ -112,6 +113,7 @@ class tps {
   friend ss_vect<tps> FExpo(const tps &, const ss_vect<tps> &,
 			    const int, const int, const int);
   friend ss_vect<tps> LieExp(const tps &, const ss_vect<tps> &);
+  friend ss_vect<tps> LieFlo(const ss_vect<tps> &, const ss_vect<tps> &);
   // Q(nv, nv) = P(nd2, nd2)^-1
   friend ss_vect<tps> Inv(const ss_vect<tps> &);
   // Q(nv, nv) = P(nv, nv)^-1
@@ -191,6 +193,8 @@ template<typename T> class ss_vect {
 //  friend ss_vect<double> operator*(const ss_vect<tps> &,
 //				   const ss_vect<double> &);
   // R(nd2, nv) = P(nd2, nd2)*Q(nd2, nv)
+  friend ss_vect<double> operator*(const double, const ss_vect<double> &);
+  friend ss_vect<double> operator*(const ss_vect<double> &, const double);
   friend ss_vect<tps> operator*(const ss_vect<tps> &, const ss_vect<tps> &);
   friend ss_vect<tps> operator*(const double, const ss_vect<tps> &);
   friend ss_vect<tps> operator*(const ss_vect<tps> &, const double);
@@ -214,6 +218,7 @@ template<typename T> class ss_vect {
   friend ss_vect<tps> FExpo(const tps &, const ss_vect<tps> &,
 			    const int, const int, const int);
   friend ss_vect<tps> LieExp(const tps &, const ss_vect<tps> &);
+  friend ss_vect<tps> LieFlo(const ss_vect<tps> &, const ss_vect<tps> &);
   // Q(nv, nv) = P(nd2, nd2)^-1
   friend ss_vect<tps> Inv(const ss_vect<tps> &);
   // Q(nv, nv) = P(nv, nv)^-1

@@ -25,13 +25,15 @@
 #define nv_             6
 
 // maximum number of LEGO blocks (Cell_nLoc)
-#define Cell_nLocMax    25000
+//#define Cell_nLocMax    25000
+/* #define Cell_nLocMax    5000 */
+#define Cell_nLocMax    10000
 
 // maximum number of families for Elem_NFam
 #define Elem_nFamMax    3000
 
 // maximum number of kids */
-#define nKidMax         2000
+#define nKidMax         5000
 
 #define DBNameLen       39
 
@@ -52,11 +54,11 @@
 
 const double  c0    = 2.99792458e8;             // speed of light in vacuum
 const double  q_e   = 1.602e-19;                // electron charge
-const double  m_e   = 0.51099906e6;             // electron rest mass [eV]
+const double  m_e   = 0.51099906e6;             // electron rest mass [eV/c^2]
 const double  mu_0  = 4.0*M_PI*1e-7;            // permittivity of free space
 const double  eps_0 = 1.0/(sqr(c0)*mu_0);       // permeability of free space
 const double  r_e   = q_e/(4.0*M_PI*eps_0*m_e); // classical electron radius
-const double  h_bar = 6.58211899e-16;           // reduced Planck constant [eV]
+const double  h_bar = 6.58211899e-16;           // reduced Planck constant [eV s]
 
 const double  max_ampl = 10.0; // [m]
 

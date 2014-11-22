@@ -9,7 +9,7 @@ J. Bengtsson  NSLS-II, BNL  2004 -
 */
 
 
-#define NoBmax       200          // maximum number of blocks (NoB)
+#define NoBmax       300          // maximum number of blocks (NoB)
 #define NoBEmax      25000        /* maximum number of elements in
 				     a block (Elem_NFam) */
 #define UDImax       100          // max number of user defined constants
@@ -811,7 +811,7 @@ static void Lat_GetSym(FILE **fi_, FILE **fo_, long *cc_, long *ll_,
   case '[':
   case ']':
   case '\'':
-    *sym = sps[*V.chin];
+    *sym = sps[(int)*V.chin];
     /* IF chin='+' THEN BEGIN nextch; goto 1 END ELSE
        IF chin='-' THEN BEGIN nextch; mysign:=-1; goto 1 END ELSE*/
     NextCh(&V);
@@ -2016,6 +2016,9 @@ static bool Lat_DealElement(FILE **fi_, FILE **fo_, long *cc_, long *ll_,
   V.LINK = LINK;
   V.fi = fi_; V.fo = fo_; V.cc = cc_; V.ll = ll_; V.errpos = errpos_;
   V.lc = lc_; V.nkw = nkw_; V.inum = inum_; V.emax_ = emax__; V.emin_ = emin__;
+  // 2/21/12 J.B. & J.C.
+  V.n_harm = 0;
+
   V.kmax_ = kmax__; V.nmax_ = nmax__; V.chin = chin_; V.id = id_;
   V.BlockName = BlockName_; V.rnum = rnum_; V.skipflag = skipflag_;
   V.rsvwd = rsvwd_; V.line = line_; V.sym = sym_; V.key = key_; V.ksy = ksy_;
@@ -3031,7 +3034,7 @@ static bool Lat_DealElement(FILE **fi_, FILE **fo_, long *cc_, long *ll_,
       WITH4->phi[0] = QPhi;
       AssignHarm(globval.Elem_nFam, &V);
       /* Equivalent vertically focusing gradient */
-      WITH4->PBW[HOMmax+2] = -QK*QK/2e0;
+//       WITH4->PBW[HOMmax+2] = -QK*QK/2e0;
       CheckWiggler(globval.Elem_nFam, &V);
     } else {
       printf("Elem_nFamMax exceeded: %ld(%ld)\n",
@@ -3048,7 +3051,7 @@ static bool Lat_DealElement(FILE **fi_, FILE **fo_, long *cc_, long *ll_,
              scaling = <scale factor>
              L       = <length [m]>,
              T       = <bending angle>, ( [degree] )
-             N       = <no of integration steps>,
+             N       = <no of periods>,
              file1   = <file name (lower case)>
  
     Example
@@ -3232,7 +3235,7 @@ static bool Lat_DealElement(FILE **fi_, FILE **fo_, long *cc_, long *ll_,
 
      if (CheckUDItable("energy         ", LINK) != 0) { 
 	RefUDItable("energy         ", &globval.Energy, LINK);
-	if (strcmp(str1, "") != 0) get_B(str1, WITH6);
+// 	if (strcmp(str1, "") != 0) get_B(str1, WITH6);
       } else {
 	cout << "Insertion_Alloc: energy not defined" << endl;
 	exit_(1);
@@ -3288,27 +3291,13 @@ static bool Lat_DealElement(FILE **fi_, FILE **fo_, long *cc_, long *ll_,
 
       // stuff for spline interpolation
       if (!WITH5->linear) {
-	  /*Orginal
 	WITH5->tx = dmatrix(1,WITH5->nz,1,WITH5->nx);
 	WITH5->tz = dmatrix(1,WITH5->nz,1,WITH5->nx);
 	WITH5->tab1 = (double *)malloc((WITH5->nx)*sizeof(double));
 	WITH5->tab2 = (double *)malloc((WITH5->nz)*sizeof(double));
 	WITH5->f2x = dmatrix(1,WITH5->nz,1,WITH5->nx);
 	WITH5->f2z = dmatrix(1,WITH5->nz,1,WITH5->nx);
-	*/
-	//GSL add
-	WITH5->mtx = gsl_matrix_alloc(WITH5->nz,WITH5->nx); 
-	GSL2NRDM2(pmtx,WITH5->mtx,WITH5->tx,0);	
-	WITH5->mtz = gsl_matrix_alloc(WITH5->nz,WITH5->nx);
-	GSL2NRDM2(pmtz,WITH5->mtz,WITH5->tz,0);
-	WITH5->tab1 = (double *)malloc((WITH5->nx)*sizeof(double));
-	WITH5->tab2 = (double *)malloc((WITH5->nz)*sizeof(double));
-	WITH5->mf2x = gsl_matrix_alloc(WITH5->nz,WITH5->nx);
-	GSL2NRDM2(pmf2x,WITH5->mf2x,WITH5->f2x,0);
-	WITH5->mf2z = gsl_matrix_alloc(WITH5->nz,WITH5->nx);
-	GSL2NRDM2(pmf2z,WITH5->mf2z,WITH5->f2z,0);
 	Matrices4Spline(WITH5);
-	//end GSL add
       }
       // to put somewhere
       //      /** Free memory **/

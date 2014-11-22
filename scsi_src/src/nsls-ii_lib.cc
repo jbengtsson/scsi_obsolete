@@ -50,6 +50,9 @@ int     Fnum_Cart, n_iter_Cart;
 double  u_Touschek;  // argument for Touschek D(ksi)
 double  chi_m;       // argument for IBS D(ksi)
 
+// IBS (Bjorken-Mtingwa)
+double  a_IBS, b_IBS, c_IBS, a_k_IBS, b_k_IBS;
+
 char    in_dir[max_str]          = "";
 
 // Computation result files
@@ -78,11 +81,6 @@ double   **SkewRespMat, *VertCouple, *SkewStrengthCorr, *eta_y;
 double   *b, *w, **V, **U;
 double   disp_wave_y;
 
-//GSL add
-gsl_matrix *mSkewRespMat, *mV, *mU;
-gsl_vector *vVertCouple, *vSkewStrengthCorr, *veta_y, *vb, *vw;
-//end GSL add
-
 // ID_corr global variables
 
 const int  n_b2_max    = 500;  // max no of quad corrector families
@@ -100,8 +98,9 @@ double        **A1, *Xsext, *Xsext0, *b2Ls_, *w1, **U1, **V1;
 double        *Xoct, *b4s, **Aoct;
 Vector2       dnu0, nu_0;
 
-gsl_matrix    *mA1, *mU1, *mV1;
-gsl_vector    *vXsext, *vXsext0, *vb2Ls_, *vw1;
+// for IBS
+int     i_, j_;
+double  **C_;
 
 ss_vect<tps>  map;
 MNF_struct    MNF;
@@ -215,7 +214,7 @@ void chk_cod(const bool cod, const char *proc_name)
 
   if (!cod) {
     printf("%s: closed orbit not found\n", proc_name);
-    exit_(1);
+//     exit_(1);
   }
 }
 
@@ -310,10 +309,49 @@ void get_dnu(const ss_vect<tps> &A, double dnu[])
 {
   int  k;
 
-  for (k = 0; k <= 1; k++) {
+  for (k = 0; k < 2; k++) {
     dnu[k] = atan2(A[2*k][2*k+1], A[2*k][2*k])/(2.0*M_PI);
     if (dnu[k] < 0.0) dnu[k] += 1.0;
   }
+}
+
+
+void get_ab(const ss_vect<tps> &A,
+	    double alpha[], double beta[], double dnu[],
+	    double eta[], double etap[])
+{
+  int           k;
+  ss_vect<tps>  A_Atp;
+
+  A_Atp = A*tp_S(2, A);
+
+  for (k = 0; k <= 1; k++) {
+    eta[k] = A[2*k][delta_]; etap[k] = A[2*k+1][delta_];
+
+    alpha[k] = -A_Atp[2*k][2*k+1]; beta[k] = A_Atp[2*k][2*k];
+  }
+
+  get_dnu(A, dnu);
+}
+
+
+ss_vect<tps> get_A(const double alpha[], const double beta[],
+		   const double eta[], const double etap[])
+{
+  int           k;
+  ss_vect<tps>  A, Id;
+
+  Id.identity();
+
+  A.identity();
+  for (k = 0; k < 2; k++) {
+    A[2*k]  = sqrt(beta[k])*Id[2*k];
+    A[2*k+1] = -alpha[k]/sqrt(beta[k])*Id[2*k] + 1.0/sqrt(beta[k])*Id[2*k+1];
+
+    A[2*k] += eta[k]*Id[delta_]; A[2*k+1] += etap[k]*Id[delta_];
+  }
+
+  return A;
 }
 
 
@@ -324,8 +362,7 @@ ss_vect<tps> get_A_CS(const ss_vect<tps> &A, double dnu[])
   ss_vect<tps>  Id, R;
 
   Id.identity(); R.identity(); get_dnu(A, dnu);
-  for (k = 0; k <= 1; k++) {
-
+  for (k = 0; k < 2; k++) {
     c = cos(2.0*M_PI*dnu[k]); s = sin(2.0*M_PI*dnu[k]);
     R[2*k] = c*Id[2*k] - s*Id[2*k+1]; R[2*k+1] = s*Id[2*k] + c*Id[2*k+1];
   }
@@ -356,7 +393,7 @@ double get_curly_H(const double alpha_x, const double beta_x,
 {
   double  curly_H, gamma_x;
 
-  gamma_x = (1.0+pow(alpha_x, 2))/beta_x;
+  gamma_x = (1.0+sqr(alpha_x))/beta_x;
 
   curly_H = gamma_x*sqr(eta_x) + 2.0*alpha_x*eta_x*etap_x + beta_x*sqr(etap_x);
 
@@ -416,10 +453,12 @@ double get_eps_x(void)
 
 void GetEmittance(const int Fnum, const bool prt)
 {
+  // A. Chao "Evaluation of Beam Distribution Parameters in an Electron
+  // Storage Ring" J. Appl. Phys 50 (2), 595-598.
   bool          emit, rad, cav, path;
   int           i, j, h_RF;
   long int      lastpos, loc;
-  double        C, theta, V_RF, phi0, alpha_z, beta_z, gamma_z;
+  double        C, theta, V_RF, phi0, gamma_z;
   double        sigma_s, sigma_delta;
   Vector3       nu;
   Matrix        Ascr;
@@ -439,14 +478,7 @@ void GetEmittance(const int Fnum, const bool prt)
 
   // radiation loss is computed in Cav_Pass
 
-  // Sum_k( alpha_k) = 2 * U_0 / E
-//  printf("\n");
-//  printf("%24.16e %24.16e\n",
-//	 globval.dE,
-//	 (globval.alpha_rad[X_]+globval.alpha_rad[Y_]
-//	 +globval.alpha_rad[Z_])/2.0);
-
-  globval.U0 = 1e9*globval.dE*globval.Energy;
+  globval.U0 = globval.dE*1e9*globval.Energy;
   V_RF = Cell[Elem_GetPos(Fnum, 1)].Elem.C->Pvolt;
   h_RF = Cell[Elem_GetPos(Fnum, 1)].Elem.C->Ph;
   phi0 = fabs(asin(globval.U0/V_RF));
@@ -454,38 +486,40 @@ void GetEmittance(const int Fnum, const bool prt)
     sqrt(-V_RF*cos(M_PI-phi0)*(2.0-(M_PI-2.0*(M_PI-phi0))
     *tan(M_PI-phi0))/(globval.Alphac*M_PI*h_RF*1e9*globval.Energy));
 
-  // compute diffusion coeffs. for eigenvectors [sigma_xx, sigma_yy, sigma_zz]
+  // Compute diffusion coeffs. for eigenvectors [sigma_xx, sigma_yy, sigma_zz]
   putlinmat(6, globval.Ascr, Ascr_map); Ascr_map += globval.CODvect;
 
   Cell_Pass(0, globval.Cell_nLoc, Ascr_map, lastpos);
 
+  // K. Robinson "Radiation Effects in Circular Electron Accelerators"
+  // Phys. Rev. 111 (2), 373-380.
+  // Iu.F. Orlov, E.K. Tarasov "Damping of Oscillations in a Cyclic Electron
+  // Accelerator" J. Exptl. Theoet. Phys. 34, 651-657 (1958).
+  // To leading order:
+  //   Sum_k(alpha_k) = 2*U_0/E
+  // or
+  //   J_x + J_y + J_z = 4.
+  
   for (i = 0; i < DOF; i++) {
     // partition numbers
-    globval.J[i] = 2.0*(1.0+globval.CODvect[delta_])*globval.alpha_rad[i]
-                   /globval.dE;
+    globval.J[i] =
+      2.0*(1.0+globval.CODvect[delta_])*globval.alpha_rad[i]/globval.dE;
     // damping times
     globval.tau[i] = -C/(c0*globval.alpha_rad[i]);
-    // diffusion coeff. and emittance
+    // diffusion coeff. and emittance (alpha is for betatron amplitudes)
     globval.eps[i] = -globval.D_rad[i]/(2.0*globval.alpha_rad[i]);
     // fractional tunes
     nu[i]  = atan2(globval.wi[i*2], globval.wr[i*2])/(2.0*M_PI);
     if (nu[i] < 0.0) nu[i] = 1.0 + nu[i];
   }
 
-  // Note, J_x + J_y + J_z not exactly 4 (1st order perturbations)
-//  printf("\n");
-//  printf("%24.16e\n", globval.J[X_]+globval.J[Y_]+globval.J[Z_]);
-  
   // undamped system
   globval.radiation = false; globval.emittance = false;
 
   Ring_GetTwiss(false, 0.0);
 
-  /* compute the sigmas arround the lattice:
-
-       sigma = A diag[J_1, J_1, J_2, J_2, J_3, J_3] A^T
-
-  */
+  // Compute sigmas arround the lattice:
+  //   Sigma = A diag[J_1, J_1, J_2, J_2, J_3, J_3] A^T
   for (i = 0; i < 6; i++) {
     Ascr_map[i] = tps(globval.CODvect[i]);
     for (j = 0; j < 6; j++)
@@ -499,20 +533,20 @@ void GetEmittance(const int Fnum, const bool prt)
   }
 
   // A. W. Chao, M. J. Lee "Particle Distribution Parameters in an Electron
-  // Storage Ring" J. Appl. Phys. 47 (10), 4453-4456 (1976)
+  // Storage Ring" J. Appl. Phys. 47 (10), 4453-4456 (1976).
   // observable tilt angle
   theta = atan2(2e0*Cell[0].sigma[x_][y_],
 	  (Cell[0].sigma[x_][x_]-Cell[0].sigma[y_][y_]))/2e0;
 
   // longitudinal alpha and beta
-  alpha_z =
+  globval.alpha_z =
     -globval.Ascr[ct_][ct_]*globval.Ascr[delta_][ct_]
     - globval.Ascr[ct_][delta_]*globval.Ascr[delta_][delta_];
-  beta_z = sqr(globval.Ascr[ct_][ct_]) + sqr(globval.Ascr[ct_][delta_]);
-  gamma_z = (1.0+sqr(alpha_z))/beta_z;
+  globval.beta_z = sqr(globval.Ascr[ct_][ct_]) + sqr(globval.Ascr[ct_][delta_]);
+  gamma_z = (1.0+sqr(globval.alpha_z))/globval.beta_z;
 
   // bunch size
-  sigma_s = sqrt(beta_z*globval.eps[Z_]);
+  sigma_s = sqrt(globval.beta_z*globval.eps[Z_]);
   sigma_delta = sqrt(gamma_z*globval.eps[Z_]);
 
   if (prt) {
@@ -623,9 +657,9 @@ void prt_lat(const char *fname, const int Fnum, const bool all)
   I2 = 0.0; I5 = 0.0;
   for (i = 0; i <= globval.Cell_nLoc; i++) {
     if (all || (Cell[i].Fnum == Fnum)) {
-      fprintf(outf, "%4ld %15s %6.2f %4.1f"
-	      " %7.3f %6.3f %6.3f %6.3f %6.3f"
-	      " %7.3f %6.3f %6.3f %6.3f %6.3f  %8.2e\n",
+      fprintf(outf, "%4ld %15s %9.5f %4.1f"
+	      " %9.5f %8.5f %8.5f %8.5f %8.5f"
+	      " %9.5f %8.5f %8.5f %8.5f %8.5f  %8.2e\n",
 	      i, Cell[i].Elem.PName, Cell[i].S, get_code(Cell[i]),
 	      Cell[i].Alpha[X_], Cell[i].Beta[X_], Cell[i].Nu[X_],
 	      Cell[i].Eta[X_], Cell[i].Etap[X_],
@@ -636,6 +670,149 @@ void prt_lat(const char *fname, const int Fnum, const bool all)
 
 //  fprintf(outf, "\n");
 //  fprintf(outf, "# emittance: %5.3f nm.rad\n", get_eps_x());
+
+  fclose(outf);
+}
+
+
+void Cell_Twiss(const long int i0, const long int i1) {
+  long int      i;
+  int           k, nu_int[2];
+  double        alpha[2], beta[2], dnu[2], eta[2], etap[2];
+  ss_vect<tps>  A;
+
+  for (k = 0; k < 2; k++)
+    nu_int[k] = 0;
+
+  for (i = i0; i <= i1; i++) {
+    putlinmat(6, Cell[i].A, A);
+    get_ab(A, alpha, beta, dnu, eta, etap);
+
+    for (k = 0; k < 2; k++) {
+      Cell[i].Alpha[k] = alpha[k]; Cell[i].Beta[k] = beta[k];
+      Cell[i].Nu[k] = nu_int[k] + dnu[k];
+
+      if (i > i0) {
+	if((Cell[i].Nu[k] < Cell[i-1].Nu[k]) && (Cell[i].Elem.PL >= 0e0)) {
+	  Cell[i].Nu[k] += 1e0; nu_int[k] += 1;
+	} else if((Cell[i].Nu[k] > Cell[i-1].Nu[k]) &&
+		  (Cell[i].Elem.PL < 0e0))
+	  nu_int[k] -= 1;
+      }
+
+      Cell[i].Eta[k] = eta[k]; Cell[i].Etap[k] = etap[k];
+    }
+  }
+}
+
+
+void prt_lat(const char *fname, const int Fnum, const bool all, const int n)
+{
+  long int         i = 0;
+  int              j, k;
+  double           s, h;
+  double           alpha[2], beta[2], nu[2], dnu[2], eta[2], etap[2], dnu1[2];
+  double           curly_H;
+  MpoleType        *Mp;
+  ss_vect<double>  eta_Fl;
+  ss_vect<tps>     A, A_CS;
+  FILE             *outf;
+
+  const double  c1 = 1e0/(2e0*(2e0-pow(2e0, 1e0/3e0))), c2 = 0.5e0-c1;
+  const double  d1 = 2e0*c1, d2 = 1e0-2e0*d1;
+
+  outf = file_write(fname);
+  fprintf(outf, "#        name           s   code"
+	        "  alphax  betax   nux   etax   etapx");
+  fprintf(outf, "  alphay  betay   nuy   etay   etapy\n");
+  fprintf(outf, "#                      [m]"
+	        "                 [m]           [m]");
+  fprintf(outf, "                   [m]           [m]\n");
+  fprintf(outf, "#\n");
+
+  for (i = 0; i <= globval.Cell_nLoc; i++) {
+    if (all || (Cell[i].Fnum == Fnum)) {
+      if ((i != 0) &&
+	  ((Cell[i].Elem.Pkind == drift) ||
+	   ((Cell[i].Elem.Pkind == Mpole) && (Cell[i].Elem.PL != 0e0)))) {
+	Mp = Cell[i].Elem.M;
+
+	for (k = 0; k < 2; k++) {
+	  alpha[k] = Cell[i-1].Alpha[k]; beta[k] = Cell[i-1].Beta[k];
+	  nu[k] = Cell[i-1].Nu[k];
+	  eta[k] = Cell[i-1].Eta[k]; etap[k] = Cell[i-1].Etap[k];
+	}
+
+	A = get_A(alpha, beta, eta, etap);
+
+	s = Cell[i].S - Cell[i].Elem.PL; h = Cell[i].Elem.PL/n;
+
+	for (j = 1; j <= n; j++) {
+	  s += h;
+
+	  if (Cell[i].Elem.Pkind == drift)
+	    Drift(h, A);
+	  else if (Cell[i].Elem.Pkind == Mpole) {
+	    if ((j == 1) && (Mp->Pirho != 0e0))
+	      EdgeFocus(Mp->Pirho, Mp->PTx1, Mp->Pgap, A);
+
+	    Drift(c1*h, A);
+	    thin_kick(Quad, Mp->PBpar, d1*h, Mp->Pirho, Mp->Pirho, A);
+	    Drift(c2*h, A);
+	    thin_kick(Quad, Mp->PBpar, d2*h, Mp->Pirho, Mp->Pirho, A);
+	    Drift(c2*h, A);
+	    thin_kick(Quad, Mp->PBpar, d1*h, Mp->Pirho, Mp->Pirho, A);
+	    Drift(c1*h, A);
+
+	    if ((j == n) && (Mp->Pirho != 0e0))
+	      EdgeFocus(Mp->Pirho, Mp->PTx2, Mp->Pgap, A);
+	  }
+
+	  get_ab(A, alpha, beta, dnu, eta, etap);
+
+	  if(Cell[i].Elem.PL < 0e0)
+	    for (k = 0; k < 2; k++)
+	      dnu[k] -= 1e0;
+
+	  A_CS = get_A_CS(A, dnu1);
+
+	  eta_Fl.zero();
+	  for (k = 0; k < 2; k++) {
+	    eta_Fl[2*k] = eta[k]; eta_Fl[2*k+1] = etap[k];
+	  }
+	  eta_Fl = (Inv(A_CS)*eta_Fl).cst();
+	  curly_H = sqr(eta_Fl[x_]) + sqr(eta_Fl[px_]);
+
+	  fprintf(outf, "%4ld %15s %6.2f %4.1f"
+		  " %7.3f %6.3f %6.3f %6.3f %6.3f"
+		  " %7.3f %6.3f %6.3f %6.3f %6.3f %10.3e %10.3e %10.3e\n",
+		  i, Cell[i].Elem.PName, s, get_code(Cell[i]),
+		  alpha[X_], beta[X_], nu[X_]+dnu[X_], eta[X_], etap[X_],
+		  alpha[Y_], beta[Y_], nu[Y_]+dnu[Y_], eta[Y_], etap[Y_],
+		  eta_Fl[x_], eta_Fl[px_], curly_H);
+	}
+      } else {
+	A = get_A(Cell[i].Alpha, Cell[i].Beta, Cell[i].Eta, Cell[i].Etap);
+
+	eta_Fl.zero();
+	for (k = 0; k < 2; k++) {
+	  eta_Fl[2*k] = Cell[i].Eta[k]; eta_Fl[2*k+1] = Cell[i].Etap[k];
+	}
+	eta_Fl = (Inv(A)*eta_Fl).cst();
+	curly_H = sqr(eta_Fl[x_]) + sqr(eta_Fl[px_]);
+
+	fprintf(outf, "%4ld %15s %6.2f %4.1f"
+		" %7.3f %6.3f %6.3f %6.3f %6.3f"
+		" %7.3f %6.3f %6.3f %6.3f %6.3f %10.3e %10.3e %10.3e\n",
+		i, Cell[i].Elem.PName, Cell[i].S, get_code(Cell[i]),
+		Cell[i].Alpha[X_], Cell[i].Beta[X_], Cell[i].Nu[X_],
+		Cell[i].Eta[X_], Cell[i].Etap[X_],
+		Cell[i].Alpha[Y_], Cell[i].Beta[Y_], Cell[i].Nu[Y_],
+		Cell[i].Eta[Y_], Cell[i].Etap[Y_],
+		eta_Fl[x_], eta_Fl[px_], curly_H);
+      }
+    }
+  }
 
   fclose(outf);
 }
@@ -749,20 +926,21 @@ void prt_cod(const char *file_name, const int Fnum, const bool all)
 
 void prt_beampos(const char *file_name)
 {
-  int       k;
-  ofstream  outf;
+  long int  k;
+  FILE      *outf;
 
-  file_wr(outf, file_name);
+  outf = file_write(file_name);
 
-  outf << "# k  s  name x   px    y   py   delta ct" << endl;
-  outf << "#" << endl;
+  fprintf(outf, "#       name             s  code    xcod   ycod\n");
+  fprintf(outf, "#                       [m]          [m]     [m]\n");
+  fprintf(outf, "#\n");
 
   for (k = 0; k <= globval.Cell_nLoc; k++)
-    outf << scientific << setprecision(5)
-	 << setw(5) << k << setw(11) << Cell[k].Elem.PName
-	 << setw(13) << Cell[k].BeamPos;
+    fprintf(outf, "%4ld %.*s %6.2f %4.1f %12.5e %12.5e\n",
+	    k, SymbolLength, Cell[k].Elem.PName, Cell[k].S, get_code(Cell[k]),
+	    Cell[k].BeamPos[x_], Cell[k].BeamPos[y_]);
 
-  outf.close();
+  fclose(outf);
 }
 
 
@@ -772,7 +950,7 @@ void CheckAlignTol(const char *OutputFile)
   // check aligment errors of individual magnets on giders
   // the dT and roll angle are all printed out
 {
-  int i,j;
+  int  i, j;
   int  n_girders;
   int  gs_Fnum, ge_Fnum;
   int  gs_nKid, ge_nKid;
@@ -1093,14 +1271,15 @@ void misalign_sys_girders(const int gs, const int ge,
 
 
 void LoadAlignTol(const char *AlignFile, const bool Scale_it,
-		  const double Scale, const bool new_rnd, const int k)
+		  const double Scale, const bool new_rnd, const int seed)
 {
-  char    line[max_str], Name[max_str],  type[max_str];
-  int     Fnum, seed_val;
-  double  dx, dy, dr;  // x and y misalignments [m] and roll error [rad]
-  double  dr_deg;
-  bool    rms = false, set_rnd;
-  FILE    *fp;
+  char      line[max_str], Name[max_str],  type[max_str];
+  int       j, k, Fnum, seed_val;
+  long int  loc;
+  double    dx, dy, dr;  // x and y misalignments [m] and roll error [rad]
+  double    dr_deg;
+  bool      rms = false, set_rnd;
+  FILE      *fp;
 
   const bool  prt = true;
 
@@ -1127,7 +1306,7 @@ void LoadAlignTol(const char *AlignFile, const bool Scale_it,
       if (strcmp("seed", Name) == 0) {
 	set_rnd = true;
 	sscanf(line, "%*s %d", &seed_val);
-	seed_val += 2*k;
+	seed_val += 2*seed;
 	printf("setting random seed to %d\n", seed_val);
 	iniranf(seed_val); 
       } else {
@@ -1196,10 +1375,16 @@ void LoadAlignTol(const char *AlignFile, const bool Scale_it,
 	} else if (strcmp("bpm", Name) == 0) {
 	  printf("misaligning bpms:        dx = %e, dy = %e, dr = %e\n",
 		 dx, dy, dr);
-	  if (rms)
-	    misalign_rms_fam(globval.bpm, dx, dy, dr_deg, new_rnd);
-	  else
-	    misalign_sys_fam(globval.bpm, dx, dy, dr_deg);
+	  for (k = 0; k < 2; k++)
+	    for (j = 1; j <= n_bpm_[k]; j++) {
+	      loc = bpms_[k][j];
+	      if (rms)
+		misalign_rms_elem(Cell[loc].Fnum, Cell[loc].Knum,
+				  dx, dy, dr_deg, new_rnd);
+	      else
+		misalign_sys_elem(Cell[loc].Fnum, Cell[loc].Knum,
+				  dx, dy, dr_deg);
+	    }
 	} else {
 	  Fnum = ElemIndex(Name);
 	  if(Fnum > 0) {
@@ -1342,6 +1527,15 @@ void set_dL(const int Fnum, const int Knum, const double dL)
 {
 
   Cell[Elem_GetPos(Fnum, Knum)].Elem.PL += dL;
+}
+
+
+void set_dL(const int Fnum, const double dL)
+{
+  int  k;
+
+  for (k = 1; k <= GetnKid(Fnum); k++)
+    Cell[Elem_GetPos(Fnum, k)].Elem.PL += dL;
 }
 
 
@@ -2037,10 +2231,18 @@ void LoadFieldErr(const char *FieldErrorFile, const bool Scale_it,
 // closed orbit correction by n_orbit iterations
 bool CorrectCOD(int n_orbit)
 {
-  bool      cod;
-  int       i;
-  long int  lastpos;
-  Vector2   mean, sigma, max;
+  bool             cod;
+  int              i;
+  long int         lastpos;
+  Vector2          mean, sigma, max;
+  ss_vect<double>  ps;
+
+  ps.zero(); Cell_Pass(0, globval.Cell_nLoc, ps, lastpos);
+  for (i = 1; i <= n_orbit; i++) {
+    lstc(1, lastpos); lstc(2, lastpos);
+
+    ps.zero(); Cell_Pass(0, globval.Cell_nLoc, ps, lastpos);
+  }
 
   cod = getcod(0.0, lastpos);
   if (cod) {
@@ -2054,9 +2256,7 @@ bool CorrectCOD(int n_orbit)
 	   1e3*sigma[X_], 1e3*sigma[Y_]);
 
     for (i = 1; i <= n_orbit; i++){
-//       lsoc1(1, globval.bpm, globval.hcorr, 1);
-//       lsoc1(1, globval.bpm, globval.vcorr, 2);
-      lsoc(1, 1); lsoc(1, 2);
+      lsoc(1); lsoc(2);
       cod = getcod(0.0, lastpos);
       if (!cod) break;
 
@@ -2231,15 +2431,7 @@ void FindSQ_SVDmat(double **SkewRespMat, double **U,
       U[i][j] = SkewRespMat[i][j];
 
   // prepare matrices for SVD
-  /*Orginal
   dsvdcmp(U, N_COUPLE, N_SKEW, w, V);
-  */
-  
-  //GSL Add
-  gsl_vector *work = gsl_vector_alloc(N_SKEW);
-  gsl_linalg_SV_decomp(mU, mV, vw, work);
-  gsl_vector_free(vw);
-  //end GSL add
 
   // zero singular values
   printf("\n");
@@ -2267,52 +2459,17 @@ void FindMatrix(double **SkewRespMat, const double deta_y_max)
   double    **betaSQ, **nuSQ, **betaBPM, **nuBPM;
   double    **betaHC, **nuHC, **betaVC, **nuVC;
   FILE      *SkewMatFile, *fp;
-  
-  //GSL add
-  gsl_vector *vetaSQ;
-  gsl_matrix *mbetaSQ, *mnuSQ, *mbetaBPM, *mnuBPM, *mbetaHC, *mnuHC, *mbetaVC, *mnuVC;
-  //end GSL add
 
   const int     Xi = 1, Yi = 2;
   const double  pi = M_PI, twopi = 2.0*M_PI;
 
-  /*Original
+
   etaSQ = dvector(1, N_SKEW); betaSQ = dmatrix(1, N_SKEW, 1, 2);
   nuSQ = dmatrix(1, N_SKEW, 1, 2);
   betaBPM = dmatrix(1, N_BPM, 1, 2); nuBPM = dmatrix(1, N_BPM, 1, 2);
   betaHC = dmatrix(1, N_HCOR, 1, 2); nuHC = dmatrix(1, N_HCOR, 1, 2);
   betaVC = dmatrix(1, N_VCOR, 1, 2); nuVC = dmatrix(1, N_VCOR, 1, 2);
-  */
-  
-  //GSL add
-  vetaSQ = gsl_vector_alloc(N_SKEW); 
-  GSL2NRDV2(vetaSQ, etaSQ);
-  
-  mbetaSQ = gsl_matrix_alloc(N_SKEW, 2);
-  GSL2NRDM2(pmbetaSQ, mbetaSQ, betaSQ, 0);
-  
-  mnuSQ = gsl_matrix_alloc(N_SKEW, 2);
-  GSL2NRDM2(pmnuSQ, mnuSQ, nuSQ, 0);
-  
-  mbetaBPM = gsl_matrix_alloc(N_BPM, 2);
-  GSL2NRDM2(pmbetaBPM, mbetaBPM, betaBPM, 0);
-  
-  mnuBPM = gsl_matrix_alloc(N_BPM, 2);
-  GSL2NRDM2(pmnuBPM, mnuBPM, nuBPM, 0);
-  
-  mbetaHC = gsl_matrix_alloc(N_HCOR, 2); 
-  GSL2NRDM2(pmbetaHC, mbetaHC, betaHC, 0);
-  
-  mnuHC = gsl_matrix_alloc(N_HCOR, 2);
-  GSL2NRDM2(pmnuHC, mnuHC, nuHC, 0);
-  
-  mbetaVC = gsl_matrix_alloc(N_VCOR, 2); 
-  GSL2NRDM2(pmbetaVC, mbetaVC, betaVC, 0);
-  
-  mnuVC = gsl_matrix_alloc(N_VCOR, 2);
-  GSL2NRDM2(pmnuVC, mnuVC, nuVC, 0);  
-  //end GSL add
-  
+
   nuX = globval.TotalTune[X_]; nuY = globval.TotalTune[Y_];
 
   for (i = 1; i <= N_SKEW; i++) {
@@ -2407,32 +2564,21 @@ void FindMatrix(double **SkewRespMat, const double deta_y_max)
   }
   fclose(fp);
 
-  /*Orginal
   free_dvector(etaSQ, 1, N_SKEW); free_dmatrix(betaSQ, 1, N_SKEW, 1, 2);
   free_dmatrix(nuSQ, 1, N_SKEW, 1, 2);
   free_dmatrix(betaBPM, 1, N_BPM, 1, 2); free_dmatrix(nuBPM, 1, N_BPM, 1, 2);
   free_dmatrix(betaHC, 1, N_HCOR, 1, 2); free_dmatrix(nuHC, 1, N_HCOR, 1, 2);
   free_dmatrix(betaVC, 1, N_VCOR, 1, 2); free_dmatrix(nuVC, 1, N_VCOR, 1, 2);
-  */
-  
-  //GSL add
-  gsl_vector_free(vetaSQ);
-  gsl_matrix_free(mbetaSQ);
-  gsl_matrix_free(mnuSQ);
-  gsl_matrix_free(mbetaBPM);
-  gsl_matrix_free(mnuBPM);
-  gsl_matrix_free(mbetaHC);
-  gsl_matrix_free(mnuHC);
-  gsl_matrix_free(mbetaVC);
-  gsl_matrix_free(mnuVC);
-  //end GSL add
-  
 } // FindMatrix
 
 
 void ini_skew_cor(const double deta_y_max)
 {
   int  k;
+
+
+  cout << "ini_skew_cor: out-of-date (globval.hcorr...)" << endl;
+  exit(1);
 
   // No of skew quads, BPMs, and correctors
   N_SKEW = GetnKid(globval.qt);
@@ -2462,41 +2608,13 @@ void ini_skew_cor(const double deta_y_max)
 
   N_COUPLE = N_BPM*(1+N_HCOR+N_VCOR);
 
-  /*Orginal
   SkewRespMat = dmatrix(1, N_COUPLE, 1, N_SKEW);
   VertCouple = dvector(1, N_COUPLE);
   SkewStrengthCorr = dvector(1, N_SKEW);
   b = dvector(1, N_COUPLE); w = dvector(1, N_SKEW);
   V = dmatrix(1, N_SKEW, 1, N_SKEW); U = dmatrix(1, N_COUPLE, 1, N_SKEW);
   eta_y = dvector(1, N_BPM);
-  */
-  
-  //GSL add
-  mSkewRespMat = gsl_matrix_alloc(N_COUPLE, N_SKEW);
-  GSL2NRDM2(dmSRM,mSkewRespMat,SkewRespMat,0);
-  
-  vVertCouple = gsl_vector_alloc(N_COUPLE);
-  GSL2NRDV2(vVertCouple, VertCouple);
-  
-  vSkewStrengthCorr = gsl_vector_alloc(N_SKEW);
-  GSL2NRDV2(vSkewStrengthCorr, SkewStrengthCorr);
-  
-  vb = gsl_vector_alloc(N_COUPLE);
-  GSL2NRDV2(vb, b);
-  
-  vw = gsl_vector_alloc(N_SKEW);
-  GSL2NRDV2(vw, w);
-  
-  mV = gsl_matrix_alloc(N_SKEW, N_SKEW); 
-  GSL2NRDM2(dmV,mV,V,0);
-  
-  mU = gsl_matrix_alloc(N_COUPLE, N_SKEW);
-  GSL2NRDM2(dmU,mU,U,0);
-  
-  veta_y = gsl_vector_alloc(N_BPM);
-  GSL2NRDV2(veta_y, eta_y);
-  //end GSL add
-  
+
   printf("\n");
   printf("Number of trims:                   horizontal = %d, vertical = %d\n",
 	 N_HCOR, N_VCOR);
@@ -2522,23 +2640,9 @@ void FindCoupVector(double *VertCouple)
   long      i,j;
   long      lastpos;
   double    *orbitP, *orbitN;
-  
-  //GSL add
-  gsl_vector *vorbitP, *vorbitN;
-  //end GSL add
 
-  /*Orginal
   orbitP = dvector(1, N_BPM); orbitN = dvector(1, N_BPM);
-  */
-  
-  //GSL add
-  vorbitP = gsl_vector_alloc(N_BPM);
-  GSL2NRDV2(vorbitP, orbitP);
-  
-  vorbitN = gsl_vector_alloc(N_BPM);
-  GSL2NRDV2(vorbitN, orbitN);
-  //end GSL add
-  
+
   // Find vertical dispersion
   Cell_Geteta(0, globval.Cell_nLoc, true, 0e0);
 
@@ -2591,15 +2695,7 @@ void FindCoupVector(double *VertCouple)
 	VHweight*(orbitP[i]-orbitN[i])*0.5/kick;
   } // vcorr cycle
 
-  /*Orginal
   free_dvector(orbitP, 1, N_BPM); free_dvector(orbitN, 1, N_BPM);
-  */
-  
-  //GSL add
-  gsl_vector_free(vorbitP);
-  gsl_vector_free(vorbitN);
-  //end GSL add
-  
 } // FindCoupVector
 
 
@@ -2676,14 +2772,8 @@ void corr_eps_y(void)
     for (j = N_BPM+1; j <= N_COUPLE; j++)
       b[j] = -VertCouple[j];
 
-	/*Orginal
     dsvbksb(U, w, V, N_COUPLE, N_SKEW, b, SkewStrengthCorr);
-	*/
-	
-	//GSL Add
-	gsl_linalg_SV_solve(mU,mV,vw,vb,vSkewStrengthCorr);
-	//end GSL add
-	
+
     printf("Applying correction\n");
     // Add correction
     for (j = 1; j <= N_SKEW; j++) 
@@ -2727,9 +2817,13 @@ void get_IDs(void)
       n_ID_Fams++; ID_Fams[n_ID_Fams-1] = k + 1;
       break;
     case Insertion:
-      printf("found ID family:   %s %12.5e\n",
+      printf("found ID family:   %s %12.5e",
 	     ElemFam[k].ElemF.PName, ElemFam[k].ElemF.ID->scaling);
-      n_ID_Fams++; ID_Fams[n_ID_Fams-1] = k + 1;
+      if (ElemFam[k].ElemF.ID->scaling != 0e0) {
+	printf("\n");
+	n_ID_Fams++; ID_Fams[n_ID_Fams-1] = k + 1;
+      } else
+	printf("  not included\n");
       break;
     case FieldMap:
       printf("found ID family:   %s %12.5e\n",
@@ -2819,16 +2913,8 @@ void SVD(const int m, const int n, double **M, double beta_nu[],
       for (j = 1; j <= n; j++)
 	U1[i][j] = M[i][j];
 
-	/*Orginal
     dsvdcmp(U1, m, n, w1, V1);
-	*/
-	
-	//GSL add
-	gsl_vector *work = gsl_vector_alloc(n);
-	gsl_linalg_SV_decomp(mU1,mV1,vw1, work);
-	gsl_vector_free(work);
-	//end GSL add
-	
+
     if (trace) { 
       printf("\n");
       printf("singular values:\n");
@@ -2846,19 +2932,7 @@ void SVD(const int m, const int n, double **M, double beta_nu[],
     if (trace) if (n % 8 != 0) printf("\n");
   }
  
- /*Orginal
   dsvbksb(U1, w1, V1, m, n, beta_nu, b2Ls_);
-  */
-  
-  //GSL add
-  gsl_vector *vbeta_nu = gsl_vector_alloc(n);
-  int i_vbeta;
-  for(i_vbeta=0;i_vbeta<n;i_vbeta++)
-	gsl_vector_set(vbeta_nu,i_vbeta,beta_nu[i_vbeta]);
-	
-  gsl_linalg_SV_solve(mU1,mV1,vw1,vbeta_nu,vb2Ls_);
-  gsl_vector_free(vbeta_nu);
-  //end GSL add
 }
 
 
@@ -3139,40 +3213,11 @@ void ini_ID_corr(const bool IDs)
   get_SQ(); Nconstr = 4*Nsext + 2;
 
   // Note, allocated vectors and matrices are deallocated in ID_corr
-  /*Orginal
   Xsext = dvector(1, Nconstr); Xsext0 = dvector(1, Nconstr);
   b2Ls_ = dvector(1, Nquad); A1 = dmatrix(1, Nconstr, 1, Nquad);
   U1 = dmatrix(1, Nconstr, 1, Nquad); w1 = dvector(1, Nquad);
   V1 = dmatrix(1, Nquad, 1, Nquad);
-*/
-    //GSL Add
-	bool checkNquad = false;
-    if(Nquad==0) {Nquad = 1; checkNquad = true;}
-	
-	vXsext = gsl_vector_alloc(Nconstr); 
-	GSL2NRDV2(vXsext, Xsext);
-	
-	vXsext0 = gsl_vector_alloc(Nconstr);
-	GSL2NRDV2(vXsext0, Xsext0);
-	
-	vb2Ls_ = gsl_vector_alloc(Nquad); 
-	GSL2NRDV2(vb2Ls_, b2Ls_);
-	
-    mA1 = gsl_matrix_alloc(Nconstr, Nquad);
-	GSL2NRDM2(dmA1,mA1,A1,0);
-	
-	mU1 = gsl_matrix_alloc(Nconstr, Nquad); 
-	GSL2NRDM2(dmU1,mU1,U1,0);
-	
-	vw1 = gsl_vector_alloc(Nquad);
-	GSL2NRDV2(vw1, w1);
-	
-	mV1 = gsl_matrix_alloc(Nquad, Nquad);
-	GSL2NRDM2(dmV1,mV1,V1,0);
-	
-	if(checkNquad) Nquad = 0;
-	//end GSL add
-	
+
   for (k = 1; k <= Nquad; k++)
     b2Ls_[k] = 0.0;
 
@@ -3214,10 +3259,10 @@ void W_diag(void)
   printf("\n");
   printf("Residuals: beta [%%], dnu : \n");
   printf("dbeta_x: %6.2f dbeta_y: %6.2f nu_x: %12.6e nu_y: %12.6e\n",
-	 sqrt(bxf)/Nsext*1e2, sqrt(byf)/Nsext*1e2,
-	 sqrt(nxf)/Nsext, sqrt(nyf)/Nsext);
+	 sqrt(bxf/Nsext)*1e2, sqrt(byf/Nsext)*1e2,
+	 sqrt(nxf/Nsext), sqrt(nyf/Nsext));
   printf("tune shift: dnu_x = %8.5f, dnu_y = %8.5f\n", dnu0[X_], dnu0[Y_]);
-  printf("Sum b2Ls_: %12.6e\n", sqrt(b2Lsum)/Nquad);
+  printf("Sum b2Ls_: %12.6e\n", sqrt(b2Lsum/Nquad));
 }
 
 
@@ -3287,22 +3332,10 @@ bool ID_corr(const int N_calls, const int N_steps, const bool IDs)
 
   // Allow for repeated calls to ID_corr, allocation is done in ini_ID_corr.
   if (false) {
-  /*Orginal
     free_dvector(Xsext, 1, Nconstr); free_dvector(Xsext0, 1, Nconstr);
     free_dvector(b2Ls_, 1, Nquad); free_dmatrix(A1, 1, Nconstr, 1, Nquad);
     free_dmatrix(U1, 1, Nconstr, 1, Nquad); free_dvector(w1, 1, Nquad);
     free_dmatrix(V1, 1, Nquad, 1, Nquad);
-	*/
-	//GSL add
-	gsl_vector_free(vXsext);
-	gsl_vector_free(vXsext0);
-	gsl_vector_free(vb2Ls_);
-	gsl_vector_free(vw1);
-	
-	gsl_matrix_free(mA1);
-	gsl_matrix_free(mU1);
-	gsl_matrix_free(mV1);
-	//end GSL add
   }
 
   printf("\n");
@@ -3362,6 +3395,9 @@ void ini_COD_corr(const int n_bpm_Fam, const string bpm_names[],
 
   gcmat(n_bpm, bpms, n_hcorr, hcorrs, 1, svd);
   gcmat(n_bpm, bpms, n_vcorr, vcorrs, 2, svd);
+
+  gtcmat(n_bpm, bpms, n_hcorr, hcorrs, 1, svd);
+  gtcmat(n_bpm, bpms, n_vcorr, vcorrs, 2, svd);
 }
 
 
@@ -3396,7 +3432,9 @@ void get_param(const char *param_file)
     if (strstr(line, "#") == NULL) {
       sscanf(line, "%s", name);
 
-      if (strcmp("in_dir", name) == 0)
+      if (strcmp("energy", name) == 0) {
+	sscanf(line, "%*s %lf", &globval.Energy);
+      } else if (strcmp("in_dir", name) == 0)
         sscanf(line, "%*s %s", in_dir);
 	else if (strcmp("ae_file", name) == 0){
         sscanf(line, "%*s %s", str);
@@ -3520,9 +3558,10 @@ void get_param(const char *param_file)
 
   inf.close();
 
-  ini_COD_corr(n_bpm_Fam, bpm_Fam_names,
-	       n_corr_Fam[X_], corr_Fam_names[X_],
-	       n_corr_Fam[Y_], corr_Fam_names[Y_], false);
+  // Do not compute orbit responce matrix; i.e., optics must be computed first.
+  // ini_COD_corr(n_bpm_Fam, bpm_Fam_names,
+  // 	       n_corr_Fam[X_], corr_Fam_names[X_],
+  // 	       n_corr_Fam[Y_], corr_Fam_names[Y_], false);
 }
 
 
@@ -3541,6 +3580,9 @@ void Orb_and_Trim_Stat(void)
 
   Vector2   Sext_max, Sext_sigma, TrimMax, orb;
   
+  cout << "ini_skew_cor: out-of-date (globval.hcorr...)" << endl;
+  exit(1);
+
   Sext_max[X_] = 0.0; Sext_max[Y_] = 0.0; 
   Sext_sigma[X_] = 0.0; Sext_sigma[Y_] = 0.0;
   TrimMax[X_] = 0.0; TrimMax[Y_] = 0.0;
@@ -3626,9 +3668,8 @@ void prt_beamsizes()
 
   fp = file_write(beam_envelope_file);
 
-  fprintf(fp,"# k    name    s    s_xx    s_pxpx    s_xpx    s_yy    s_pypy"
-	  "    s_ypy    theta_xy\n");
-  for(k = 0; k <= globval.Cell_nLoc; k++){
+  fprintf(fp,"# k    name    s    s_xx    s_pxpx    s_xpx    s_yy    s_pypy    s_ypy    theta_xy\n");
+  for(k = 0; k <= globval.Cell_nLoc; k++)
     fprintf(fp,"%4d %10s %e %e %e %e %e %e %e %e\n",
 	    k, Cell[k].Elem.PName, Cell[k].S,
 	    Cell[k].sigma[x_][x_], Cell[k].sigma[px_][px_],
@@ -3637,13 +3678,12 @@ void prt_beamsizes()
 	    Cell[k].sigma[y_][py_],
 	    atan2(2e0*Cell[k].sigma[x_][y_],
 		  Cell[k].sigma[x_][x_]-Cell[k].sigma[y_][y_])/2e0*180.0/M_PI);
-  }
 
   fclose(fp);
 }
 
 
-float f_int_Touschek(const float u)
+double f_int_Touschek(const double u)
 {
   double  f;
 
@@ -3655,30 +3695,71 @@ float f_int_Touschek(const float u)
   return f;
 } 
 
-//Add
-//This method had to be overwritten because of gsl integration construction
-double gsl_f_int_Touschek(double u, void *params)
+
+double Touschek_loc(const long int i, const double gamma,
+		    const double delta_RF,
+		    const double eps_x, const double eps_y,
+		    const double sigma_delta, const double sigma_s,
+		    const bool ZAP_BS)
 {
- double alpha = *(double *) params;
-  double  f;
+  int     k;
+  double  sigma_x, sigma_y, sigma_xp, curly_H, dtau_inv;
+  double  alpha[2], beta[2], eta[2], etap[2];
 
-  if (u > 0.0)
-    f = (1.0/u-log(1.0/u)/2.0-1.0)*exp(-u_Touschek/u); 
-  else
-    f = 0.0;
+  if ((i < 0) || (i > globval.Cell_nLoc)) {
+    cout << "Touschek_loc: undefined location " << i << endl;
+    exit(1);
+  }
 
-  return alpha*f;
-} 
-//end add
+  if (!ZAP_BS) {
+    curly_H = get_curly_H(Cell[i].Alpha[X_], Cell[i].Beta[X_],
+			  Cell[i].Eta[X_], Cell[i].Etap[X_]);
+
+    // Compute beam sizes for given hor/ver emittance, sigma_s,
+    // and sigma_delta (for x ~ 0): sigma_x0' = sqrt(eps_x/beta_x).
+    sigma_x = sqrt(Cell[i].Beta[X_]*eps_x+sqr(Cell[i].Eta[X_]*sigma_delta)); 
+    sigma_y = sqrt(Cell[i].Beta[Y_]*eps_y); 
+    sigma_xp = (eps_x/sigma_x)*sqrt(1e0+curly_H*sqr(sigma_delta)/eps_x);  
+  } else {
+    // ZAP averages the optics functions over an element instead of the
+    // integrand; incorrect.
+
+    for (k = 0; k < 2; k++) {
+      alpha[k] = (Cell[i-1].Alpha[k]+Cell[i].Alpha[k])/2e0;
+      beta[k] = (Cell[i-1].Beta[k]+Cell[i].Beta[k])/2e0;
+      eta[k] = (Cell[i-1].Eta[k]+Cell[i].Eta[k])/2e0;
+      etap[k] = (Cell[i-1].Etap[k]+Cell[i].Etap[k])/2e0;
+    }
+
+    curly_H = get_curly_H(alpha[X_], beta[X_], eta[X_], etap[X_]);
+
+    // Compute beam sizes for given hor/ver emittance, sigma_s,
+    // and sigma_delta (for x ~ 0): sigma_x0' = sqrt(eps_x/beta_x).
+    sigma_x = sqrt(beta[X_]*eps_x+sqr(eta[X_]*sigma_delta)); 
+    sigma_y = sqrt(beta[Y_]*eps_y); 
+    sigma_xp = (eps_x/sigma_x)*sqrt(1e0+curly_H*sqr(sigma_delta)/eps_x);  
+  }
+
+  u_Touschek = sqr(delta_RF/(gamma*sigma_xp));
+
+  dtau_inv = dqromb(f_int_Touschek, 0e0, 1e0)/(sigma_x*sigma_y*sigma_xp);
+
+  return dtau_inv;
+}
 
 
 double Touschek(const double Qb, const double delta_RF,
 		const double eps_x, const double eps_y,
 		const double sigma_delta, const double sigma_s)
 {
-  long int  k;
-  double    tau, sigma_x, sigma_y, sigma_xp, L, curly_H;
+  // Note, ZAP (LBL-21270) averages the optics functions over an element
+  // instead of the integrand; incorrect.  Hence, the Touschek lifetime is
+  // overestimated by ~20%.
 
+  long int  i;
+  double    p1, p2, dtau_inv, tau_inv;
+
+  const bool    ZAP_BS = false;
   const double  gamma = 1e9*globval.Energy/m_e, N_e = Qb/q_e;
 
   printf("\n");
@@ -3688,48 +3769,39 @@ double Touschek(const double Qb, const double delta_RF,
   printf("sigma_delta = %8.2e, sigma_s = %4.2f mm\n",
 	 sigma_delta, 1e3*sigma_s);
 
-  tau = 0.0;
-  for(k = 1; k <= globval.Cell_nLoc; k++) {
-    L = Cell[k].S - Cell[k-1].S;
+  // Integrate around the lattice with Trapezoidal rule; for nonequal steps.
 
-    curly_H = get_curly_H(Cell[k].Alpha[X_], Cell[k].Beta[X_],
-			  Cell[k].Eta[X_], Cell[k].Etap[X_]);
+  p1 = Touschek_loc(0, gamma, delta_RF, eps_x, eps_y, sigma_delta, sigma_s,
+		    ZAP_BS);
 
-    // compute estimated beam sizes for given
-    // hor.,  ver. emittance, sigma_s, and sigma_delta (x ~ 0)
-    sigma_x = sqrt(Cell[k].Beta[X_]*eps_x+sqr(sigma_delta*Cell[k].Eta[X_])); 
-    sigma_y = sqrt(Cell[k].Beta[Y_]*eps_y); 
-    sigma_xp = (eps_x/sigma_x)*sqrt(1.0+curly_H*sqr(sigma_delta)/eps_x);  
+  tau_inv = 0e0;
+  for(i = 1; i <= globval.Cell_nLoc; i++) {
+    p2 = Touschek_loc(i, gamma, delta_RF, eps_x, eps_y, sigma_delta, sigma_s,
+		      ZAP_BS);
 
-    u_Touschek = sqr(delta_RF/(gamma*sigma_xp));
+    if (!ZAP_BS)
+      dtau_inv = (p1+p2)/2e0;
+    else
+      dtau_inv = p2;
 
-    /*Orginal
-    tau += qromb(f_int_Touschek, 0.0, 1.0)/(sigma_x*sigma_y*sigma_xp)*L; 
-	*/
-	
-	//GSL Add
-	double result, error;
-	double alpha = 1.0;
-    gsl_function F;
-    F.function = &gsl_f_int_Touschek;
-    F.params = &alpha;
-	
-	gsl_integration_workspace * w = gsl_integration_workspace_alloc (1000);
-	gsl_integration_qags (&F, 0, 1.0, 0, 1e-7, 1000, w, &result, &error);
-	
-	tau +=result/(sigma_x*sigma_y*sigma_xp)*L;
-	gsl_integration_workspace_free (w);		
-	//end GSL add
-	
-    fflush(stdout);
+    tau_inv += dtau_inv*Cell[i].Elem.PL; p1 = p2;
+
+    if (false) {
+      dtau_inv *=
+	N_e*sqr(r_e)*c0/(8.0*M_PI*cube(gamma)*sigma_s)/sqr(delta_RF);
+
+      printf("%4ld %9.3e\n", i, dtau_inv);
+    }
   }
 
-  tau *= N_e*sqr(r_e)*c0/(8.0*M_PI*cube(gamma)*sigma_s)
-         /(sqr(delta_RF)*Cell[globval.Cell_nLoc].S);
+  tau_inv *=
+    N_e*sqr(r_e)*c0/(8.0*M_PI*cube(gamma)*sigma_s)
+    /(sqr(delta_RF)*Cell[globval.Cell_nLoc].S);
 
   printf("\n"); 
-  printf("Touschek lifetime [hrs]: %10.3e\n", 1.0/(3600.0*tau)); 
-  return(1.0/(tau));
+  printf("Touschek lifetime [hrs]: %10.3e\n", 1e0/(3600e0*tau_inv)); 
+
+  return(1e0/(tau_inv));
 }
 
 
@@ -3754,7 +3826,7 @@ void mom_aper(double &delta, double delta_RF, const long int k,
     x[delta_] += delta;
   
     // complete one turn
-    Cell_Pass(k, globval.Cell_nLoc, x, lastpos); 
+    Cell_Pass(k+1, globval.Cell_nLoc, x, lastpos); 
     if (lastpos < globval.Cell_nLoc)
       // particle lost
       delta_max = delta;
@@ -3786,7 +3858,7 @@ double Touschek(const double Qb, const double delta_RF,const bool consistent,
 {
   bool      cav, aper;
   long int  k;
-  double    rate, delta_p, delta_m, curly_H0, curly_H1, L;
+  double    tau_inv, delta_p, delta_m, curly_H0, curly_H1, L;
   double    sigma_x, sigma_y, sigma_xp;
 
   const bool  prt = false;
@@ -3810,7 +3882,7 @@ double Touschek(const double Qb, const double delta_RF,const bool consistent,
 	 sigma_delta, 1e3*sigma_s);
 
   printf("\n");
-  printf("Momentum aperture:" );
+  printf("Momentum aperture:");
   printf("\n");
 
   delta_p = delta_RF; mom_aper(delta_p, delta_RF, 0, n_turn, true);
@@ -3819,9 +3891,9 @@ double Touschek(const double Qb, const double delta_RF,const bool consistent,
   sum_delta[0][0] += delta_p; sum_delta[0][1] += delta_m;
   sum2_delta[0][0] += sqr(delta_p); sum2_delta[0][1] += sqr(delta_m);
   
-  rate = 0.0; curly_H0 = -1e30;
+  tau_inv = 0.0; curly_H0 = -1e30;
   for (k = 1; k <= globval.Cell_nLoc; k++) {
-    L = Cell[k].S - Cell[k-1].S;
+    L = Cell[k].Elem.PL;
 
     curly_H1 = get_curly_H(Cell[k].Alpha[X_], Cell[k].Beta[X_],
 			   Cell[k].Eta[X_], Cell[k].Etap[X_]);
@@ -3842,11 +3914,11 @@ double Touschek(const double Qb, const double delta_RF,const bool consistent,
 	     k, Cell[k].S, 1e2*delta_p, 1e2*delta_m);
 
     if (!consistent) {
-      // compute estimated beam sizes for given
-      // hor.,  ver. emittance, sigma_s, and sigma_delta (x ~ 0)
+      // Compute beam sizes for given hor/ver emittance, sigma_s,
+      // and sigma_delta (for x ~ 0): sigma_x0' = sqrt(eps_x/beta_x).
       sigma_x = sqrt(Cell[k].Beta[X_]*eps_x+sqr(sigma_delta*Cell[k].Eta[X_]));
       sigma_y = sqrt(Cell[k].Beta[Y_]*eps_y);
-      sigma_xp = (eps_x/sigma_x)*sqrt(1.0+curly_H1*sqr(sigma_delta)/eps_x);
+      sigma_xp = (eps_x/sigma_x)*sqrt(1e0+curly_H1*sqr(sigma_delta)/eps_x);
     } else {
       // use self-consistent beam sizes
       sigma_x = sqrt(Cell[k].sigma[x_][x_]);
@@ -3857,42 +3929,28 @@ double Touschek(const double Qb, const double delta_RF,const bool consistent,
 
     u_Touschek = sqr(delta_p/(gamma*sigma_xp));
 
-	/*Orginal
-    rate += qromb(f_int_Touschek, 0.0, 1.0)
-            /(sigma_x*sigma_xp*sigma_y*sqr(delta_p))*L;
-			*/
-	//GSL Add
-	double result, error;
-	double alpha = 1.0;
-    gsl_function F;
-    F.function = &gsl_f_int_Touschek;
-    F.params = &alpha;
-	
-	gsl_integration_workspace * w = gsl_integration_workspace_alloc (1000);
-	gsl_integration_qags (&F, 0, 1.0, 0, 1e-7, 1000, w, &result, &error);
-	
-	rate +=result/(sigma_x*sigma_xp*sigma_y*sqr(delta_p))*L;
-	gsl_integration_workspace_free (w);		
-	//end GSL add
+    tau_inv +=
+      dqromb(f_int_Touschek, 0e0, 1e0)
+      /(sigma_x*sigma_xp*sigma_y*sqr(delta_p))*L;
 
     fflush(stdout);
   }
 
-  rate *= N_e*sqr(r_e)*c0/(8.0*M_PI*cube(gamma)*sigma_s)
-         /Cell[globval.Cell_nLoc].S;
+  tau_inv *=
+    N_e*sqr(r_e)*c0/(8.0*M_PI*cube(gamma)*sigma_s)/Cell[globval.Cell_nLoc].S;
 
   printf("\n");
-  printf("Touschek lifetime [hrs]: %4.2f\n", 1.0/(3600.0*rate));
+  printf("Touschek lifetime [hrs]: %4.2f\n", 1e0/(3600e0*tau_inv));
 
   globval.Cavity_on = cav; globval.Aperture_on = aper;
 
-  return 1/rate;
+  return 1/tau_inv;
 }
 
 
 double f_IBS(const double chi_m)
 {
-  // Interpolated
+  // Interpolated integral (V. Litvinenko).
 
   double  f, ln_chi_m;
 
@@ -3904,80 +3962,89 @@ double f_IBS(const double chi_m)
 }
 
 
-float f_int_IBS(const float chi)
+double f_int_IBS(const double chi)
 {
-  // Integrated
+  // Integrand for numerical integration.
 
+  return exp(-chi)*log(chi/chi_m)/chi;
+}
+
+
+double get_int_IBS(void)
+{
+  int     k;
   double  f;
 
-  f = exp(-chi)*log(chi/chi_m)/chi;
+  const int     n_decades = 30;
+  const double  base      = 10e0;
+
+  f = 0e0;
+  for (k = 0; k <= n_decades; k++) {
+    if (k == 0)
+      f += dqromo(f_int_IBS, chi_m, pow(base, k), dmidsql);
+    else
+      f += dqromb(f_int_IBS, pow(base, k-1), pow(base, k));
+  }
 
   return f;
 }
 
 
-// J.B. 11/12/14 ->
-
-//Add
-//This method had to be overwritten because of gsl integration construction
-double gsl_f_int_IBS(double chi, void *params)
+void IBS(const double Qb, const double eps_SR[], double eps[])
 {
- double alpha = *(double *) params;
-  double  f;
+  /* J. Le Duff "Single and Multiple Touschek Effects" (e.g. CERN 89-01)
 
-  f = exp(-chi)*log(chi/chi_m)/chi;
+     The equilibrium emittance is given by (tau is for amplitudes not
+     invariants):
 
-  return alpha*f;
-} 
-//end add
+       sigma_delta^2 = sigma_delta_SR^2 + D_delta_IBS*tau_delta/2
 
-// <- J.B. 11/12/14.
-
-
-void IBS(const double Qb,
-	 const double eps_SR[], double eps[],
-	 const double alpha_z, const double beta_z)
-{
-  /* The equilibrium emittance is given by:
-
-       sigma_delta^2 = tau_delta*(D_delta_IBS + D_delta_SR)
+     and
 
        D_x = <D_delta*curly_H> =>
 
-       eps_x = eps_x_SR + eps_x_IBS,    D_x_IBS ~ 1/eps_x
+       eps_x = eps_x_SR + eps_x_IBS = eps_x_SR + D_x_IBS*tau_x/2
 
-     i.e., the 2nd term is essentially constant.  From
+     where
 
-       eps_x^2 = eps_x*eps_x_SR + eps_x*eps_x_IBS
+       D_x_IBS ~ 1/eps_x
 
-     one obtains the IBS limited emittance (eps_x_SR = 0, eps_x^2=eps_x_IBS*tau_x*D_x_IBS->cst):
+     Multiplying with eps_x gives
 
-       eps_x,IBS = sqrt(tau_x*(eps_x*D_x_IBS)
+       eps_x^2 = eps_x*eps_x_SR + (eps_x*D_x_IBS)*tau_x/2
 
-     and by solving for eps_x
+     where the 2nd term is roughly a constant. The IBS limit is obtained by
 
-       eps_x = eps_x_SR/2 + sqrt(eps_x_SR^2/4+eps_x_IBS^2)
+       eps_x_SR -> 0 => eps_x_IBS = sqrt((eps_x*D_x_IBS)*tau_x/2)
 
-  */
+     which is inserted into the original equation
+
+       eps_x^2 = eps_x*eps_x_SR + eps_x_IBS^2
+
+     and then solved for eps_x
+
+       eps_x = eps_x_SR/2 + sqrt(eps_x_SR^2/4+eps_x_IBS^2)                   */
 
   long int  k;
-  double    D_x, D_delta, b_max, L, gamma_z;
-  double    sigma_x, sigma_xp, sigma_y, sigma_p, sigma_s, sigma_delta;
-  double    incr, C, curly_H, eps_IBS[3], eps_x_tot, sigma_E;
-  double    sigma_s_SR, sigma_delta_SR, sigma_delta_IBS;
+  double    D_x, D_delta, b_max, L, gamma_z, a;
+  double    sigma_x, sigma_xp, sigma_y, sigma_s, sigma_delta;
+  double    incr, curly_H, eps_IBS[3];
+  double    sigma_s_SR, sigma_delta_SR;
 
   const bool    integrate = false;
-  const double  gamma = 1e9*globval.Energy/m_e, N_e = Qb/q_e;
+  const double  gamma = 1e9*globval.Energy/m_e, N_b = Qb/q_e;
 
   // bunch size
-  gamma_z = (1.0+sqr(alpha_z))/beta_z;
-  sigma_s_SR = sqrt(beta_z*eps_SR[Z_]);
+  gamma_z = (1.0+sqr(globval.alpha_z))/globval.beta_z;
+
+  sigma_s_SR = sqrt(globval.beta_z*eps_SR[Z_]);
   sigma_delta_SR = sqrt(gamma_z*eps_SR[Z_]);
 
-  sigma_s = sqrt(beta_z*eps[Z_]); sigma_delta = sqrt(gamma_z*eps[Z_]);
+  sigma_s = sqrt(globval.beta_z*eps[Z_]); sigma_delta = sqrt(gamma_z*eps[Z_]);
 
   printf("\n");
-  printf("Qb             = %4.2f nC\n", 1e9*Qb);
+  printf("Qb             = %4.2f nC,         Nb          = %9.3e\n",
+	 1e9*Qb, N_b);
   printf("eps_x_SR       = %9.3e m.rad, eps_x       = %9.3e m.rad\n",
 	 eps_SR[X_], eps[X_]);
   printf("eps_y_SR       = %9.3e m.rad, eps_y       = %9.3e m.rad\n",
@@ -3985,107 +4052,427 @@ void IBS(const double Qb,
   printf("eps_z_SR       = %9.3e,       eps_z       = %9.3e\n",
 	 eps_SR[Z_], eps[Z_]);
   printf("alpha_z        = %9.3e,       beta_z      = %9.3e\n",
-	 alpha_z, beta_z);
+	 globval.alpha_z, globval.beta_z);
   printf("sigma_s_SR     = %9.3e mm,    sigma_s     = %9.3e mm\n",
 	 1e3*sigma_s_SR, 1e3*sigma_s);
   printf("sigma_delta_SR = %9.3e,       sigma_delta = %9.3e\n",
 	 sigma_delta_SR, sigma_delta);
 
   D_delta = 0.0; D_x = 0.0;
-  for(k = 1; k <= globval.Cell_nLoc; k++) {
+  for(k = 0; k <= globval.Cell_nLoc; k++) {
     L = Cell[k].Elem.PL;
 
     curly_H = get_curly_H(Cell[k].Alpha[X_], Cell[k].Beta[X_],
 			  Cell[k].Eta[X_], Cell[k].Etap[X_]);
 
-    // compute estimated beam sizes for given
-    // hor.,  ver. emittance, sigma_s, and sigma_delta (x ~ 0)
-    sigma_x = sqrt(Cell[k].Beta[X_]*eps[X_]+sqr(sigma_delta*Cell[k].Eta[X_])); 
+    // Compute beam sizes for given hor/ver emittance, sigma_s,
+    // and sigma_delta (for x ~ 0): sigma_x0' = sqrt(eps_x/beta_x).
+    sigma_x = sqrt(Cell[k].Beta[X_]*eps[X_]+sqr(Cell[k].Eta[X_]*sigma_delta));
+    sigma_xp = (eps[X_]/sigma_x)*sqrt(1.0+curly_H*sqr(sigma_delta)/eps[X_]);  
     sigma_y = sqrt(Cell[k].Beta[Y_]*eps[Y_]);
-    sigma_xp = (eps[X_]/sigma_x)*sqrt(1.0+curly_H*sqr(sigma_delta)/eps[X_]);
 
-    sigma_E = gamma*m_e*q_e*sigma_delta;
-    sigma_p = gamma*m_e*q_e*sigma_xp;
+    b_max = 2.0*sqrt(M_PI)/pow(N_b/(sigma_x*sigma_y*sigma_s), 1.0/3.0);
 
-//    b_max = sqrt(2.0*M_PI)/pow(N_e/(sigma_x*sigma_y*sigma_s), 1.0/3.0);
-    b_max = 2.0*sqrt(M_PI)/pow(N_e/(sigma_x*sigma_y*sigma_s), 1.0/3.0);
-
-    chi_m = r_e*sqr(m_e*q_e/sigma_E)/b_max;
-//    chi_m = r_e*sqr(m_e*q_e/sigma_p)/b_max;
+    chi_m = r_e/(b_max*sqr(gamma*sigma_xp));
 
     if (!integrate)
-      incr = f_IBS(chi_m)/sigma_y*L;
-    else {
-      /*Orginal
-      incr = qromb(f_int_IBS, chi_m, 1e5*chi_m)/sigma_y*L;
-      */
-	
-      // J.B. 11/12/14 ->
+      incr = f_IBS(chi_m)/sigma_y;
+    else
+      incr = get_int_IBS()/sigma_y;
 
-      //GSL Add
-      double result, error;
-      double alpha = 1.0;
-      gsl_function F;
-      F.function = &gsl_f_int_IBS;
-      F.params = &alpha;
-	
-      gsl_integration_workspace * w = gsl_integration_workspace_alloc (1000);
-      gsl_integration_qags (&F, 0, 1.0, 0, 1e-7, 1000, w, &result, &error);
-	
-      incr += result;
-      gsl_integration_workspace_free (w);		
-      //end GSL add
-
-      // <- J.B. 11/12/14.
-   }
-
-    D_delta += incr; D_x += incr*curly_H;
+    D_delta += incr*L; D_x += incr*curly_H*L;
   }
 
-  C = Cell[globval.Cell_nLoc].S;
+  a =
+    N_b*sqr(r_e)*c0/(32.0*M_PI*cube(gamma)*sigma_s*Cell[globval.Cell_nLoc].S);
 
-  if (true) {
-    eps_x_tot = 1.0;
-    D_delta *= N_e*sqr(r_e)*c0/(32.0*M_PI*cube(gamma)*eps_x_tot*sigma_s*C);
-    D_x *= N_e*sqr(r_e)*c0/(32.0*M_PI*cube(gamma)*eps_x_tot*sigma_s*C);
-    eps_IBS[X_] = sqrt(globval.tau[X_]*D_x);
-    eps_x_tot = eps_SR[X_]*(1.0+sqrt(1.0+4.0*sqr(eps_IBS[X_]/eps_SR[X_])))/2.0;
-    D_delta /= eps_x_tot; D_x /= eps_x_tot;
-    sigma_delta_IBS = sqrt(globval.tau[Z_]*D_delta);
-    eps[X_] = eps_x_tot;
+  // eps_x*D_X
+  D_x *= a;
+  // Compute eps_IBS.
+  eps_IBS[X_] = sqrt(D_x*globval.tau[X_]/2e0);
+  // Solve for eps_x
+  eps[X_] = eps_SR[X_]*(1.0+sqrt(1.0+4.0*sqr(eps_IBS[X_]/eps_SR[X_])))/2.0;
 
-    eps[Y_] = eps_SR[Y_]/eps_SR[X_]*eps[X_];
-    sigma_delta = sqrt(sqr(sigma_delta_SR)+sqr(sigma_delta_IBS));
-    eps_IBS[Z_] = sigma_s*sigma_delta;
-    eps[Z_] = eps_SR[Z_] + eps_IBS[Z_];
-  } else {
-    D_delta *= N_e*sqr(r_e)*c0/(32.0*M_PI*cube(gamma)*eps[X_]*sigma_s*C);
-    D_x *= N_e*sqr(r_e)*c0/(32.0*M_PI*cube(gamma)*eps[X_]*sigma_s*C);
-    eps_IBS[X_] = globval.tau[X_]*D_x;
-    eps_IBS[Z_] = globval.tau[Z_]*D_delta;
-    eps[X_] = eps_SR[X_] + eps_IBS[X_];
-    eps[Y_] = eps_SR[Y_]/eps_SR[X_]*eps[X_];
-    sigma_delta_IBS = sqrt(globval.tau[Z_]*D_delta);
-    sigma_delta = sqrt(sqr(sigma_delta_SR)+sqr(sigma_delta_IBS));
-    // approx.
-    eps_IBS[Z_] = sigma_s*sigma_delta;
-    eps[Z_] = eps_SR[Z_] + eps_IBS[Z_];
-  }
+  // compute diffusion coeffs.
+  D_x /= eps[X_]; D_delta *= a/eps[X_];
 
-  // bunch size
-  sigma_s = sqrt(beta_z*eps[Z_]);
-  sigma_delta = sqrt(gamma_z*eps[Z_]);
+  eps[Y_] = eps_SR[Y_]/eps_SR[X_]*eps[X_];
+
+  sigma_delta = sqrt(sqr(sigma_delta_SR)+D_delta*globval.tau[Z_]/2e0);
+  eps[Z_] = sqr(sigma_delta)/gamma_z;
+
+  sigma_s = sqrt(globval.beta_z*eps[Z_]);
 
   printf("\n");
-  printf("D_x,IBS         = %9.3e\n", D_x);
-  printf("eps_x,IBS       = %5.3f nm.rad\n", 1e9*eps_IBS[X_]);
-  printf("eps_x,tot       = %5.3f nm.rad\n", 1e9*eps[X_]);
-  printf("eps_y,tot       = %5.3f nm.rad\n", 1e9*eps[Y_]);
-  printf("eps_z,tot       = %9.3e\n", eps[Z_]);
-  printf("D_delta,IBS     = %9.3e\n", D_delta);
-  printf("sigma_delta,IBS = %9.3e\n", sigma_delta_IBS);
-  printf("sigma_delta,tot = %9.3e\n", sigma_delta);
-  printf("sigma_s,tot     = %9.3e\n", sigma_s);
+  printf("D_x         = %9.3e\n", D_x);
+  printf("eps_x(IBS)  = %5.3f nm.rad\n", 1e9*eps_IBS[X_]);
+  printf("eps_x       = %5.3f nm.rad\n", 1e9*eps[X_]);
+  printf("eps_y       = %5.3f pm.rad\n", 1e12*eps[Y_]);
+  printf("D_delta     = %9.3e\n", D_delta);
+  printf("eps_z       = %9.3e\n", eps[Z_]);
+  printf("sigma_s     = %9.3e\n", sigma_s);
+  printf("sigma_delta = %9.3e\n", sigma_delta);
+}
+
+
+double f_int_IBS_BM(const double lambda)
+{
+  double  f;
+
+  f =
+    sqrt(lambda)*(a_k_IBS*lambda+b_k_IBS)
+    /pow(cube(lambda)+a_IBS*sqr(lambda)+b_IBS*lambda+c_IBS, 3.0/2.0);
+
+  return f;
+}
+
+
+double get_int_IBS_BM(void)
+{
+  int     k;
+  double  f;
+
+  const int     n    = 30;
+  const double  decade = 10e0;
+
+  f = 0e0;
+  for (k = 0; k <= n; k++) {
+    if (k == 0)
+      f += dqromb(f_int_IBS_BM, 0e0, pow(decade, k));
+    else
+      f += dqromo(f_int_IBS_BM, pow(decade, k-1), pow(decade, k), dmidsql);
+  }
+
+  return f;
+}
+
+
+void IBS_BM(const double Qb, const double eps_SR[], double eps[])
+{
+  // J. Bjorken, S. K. Mtingwa "Intrabeam Scattering" Part. Accel. 13, 115-143 (1983).
+  // M. Conte, M. Martini "Intrabeam Scattering in the CERN Antiproton
+  // Accumulator" Par. Accel. 17, 1-10 (1985). 
+  // F. Zimmermann "Intrabeam Scattering with Non-Ultrarelatvistic Corrections
+  // and Vertical Dispersion" CERN-AB-2006-002
+  // Note, ZAP (LBL-21270)uses the Conte-Martini formalism.  However, it also
+  // averages the optics functions over an element instead of the integrand;
+  // incorrect.  Hence, the IBS effect is underestimated.
+
+  long int  k;
+  int       i;
+  double    gamma_z, sigma_s_SR, sigma_delta_SR, sigma_s, sigma_delta;
+  double    V, beta_m[2], sigma_m[2], alpha[2], beta[2], eta[2], etap[2]; 
+  double    T_trans, rho, lambda_D, r_max;
+  double    r_min, r_min_Cl, r_min_QM, log_Coulomb;
+  double    L, curly_H[2], phi[2], dtau_inv[3], tau_inv[3], Gamma;
+  double    a_BM, b_BM, c_BM, a2_CM, b2_CM, D_CM;
+  double    D_x, D_delta, eps_IBS[3];
+
+  const bool    ZAP_BS = false;
+  const int     model = 2; // 1: Bjorken-Mtingwa, 2: Conte-Martini, 3: MAD-X
+  const double  gamma = 1e9*globval.Energy/m_e;
+  const double  beta_rel = sqrt(1e0-1e0/sqr(gamma));
+  const double  N_b = Qb/q_e, q_i = 1e0;
+
+  // bunch size
+  gamma_z = (1e0+sqr(globval.alpha_z))/globval.beta_z;
+
+  sigma_s_SR = sqrt(globval.beta_z*eps_SR[Z_]);
+  sigma_delta_SR = sqrt(gamma_z*eps_SR[Z_]);
+
+  sigma_s = sqrt(globval.beta_z*eps[Z_]); sigma_delta = sqrt(gamma_z*eps[Z_]);
+
+  printf("\n");
+  printf("Qb             = %4.2f nC,         Nb          = %9.3e\n",
+	 1e9*Qb, N_b);
+  printf("eps_x_SR       = %9.3e m.rad, eps_x       = %9.3e m.rad\n",
+	 eps_SR[X_], eps[X_]);
+  printf("eps_y_SR       = %9.3e m.rad, eps_y       = %9.3e m.rad\n",
+	 eps_SR[Y_], eps[Y_]);
+  printf("eps_z_SR       = %9.3e,       eps_z       = %9.3e\n",
+	 eps_SR[Z_], eps[Z_]);
+  printf("alpha_z        = %9.3e,       beta_z      = %9.3e\n",
+	 globval.alpha_z, globval.beta_z);
+  printf("sigma_s_SR     = %9.3e mm,    sigma_s     = %9.3e mm\n",
+	 1e3*sigma_s_SR, 1e3*sigma_s);
+  printf("sigma_delta_SR = %9.3e,       sigma_delta = %9.3e\n",
+	 sigma_delta_SR, sigma_delta);
+
+  // Compute the Coulomb log
+
+  for (i = 0; i < 2; i++)
+    beta_m[i] = 0e0;
+
+  for(k = 0; k <= globval.Cell_nLoc; k++)
+    for (i = 0; i < 2; i++)
+      beta_m[i] += Cell[k].Beta[i]*Cell[k].Elem.PL;
+
+  for (i = 0; i < 2; i++) {
+    beta_m[i] /= Cell[globval.Cell_nLoc].S;
+    sigma_m[i] = sqrt(beta_m[i]*eps[i]);
+  }
+
+  V = 8e0*pow(M_PI, 3e0/2e0)*sigma_m[X_]*sigma_m[Y_]*sigma_s;
+  rho = N_b/V;
+  T_trans = (gamma*1e9*globval.Energy-m_e)*eps[X_]/beta_m[X_];
+  lambda_D = 743.4e-2/q_i*sqrt(T_trans/(1e-6*rho));
+  r_max = min(sigma_m[X_], lambda_D);
+
+  r_min_Cl = 1.44e-9*sqr(q_i)/T_trans;
+
+  if (!ZAP_BS)
+    r_min_QM = 1.973e-13/(2e0*sqrt(T_trans*m_e));
+  else
+    // Bug in ZAP.
+    r_min_QM = 1.973e-13/(2e0*sqrt(1e-12*T_trans*m_e));
+
+  r_min = max(r_min_Cl, r_min_QM);
+
+  log_Coulomb = log(r_max/r_min);
+
+  for (i = 0; i < 3; i++)
+    tau_inv[i] = 0e0;
+
+  for(k = 1; k <= globval.Cell_nLoc; k++) {
+    L = Cell[k].Elem.PL;
+
+    for (i = 0; i < 2; i++){
+      if (!ZAP_BS) {
+	alpha[i] = Cell[k].Alpha[i]; beta[i] = Cell[k].Beta[i];
+	eta[i] = Cell[k].Eta[i]; etap[i] = Cell[k].Etap[i];
+      } else {
+	// Note, ZAP averages the optics functions over an element instead of
+	// the integrand; incorrect.
+	alpha[i] = (Cell[k-1].Alpha[i]+Cell[k].Alpha[i])/2e0;
+	beta[i] = (Cell[k-1].Beta[i]+Cell[k].Beta[i])/2e0;
+	eta[i] = (Cell[k-1].Eta[i]+Cell[k].Eta[i])/2e0;
+	etap[i] = (Cell[k-1].Etap[i]+Cell[k].Etap[i])/2e0;
+      }
+
+      curly_H[i] = get_curly_H(alpha[i], beta[i], eta[i], etap[i]);
+
+      phi[i] = etap[i] + alpha[i]*eta[i]/beta[i];
+    }
+
+    Gamma = eps[X_]*eps[Y_]*sigma_delta*sigma_s;
+
+    if ((model == 1) || (model == 2)) {
+      a_BM = sqr(gamma)*(curly_H[X_]/eps[X_]+1e0/sqr(sigma_delta));
+
+      b_BM =
+	(beta[X_]/eps[X_]+beta[Y_]/eps[Y_])*sqr(gamma)
+	*(sqr(eta[X_])/(eps[X_]*beta[X_])+1e0/sqr(sigma_delta))
+	+ beta[X_]*beta[Y_]/(eps[X_]*eps[Y_])*sqr(gamma*phi[X_]);
+
+      c_BM =
+	beta[X_]*beta[Y_]/(eps[X_]*eps[Y_])*sqr(gamma)
+	*(sqr(eta[X_])/(eps[X_]*beta[X_])+1e0/sqr(sigma_delta));
+    }
+
+    switch (model) {
+    case 1:
+      // Bjorken-Mtingwa
+      a_IBS = a_BM; b_IBS = b_BM; c_IBS = c_BM;
+      break;
+    case 2:
+      // Conte-Martini
+      a_IBS = a_BM + beta[X_]/eps[X_] + beta[Y_]/eps[Y_];
+
+      b_IBS = b_BM + beta[X_]*beta[Y_]/(eps[X_]*eps[Y_]);
+
+      c_IBS = c_BM;
+      break;
+    case 3:
+      // MAD-X
+      a_IBS =
+	sqr(gamma)
+	*(curly_H[X_]/eps[X_]+curly_H[Y_]/eps[Y_]+1e0/sqr(sigma_delta))
+	+ beta[X_]/eps[X_] + beta[Y_]/eps[Y_];
+
+      b_IBS =
+	(beta[X_]/eps[X_]+beta[Y_]/eps[Y_])*sqr(gamma)
+	*(sqr(eta[X_])/(eps[X_]*beta[X_])
+	  +sqr(eta[Y_])/(eps[Y_]*beta[Y_])
+	  +1e0/sqr(sigma_delta))
+	+ beta[X_]*beta[Y_]/(eps[X_]*eps[Y_])*sqr(gamma)
+	*(sqr(phi[X_])+sqr(phi[Y_])+1e0/sqr(gamma));
+
+      c_IBS =
+	beta[X_]*beta[Y_]/(eps[X_]*eps[Y_])*sqr(gamma)
+	*(sqr(eta[X_])/(eps[X_]*beta[X_])
+	  +sqr(eta[Y_])/(eps[Y_]*beta[Y_])
+	  +1e0/sqr(sigma_delta));
+      break;
+    }
+
+    // Horizontal plane.
+    switch (model) {
+    case 1:
+      a_k_IBS = 2e0*a_BM; b_k_IBS = b_BM;
+      break;
+    case 2:
+      D_CM =
+	sqr(gamma)
+	*(sqr(eta[X_])/(beta[X_]*eps[X_])+beta[X_]/eps[X_]*sqr(phi[X_]));
+
+      a2_CM =
+	beta[X_]/eps[X_]
+	*(6e0*beta[X_]/eps[X_]*sqr(gamma*phi[X_])-a_BM
+	  +2e0*beta[X_]/eps[X_]-beta[Y_]/eps[Y_])/D_CM;
+
+      b2_CM =
+	beta[X_]/eps[X_]
+	*(6e0*beta[X_]*beta[Y_]/(eps[X_]*eps[Y_])*sqr(gamma*phi[X_])+b_IBS
+	  -3e0*beta[Y_]/eps[Y_]*a_BM)/D_CM;
+
+      a_k_IBS =	2e0*a_BM - beta[X_]/eps[X_] - beta[Y_]/eps[Y_] + a2_CM;
+
+      b_k_IBS = b_IBS - 3e0*beta[X_]*beta[Y_]/(eps[X_]*eps[Y_]) + b2_CM;
+      break;
+    case 3:
+      a_k_IBS = 
+	2e0*sqr(gamma)
+	*(curly_H[X_]/eps[X_]+curly_H[Y_]/eps[Y_]+1e0/sqr(sigma_delta))
+	- beta[X_]*curly_H[Y_]/(curly_H[X_]*eps[Y_])
+	+ beta[X_]/(curly_H[X_]*sqr(gamma))
+	*(2e0*beta[X_]/eps[X_]-beta[Y_]/eps[Y_]-sqr(gamma/sigma_delta));
+
+      b_k_IBS =
+	(beta[X_]/eps[X_]+beta[Y_]/eps[Y_])*sqr(gamma)
+	*(curly_H[X_]/eps[X_]+curly_H[Y_]/eps[Y_]+1e0/sqr(sigma_delta))
+	- sqr(gamma)
+	*(sqr(beta[X_]*phi[X_]/eps[X_])+sqr(beta[Y_]*phi[Y_]/eps[Y_]))
+	+ (beta[X_]/eps[X_]-4e0*beta[Y_]/eps[Y_])*beta[X_]/eps[X_]
+	+ beta[X_]/(sqr(gamma)*curly_H[X_])
+	*(sqr(gamma/sigma_delta)
+	  *(beta[X_]/eps[X_]-2e0*beta[Y_]/eps[Y_])
+	  +beta[X_]*beta[Y_]/(eps[X_]*eps[Y_])
+	  +sqr(gamma)*(2e0*sqr(beta[Y_]*phi[Y_]/eps[Y_])
+		       -sqr(beta[X_]*phi[X_]/eps[X_])))
+	+ beta[X_]*curly_H[Y_]/(eps[Y_]*curly_H[X_])
+	*(beta[X_]/eps[X_]-2e0*beta[Y_]/eps[Y_]);
+      break;
+    }
+
+    dtau_inv[X_] = sqr(gamma)*curly_H[X_]/eps[X_]*get_int_IBS_BM()/Gamma;
+    tau_inv[X_] += dtau_inv[X_]*L;
+
+    // Vertical plane.
+    switch (model) {
+    case 1:
+      a_k_IBS = -a_BM; b_k_IBS = b_BM - 3e0*eps[Y_]/beta[Y_]*c_BM;
+      break;
+    case 2:
+      a_k_IBS =	-(a_BM+beta[X_]/eps[X_]-2e0*beta[Y_]/eps[Y_]);
+
+      b_k_IBS = b_IBS - 3e0*eps[Y_]/beta[Y_]*c_IBS;
+      break;
+    case 3:
+      a_k_IBS =
+	-sqr(gamma)*(curly_H[X_]/eps[X_]+2e0*curly_H[Y_]/eps[Y_]
+		     +beta[X_]/beta[Y_]*curly_H[Y_]/eps[X_]
+		     +1e0/sqr(sigma_delta))
+	+ 2e0*pow(gamma, 4e0)*curly_H[Y_]/beta[Y_]
+	*(curly_H[Y_]/eps[Y_]+curly_H[X_]/eps[X_])
+	+ 2e0*pow(gamma, 4e0)*curly_H[Y_]/(beta[Y_]*sqr(sigma_delta))
+	- (beta[X_]/eps[X_]-2e0*beta[Y_]/eps[Y_]);
+
+      b_k_IBS = 
+	sqr(gamma)*(beta[Y_]/eps[Y_]-2e0*beta[X_]/eps[X_])
+	*(curly_H[X_]/eps[X_]+1e0/sqr(sigma_delta))
+	+ (beta[Y_]/eps[Y_]-4e0*beta[X_]/eps[X_])*sqr(gamma)
+	*curly_H[Y_]/eps[Y_]
+	+ beta[X_]*beta[Y_]/(eps[X_]*eps[Y_])
+	+ sqr(gamma)
+	*(2e0*sqr(beta[X_]*phi[X_]/eps[X_])-sqr(beta[Y_]*phi[Y_]/eps[Y_]))
+	+ pow(gamma, 4e0)*curly_H[Y_]/beta[Y_]
+	*(beta[X_]/eps[X_]+beta[Y_]/eps[Y_])
+	*(curly_H[Y_]/eps[Y_]+1e0/sqr(sigma_delta))
+	+ (beta[Y_]/eps[Y_]+beta[X_]/eps[X_])
+	*pow(gamma, 4e0)*curly_H[X_]*curly_H[Y_]/(beta[Y_]*eps[X_])
+	- pow(gamma, 4e0)*curly_H[Y_]/beta[Y_]
+	*(sqr(beta[X_]*phi[X_]/eps[X_])+sqr(beta[Y_]*phi[Y_]/eps[Y_]));
+      break;
+    }
+
+    dtau_inv[Y_] = beta[Y_]/eps[Y_]*get_int_IBS_BM()/Gamma;
+    tau_inv[Y_] += dtau_inv[Y_]*L;
+
+    // Longitudinal plane.
+    switch (model) {
+    case 1:
+      a_k_IBS =	2e0*a_BM; b_k_IBS = b_BM;
+      break;
+    case 2:
+      a_k_IBS =	2e0*a_BM - beta[X_]/eps[X_] - beta[Y_]/eps[Y_];
+
+      b_k_IBS = b_BM - 2e0*beta[X_]*beta[Y_]/(eps[X_]*eps[Y_]);
+      break;
+    case 3:
+      a_k_IBS =
+	2e0*sqr(gamma)
+	*(curly_H[X_]/eps[X_]+curly_H[Y_]/eps[Y_]+1e0/sqr(sigma_delta))
+	- beta[X_]/eps[X_] - beta[Y_]/eps[Y_];
+
+      b_k_IBS =
+	(beta[X_]/eps[X_]+beta[Y_]/eps[Y_])*sqr(gamma)
+	*(curly_H[X_]/eps[X_]+curly_H[Y_]/eps[Y_]+1e0/sqr(sigma_delta))
+	- 2e0*beta[X_]*beta[Y_]/(eps[X_]*eps[Y_])
+	- sqr(gamma)*(sqr(beta[X_]*phi[X_]/eps[X_])
+		      +sqr(beta[Y_]*phi[Y_]/eps[Y_]));
+      break;
+    }
+
+    dtau_inv[Z_] = sqr(gamma/sigma_delta)*get_int_IBS_BM()/Gamma;
+    tau_inv[Z_] += dtau_inv[Z_]*L;
+
+    if (true) {
+      for (i = 0; i < 3; i++)
+	dtau_inv[i] *=
+	  sqr(r_e)*c0*N_b*log_Coulomb
+	  /(M_PI*cube(2e0*beta_rel)*pow(gamma, 4e0));
+
+      printf("%4ld %10.3e %10.3e %10.3e %5.3f\n",
+	     k, dtau_inv[Z_], dtau_inv[X_], dtau_inv[Y_], L);
+    }
+  }
+
+  for (i = 0; i < 3; i++)
+    tau_inv[i] *=
+      sqr(r_e)*c0*N_b*log_Coulomb
+      /(M_PI*cube(2e0*beta_rel)*pow(gamma, 4e0)*Cell[globval.Cell_nLoc].S);
+
+  D_x = eps[X_]*tau_inv[X_]; D_delta = eps[delta_]*tau_inv[delta_];
+
+  // eps_x*D_x
+  D_x *= eps[X_];
+  // Compute eps_IBS.
+  eps_IBS[X_] = sqrt(D_x*globval.tau[X_]/2e0);
+  // Solve for eps_x
+  eps[X_] = eps_SR[X_]*(1e0+sqrt(1e0+4e0*sqr(eps_IBS[X_]/eps_SR[X_])))/2e0;
+  // Compute D_x.
+  D_x /= eps[X_];
+
+  eps[Y_] = eps_SR[Y_]/eps_SR[X_]*eps[X_];
+
+  D_delta = tau_inv[Z_]*sqr(sigma_delta);
+  sigma_delta =
+    sqrt((D_delta+2e0/globval.tau[Z_]*sqr(sigma_delta_SR))
+	 *globval.tau[Z_]/2e0);
+  eps[Z_] = sqr(sigma_delta)/gamma_z;
+
+  sigma_s = sqrt(globval.beta_z*eps[Z_]);
+
+  printf("\n");
+  printf("Coulomb Log = %6.3f\n", log_Coulomb);
+  printf("D_x         = %9.3e\n", D_x);
+  printf("eps_x(IBS)  = %5.3f nm.rad\n", 1e9*eps_IBS[X_]);
+  printf("eps_x       = %5.3f nm.rad\n", 1e9*eps[X_]);
+  printf("eps_y       = %5.3f pm.rad\n", 1e12*eps[Y_]);
+  printf("D_delta     = %9.3e\n", D_delta);
+  printf("eps_z       = %9.3e\n", eps[Z_]);
+  printf("sigma_s     = %9.3e\n", sigma_s);
+  printf("sigma_delta = %9.3e\n", sigma_delta);
 }
 
 
@@ -4102,7 +4489,7 @@ void rm_space(char *name)
 }
 
 
-void get_bn(char file_name[], int n, const bool prt)
+void get_bn(const char file_name[], int n, const bool prt)
 {
   char      line[max_str], str[max_str], str1[max_str], *token, *name, *p;
   int       n_prm, Fnum, Knum, order;
@@ -4110,6 +4497,8 @@ void get_bn(char file_name[], int n, const bool prt)
   FILE      *inf, *fp_lat;
 
   inf = file_read(file_name); fp_lat = file_write("get_bn.lat");
+
+  no_sxt();
 
   // if n = 0: go to last data set
   if (n == 0) {
@@ -4151,8 +4540,8 @@ void get_bn(char file_name[], int n, const bool prt)
     
       L = GetL(Fnum, 1);
       if (Knum == 1) {
-	if (order == 0){
-	  fprintf(fp_lat, "%s: Drift, L = %8.6f;\n", str1, bnL);}
+	if (order == 0)
+	  fprintf(fp_lat, "%s: Drift, L = %8.6f;\n", str1, bnL);
 	else {
 	  bn = (L != 0.0)? bnL/L : bnL;
 	  if (order == Quad)
@@ -4160,7 +4549,7 @@ void get_bn(char file_name[], int n, const bool prt)
 		    ", Method = Meth;\n", str1, L, bn);
 	  else if (order == Sext)
 	    fprintf(fp_lat, "%s: Sextupole, L = %8.6f, K = %10.6f"
-		    ", N = 1, Method = Meth;\n", str1, L, bn);
+		    ", N = Nsext, Method = Meth;\n", str1, L, bn);
 	  else {
 	    fprintf(fp_lat, "%s: Multipole, L = %8.6f"
 		    ", N = 1, Method = Meth,\n", str1, L);
@@ -4168,7 +4557,7 @@ void get_bn(char file_name[], int n, const bool prt)
 		    order, bn, 0.0);
 	  }
 	}
-	}
+      }
     } else {
       printf("element %s not found\n", name);
       exit_(1);
@@ -4307,20 +4696,17 @@ bool find_nu(const int n, const double nus[], const double eps, double &nu)
   bool  lost;
   int   k;
 
-  const bool  prt = false;
-
-  if (prt) printf("\n");
   k = 0;
   while ((k < n) && (fabs(nus[k]-nu) > eps)) {
-    if (prt) printf("nu = %7.5f(%7.5f) eps = %7.1e\n", nus[k], nu, eps);
+    if (trace) printf("nu = %7.5f(%7.5f) eps = %7.1e\n", nus[k], nu, eps);
     k++;
   }
 
   if (k < n) {
-    if (prt) printf("nu = %7.5f(%7.5f)\n", nus[k], nu);
+    if (trace) printf("nu = %7.5f(%7.5f)\n", nus[k], nu);
     nu = nus[k]; lost = false;
   } else {
-    if (prt) printf("lost\n");
+    if (trace) printf("lost\n");
     lost = true;
   }
 
@@ -4389,54 +4775,101 @@ void dnu_dA(const double Ax_max, const double Ay_max, const double delta,
   const double  A_min  = 1e-3;
 //  const double  eps0   = 0.04, eps   = 0.02;
 //  const double  eps0   = 0.025, eps   = 0.02;
-  const double  eps0   = 0.04, eps   = 0.015;
+//   const double  eps0   = 0.04, eps   = 0.015;
+  const double  eps = 0.01;
 
   Ring_GetTwiss(false, 0.0);
 
-  ok = false;
+  if (trace) printf("dnu_dAx\n");
+
+  nu_x = fract(globval.TotalTune[X_]); nu_y = fract(globval.TotalTune[Y_]);
+
   fp = file_write("dnu_dAx.out");
   fprintf(fp, "#   A_x        A_y        J_x        J_y      nu_x    nu_y\n");
   fprintf(fp, "#\n");
-  for (i = -n_ampl; i <= n_ampl; i++) {
-    Ax = i*Ax_max/n_ampl;
-    if (Ax == 0.0) Ax = A_min;
-    Ay = A_min;
-    ps[x_] = Ax; ps[px_] = 0.0; ps[y_] = Ay; ps[py_] = 0.0; getfloqs(ps);
+  fprintf(fp, "%10.3e %10.3e %10.3e %10.3e %7.5f %7.5f\n",
+	  0e0, 0e0, 0e0, 0e0, fract(nu_x), fract(nu_y));
+
+  Ay = A_min;
+  for (i = 1; i <= n_ampl; i++) {
+    Ax = -i*Ax_max/n_ampl;
+    ps[x_] = Ax; ps[px_] = 0e0; ps[y_] = Ay; ps[py_] = 0e0; getfloqs(ps);
     Jx = (sqr(ps[x_])+sqr(ps[px_]))/2.0; Jy = (sqr(ps[y_])+sqr(ps[py_]))/2.0;
-    if (!ok) {
-      nu_x = fract(globval.TotalTune[X_]); nu_y = fract(globval.TotalTune[Y_]);
-      ok = get_nu(Ax, Ay, delta, eps0, nu_x, nu_y);
-    } else
-      ok = get_nu(Ax, Ay, delta, eps, nu_x, nu_y);
+    ok = get_nu(Ax, Ay, delta, eps, nu_x, nu_y);
     if (ok)
       fprintf(fp, "%10.3e %10.3e %10.3e %10.3e %7.5f %7.5f\n",
 	      1e3*Ax, 1e3*Ay, 1e6*Jx, 1e6*Jy, fract(nu_x), fract(nu_y));
     else
       fprintf(fp, "# %10.3e %10.3e particle lost\n", 1e3*Ax, 1e3*Ay);
   }
+
+  if (trace) printf("\n");
+
+  nu_x = fract(globval.TotalTune[X_]); nu_y = fract(globval.TotalTune[Y_]);
+
+  fprintf(fp, "\n");
+  fprintf(fp, "%10.3e %10.3e %10.3e %10.3e %7.5f %7.5f\n",
+	  0e0, 0e0, 0e0, 0e0, fract(nu_x), fract(nu_y));
+
+  Ay = A_min;
+  for (i = 0; i <= n_ampl; i++) {
+    Ax = i*Ax_max/n_ampl;
+    ps[x_] = Ax; ps[px_] = 0e0; ps[y_] = Ay; ps[py_] = 0e0; getfloqs(ps);
+    Jx = (sqr(ps[x_])+sqr(ps[px_]))/2.0; Jy = (sqr(ps[y_])+sqr(ps[py_]))/2.0;
+    ok = get_nu(Ax, Ay, delta, eps, nu_x, nu_y);
+    if (ok)
+      fprintf(fp, "%10.3e %10.3e %10.3e %10.3e %7.5f %7.5f\n",
+	      1e3*Ax, 1e3*Ay, 1e6*Jx, 1e6*Jy, fract(nu_x), fract(nu_y));
+    else
+      fprintf(fp, "# %10.3e %10.3e particle lost\n", 1e3*Ax, 1e3*Ay);
+  }
+
   fclose(fp);
 
-  ok = false;
+  if (trace) printf("dnu_dAy\n");
+
+  nu_x = fract(globval.TotalTune[X_]); nu_y = fract(globval.TotalTune[Y_]);
+
   fp = file_write("dnu_dAy.out");
   fprintf(fp, "#   A_x        A_y      nu_x    nu_y\n");
   fprintf(fp, "#\n");
-  for (i = -n_ampl; i <= n_ampl; i++) {
-    Ax = A_min; Ay = i*Ay_max/n_ampl;
+  fprintf(fp, "%10.3e %10.3e %10.3e %10.3e %7.5f %7.5f\n",
+	  0e0, 0e0, 0e0, 0e0, fract(nu_x), fract(nu_y));
+
+  Ax = A_min;
+  for (i = 1; i <= n_ampl; i++) {
+    Ay = -i*Ay_max/n_ampl;
     Jx = pow(Ax, 2)/(2.0*Cell[globval.Cell_nLoc].Beta[X_]);
-    if (Ay == 0.0) Ay = A_min;
     Jy = pow(Ay, 2)/(2.0*Cell[globval.Cell_nLoc].Beta[Y_]);
-//    if (i == 1) exit_(0);
-    if (!ok) {
-      nu_x = fract(globval.TotalTune[X_]); nu_y = fract(globval.TotalTune[Y_]);
-      ok = get_nu(Ax, Ay, delta, eps0, nu_x, nu_y);
-    } else
-      ok = get_nu(Ax, Ay, delta, eps, nu_x, nu_y);
+    ok = get_nu(Ax, Ay, delta, eps, nu_x, nu_y);
     if (ok)
       fprintf(fp, "%10.3e %10.3e %10.3e %10.3e %7.5f %7.5f\n",
 	      1e3*Ax, 1e3*Ay, 1e6*Jx, 1e6*Jy, fract(nu_x), fract(nu_y));
     else
       fprintf(fp, "# %10.3e %10.3e particle lost\n", 1e3*Ax, 1e3*Ay);
   }
+
+  if (trace) printf("\n");
+
+  nu_x = fract(globval.TotalTune[X_]); nu_y = fract(globval.TotalTune[Y_]);
+
+  fprintf(fp, "\n");
+  fprintf(fp, "%10.3e %10.3e %10.3e %10.3e %7.5f %7.5f\n",
+	  0e0, 0e0, 0e0, 0e0, fract(nu_x), fract(nu_y));
+
+  Ax = A_min;
+  for (i = 0; i <= n_ampl; i++) {
+    Ay = i*Ay_max/n_ampl;
+    Jx = pow(Ax, 2)/(2.0*Cell[globval.Cell_nLoc].Beta[X_]);
+    Jy = pow(Ay, 2)/(2.0*Cell[globval.Cell_nLoc].Beta[Y_]);
+    ok = get_nu(Ax, Ay, delta, eps, nu_x, nu_y);
+    if (ok)
+      fprintf(fp, "%10.3e %10.3e %10.3e %10.3e %7.5f %7.5f\n",
+	      1e3*Ax, 1e3*Ay, 1e6*Jx, 1e6*Jy, fract(nu_x), fract(nu_y));
+    else
+      fprintf(fp, "# %10.3e %10.3e particle lost\n", 1e3*Ax, 1e3*Ay);
+  }
+
   fclose(fp);
 }
 
@@ -4447,6 +4880,9 @@ bool orb_corr(const int n_orbit)
   int       i;
   long      lastpos;
   Vector2   xmean, xsigma, xmax;
+
+  cout << "ini_skew_cor: out-of-date (globval.hcorr...)" << endl;
+  exit(1);
 
   printf("\n");
 
@@ -4463,8 +4899,7 @@ bool orb_corr(const int n_orbit)
       printf("\n");
       printf("RMS orbit [mm]: (%8.1e+/-%7.1e, %8.1e+/-%7.1e)\n", 
 	     1e3*xmean[X_], 1e3*xsigma[X_], 1e3*xmean[Y_], 1e3*xsigma[Y_]);
-      lsoc(1, globval.bpm, globval.hcorr, 1);
-      lsoc(1, globval.bpm, globval.vcorr, 2);
+      lsoc(1); lsoc(2);
       cod = getcod(0.0, lastpos);
       if (cod) {
 	codstat(xmean, xsigma, xmax, globval.Cell_nLoc, false);
@@ -4521,24 +4956,11 @@ void get_alphac2(void)
 	 b[1], b[2], b[3]);
 }
 
-/*Orgianl
+
 float f_bend(float b0L[])
-*/
-//GSL add
-double f_bend(const gsl_vector *vb0L, void *params)
-//end GSL add
 {
   long int  lastpos;
   Vector    ps;
-  
-  //GSL add
-  float b0L[vb0L->size];
-  int i;
-  for(i=0;i<vb0L->size;i++)
-	b0L[i] = gsl_vector_get(vb0L,i);
-  
-  double *p = (double *)params;
-  //end GSL add
 
   const int   n_prt = 10;
 
@@ -4565,85 +4987,26 @@ void bend_cal_Fam(const int Fnum)
   /* Adjusts b1L_sys to zero the orbit for a given gradient. */
   const int  n_prm = 1;
 
-  /*Orginal
   int       iter;
   float     *b0L, **xi, fret;
-  */
   Vector    ps;
-  
-  //GSL add
-  double par[1] = {1};
-  
-  const gsl_multimin_fminimizer_type *AA = gsl_multimin_fminimizer_nmsimplex2;
-  gsl_multimin_fminimizer *s = NULL;
-  gsl_vector *step, *x;
-  gsl_multimin_function minex_func;
 
-  size_t iter = 0;
-  int status;
-  double size;
-  
-  /* Starting point */
-  x = gsl_vector_alloc (n_prm);
-  gsl_vector_set_all(x, 0.0);
-
-  /* Set initial step sizes to 1 */
-  step = gsl_vector_alloc (n_prm);
-  gsl_vector_set_all (step, 1.0);
-
-  /* Initialize method and iterate */
-  minex_func.n = n_prm;
-  minex_func.f = f_bend;
-  minex_func.params = par;
-  
-  s = gsl_multimin_fminimizer_alloc(AA, n_prm);
-  gsl_multimin_fminimizer_set (s, &minex_func, x, step);
-  //end GSL add
-  
-  /*Orgianl
   const float  ftol = 1e-15;
 
   b0L = vector(1, n_prm); xi = matrix(1, n_prm, 1, n_prm);
-  */
 
   cout << endl;
   cout << "bend_cal: " << ElemFam[Fnum-1].ElemF.PName << ":" << endl;
 
-  Fnum_Cart = Fnum;  
-  /*Orginal
-  b0L[1] = 0.0; xi[1][1] = 1e-3;
-  */
+  Fnum_Cart = Fnum;  b0L[1] = 0.0; xi[1][1] = 1e-3;
+
   cout << endl;
   n_iter_Cart = 0;
-  
-  /*Orginal
   powell(b0L, xi, n_prm, ftol, &iter, &fret, f_bend);
-  */
-  
-  //GSL add
-  do {
-    iter++;
-    status = gsl_multimin_fminimizer_iterate(s);
-      
-    if (status) 
-    break;
 
-    size = gsl_multimin_fminimizer_size (s);
-    status = gsl_multimin_test_size (size, 1e-15);
-
-   }while (status == GSL_CONTINUE);
-   //end GSL add
-   
-  /*Orginal
   free_vector(b0L, 1, n_prm); free_matrix(xi, 1, n_prm, 1, n_prm);
-  */
-  
-  //GSL add
-  gsl_vector_free(x);
-  gsl_vector_free(step);
-  gsl_multimin_fminimizer_free (s);
-  //end GSL add
 }
+
 
 void bend_cal(void)
 {
@@ -4667,41 +5030,6 @@ double h_ijklm(const tps &h, const int i, const int j, const int k,
     jj[i1] = 0;
   jj[x_] = i; jj[px_] = j; jj[y_] = k; jj[py_] = l; jj[delta_] = m;
   return h[jj];
-}
-
-
-ss_vect<tps> get_A(const double alpha[], const double beta[],
-		   const double eta[], const double etap[])
-{
-  ss_vect<tps>  A, Id;
-
-  Id.identity();
-
-  A.identity();
-  A[x_]  = sqrt(beta[X_])*Id[x_];
-  A[px_] = -alpha[X_]/sqrt(beta[X_])*Id[x_] + 1.0/sqrt(beta[X_])*Id[px_];
-  A[y_]  = sqrt(beta[Y_])*Id[y_];
-  A[py_] = -alpha[Y_]/sqrt(beta[Y_])*Id[y_] + 1.0/sqrt(beta[Y_])*Id[py_];
-
-  A[x_] += eta[X_]*Id[delta_]; A[px_] += etap[X_]*Id[delta_];
-
-  return A;
-}
-
-
-void get_ab(const ss_vect<tps> &A,
-	    double alpha[], double beta[], double eta[], double etap[])
-{
-  int           k;
-  ss_vect<tps>  A_Atp;
-
-  A_Atp = A*tp_S(2, A);
-
-  for (k = 0; k <= 1; k++) {
-    eta[k] = A[2*k][delta_]; etap[k] = A[2*k+1][delta_];
-
-    alpha[k] = -A_Atp[2*k][2*k+1]; beta[k] = A_Atp[2*k][2*k];
-  }
 }
 
 

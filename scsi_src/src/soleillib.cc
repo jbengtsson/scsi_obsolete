@@ -858,19 +858,20 @@ void fmap(long Nbx, long Nbz, long Nbtour, double xmax, double zmax,
      }
      
      // printout value
-     if (!diffusion){
+     if (!diffusion) {
        fprintf(outf,"%14.6e %14.6e %14.6e %14.6e\n",
 	       1e3*x, 1e3*z, nux1, nuz1);
        fprintf(stdout,"%14.6e %14.6e %14.6e %14.6e\n",
 	       1e3*x, 1e3*z, nux1, nuz1);
-     }
-     else {
+     } else {
        dfx = nux1 - nux2; dfz = nuz1 - nuz2;
        fprintf(outf,"%14.6e %14.6e %14.6e %14.6e %14.6e %14.6e %14.6e\n",
 	       1e3*x, 1e3*z, nux1, nuz1, dfx, dfz, get_D(dfx, dfz));
        fprintf(stdout,"%14.6e %14.6e %14.6e %14.6e %14.6e %14.6e %14.6e\n",
 	       1e3*x, 1e3*z, nux1, nuz1, dfx, dfz, get_D(dfx, dfz));
      }
+
+     fflush(outf);
    }
  }
 
@@ -996,19 +997,20 @@ void fmapdp(long Nbx, long Nbe, long Nbtour, double xmax, double emax,
      }
 
      // printout value
-     if (!diffusion){
+     if (!diffusion) {
        fprintf(outf,"%14.6e %14.6e %14.6e %14.6e\n",
 	       1e2*dp, 1e3*x, nux1, nuz1);
        fprintf(stdout,"%14.6e %14.6e %14.6e %14.6e\n",
 	       1e2*dp, 1e3*x, nux1, nuz1);
-     }
-     else {
+     } else {
        dfx = nux2 - nux1; dfz = nuz2 - nuz1;
        fprintf(outf,"%14.6e %14.6e %14.6e %14.6e %14.6e %14.6e %14.6e\n",
 	       1e2*dp, 1e3*x, nux1, nuz2, dfx, dfz, get_D(dfx, dfz));
        fprintf(stdout,"%14.6e %14.6e %14.6e %14.6e %14.6e %14.6e %14.6e\n",
 	       1e2*dp, 1e3*x, nux1, nuz2, dfx, dfz, get_D(dfx, dfz));
      }
+
+     fflush(outf);
    }
  }
 

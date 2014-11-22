@@ -39,7 +39,7 @@
                                           roll angle (error)
                  L, 1/rho, entrance angle, exit angle
                  apertures[4]
-		 no of nonzero multipole coeff.
+		 no of nonzero multipole coeff., n design
 		 n, b , a
 		     n   n
 		    ...
@@ -172,7 +172,8 @@ void prtmfile(const char mfile_dat[])
 		Cell[i].Elem.ID->scaling, 2, Cell[i].Elem.ID->fname2);
       break;
     default:
-      fprintf(mfile, "prtmfile: unknown type\n");
+      printf("prtmfile: unknown type %d\n", Cell[i].Elem.Pkind);
+      exit(1);
       break;
     }
   }

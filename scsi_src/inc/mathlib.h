@@ -46,6 +46,7 @@ void CopyMat(const int n, const Matrix &a, Matrix &b);
 void AddMat(const int n, const Matrix &a, Matrix &b);
 void SubMat(const int n, const Matrix &a, Matrix &b);
 void LinTrans(const int n, const Matrix &a, Vector &x);
+void MulcMat(const int n, const double c, Matrix &A);
 void MulLMat(const int n, const Matrix &a, Matrix &b);
 void MulRMat(const int n, Matrix &a, const Matrix &b);
 double TrMat(const int n, const Matrix &a);

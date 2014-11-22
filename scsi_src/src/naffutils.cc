@@ -56,21 +56,30 @@ void Trac_Simple(double x, double px, double y, double py, double dp,
   long             lastn = 0;
   Vector2          aperture = {1.0, 1.0};
 
+  bool cod = false;
+
   *status2 = true; /* stable */
 
   if (globval.MatMeth) Cell_Concat(dp);
 
-  /* Get closed orbit */
-  //~ getcod(dp, lastpos);
-  findcod(dp);
+  if (cod) {
+    printf("Trac_Simple: relative (to COD)\n");
+    /* Get closed orbit */
+    //~ getcod(dp, lastpos);
+    findcod(dp);
   
-  if (trace && status.codflag) 
-    printf("dp= % .5e %% xcod= % .5e mm zcod= % .5e mm \n",
+    if (trace && status.codflag) 
+      printf("dp= % .5e %% xcod= % .5e mm zcod= % .5e mm \n",
              dp*1e2, globval.CODvect[0]*1e3, globval.CODvect[2]*1e3);
 
-  /* Tracking coordinates around the closed orbit */
-  x1[0] =  x + globval.CODvect[0]; x1[1] = px + globval.CODvect[1];
-  x1[2] =  y + globval.CODvect[2]; x1[3] = py + globval.CODvect[3];
+    /* Tracking coordinates around the closed orbit */
+    x1[0] =  x + globval.CODvect[0]; x1[1] = px + globval.CODvect[1];
+    x1[2] =  y + globval.CODvect[2]; x1[3] = py + globval.CODvect[3];
+  } else {
+    printf("Trac_Simple: absolute\n");
+    x1[0] = x; x1[1] = px; x1[2] = y; x1[3] = py;
+  }
+
   x1[4] = dp; x1[5] = ctau;
 
   Tx[0][lastn] = x1[0]; Tx[1][lastn] = x1[1];

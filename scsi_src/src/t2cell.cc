@@ -84,11 +84,6 @@ void Elem_Pass(const long i, ss_vect<T> &x)
       break;
   }
 
-  if (globval.IBS) {
-//    trace = i == 34;
-    is_tps<T>::do_IBS(Cell[i].Elem.PL, x);
-  }
-
   is_tps<T>::get_ps(x, Cell[i]);
 }
 
@@ -181,20 +176,16 @@ void Cell_Pass(const long i0, const long i1, ss_vect<T> &x, long &lastpos)
   if (globval.MatMeth && (x[delta_] != globval.dPparticle))
     Cell_SetdP(is_double<T>::cst(x[delta_]));
     
-  if (globval.radiation) globval.dE = 0.0;
+  if (globval.radiation) globval.dE = 0e0;
 
   if (globval.emittance) {
-    I2 = 0.0; I4 = 0.0; I5 = 0.0;
+    I2 = 0e0; I4 = 0e0; I5 = 0e0;
 
     for (i = 0; i < DOF; i++)
-      globval.D_rad[i] = 0.0;
+      globval.D_rad[i] = 0e0;
   }
 
-  if (globval.IBS)
-    for (i = 0; i < DOF; i++)
-      globval.D_IBS[i] = 0.0;
-
-   if (!CheckAmpl(x, i0))
+  if (!CheckAmpl(x, i0))
     lastpos = i0;
   else {
     lastpos = i1;
@@ -208,6 +199,7 @@ void Cell_Pass(const long i0, const long i1, ss_vect<T> &x, long &lastpos)
 
 void Cell_Pass(const long i0, const long i1, tps &sigma, long &lastpos)
 {
+  // Note: Sigma_k+1 = M_k Sigma_k M_k^T = (M_k (M_k Sigma_k)^T)^T
   const int  n = 9;
 
   int           i, j, jj[n][nv_tps];
@@ -346,12 +338,12 @@ void GtoL_dP(Matrix &mat, Vector2 &dT)
   Vector2  dS0;
   Vector   x;
 
-  dS0[0] = 0.0; dS0[1] = 0.0;
+  dS0[0] = 0e0; dS0[1] = 0e0;
 
   for (k = 0; k < n; k++)
     x[k] = mat[k][n];
 
-  GtoL(x, dS0, dT, 0.0, 0.0, 0.0);
+  GtoL(x, dS0, dT, 0e0, 0e0, 0e0);
 
   for (k = 0; k < n; k++)
     mat[k][n] = x[k];
@@ -364,12 +356,12 @@ static void LtoG_dP(Matrix &mat, Vector2 &dT)
   Vector2  dS0;
   Vector   x;
 
-  dS0[0] = 0.0; dS0[1] = 0.0;
+  dS0[0] = 0e0; dS0[1] = 0e0;
 
   for (k = 0; k < n; k++)
     x[k] = mat[k][n];
 
-  LtoG(x, dS0, dT, 0.0, 0.0, 0.0);
+  LtoG(x, dS0, dT, 0e0, 0e0, 0e0);
 
   for (k = 0; k < n; k++)
     mat[k][n] = x[k];
@@ -379,7 +371,7 @@ static void LtoG_dP(Matrix &mat, Vector2 &dT)
 void Cell_Concat(double dP)
 {
   long      j = 0, i1 = 0;
-  double    PB2 = 0.0;
+  double    PB2 = 0e0;
   CellType  *cellp;
   elemtype  *elemp;
   MpoleType *M;
@@ -416,14 +408,14 @@ void Cell_Concat(double dP)
             MulLsMat(M->AU55, transfmat[ntransfmat-1]);
             /* Assuming there is no quadrupole kick */
             PB2 = M->PB[Quad+HOMmax];
-            M->PB[Quad+HOMmax] = 0.0;
-            thin_kick(M->Porder, M->PB, elemp->PL, 0.0, 0.0,
+            M->PB[Quad+HOMmax] = 0e0;
+            thin_kick(M->Porder, M->PB, elemp->PL, 0e0, 0e0,
 		      transfmat[ntransfmat-1][n]);
             M->PB[Quad+HOMmax] = PB2;
             MulLsMat(M->AD55, transfmat[ntransfmat-1]);
           } else {
             /* Dipole kick */
-            thin_kick(M->Porder, M->PB, 1.0, 0.0, 0.0,
+            thin_kick(M->Porder, M->PB, 1e0, 0e0, 0e0,
 		      transfmat[ntransfmat-1][n]);
           }
           LtoG_M(transfmat[ntransfmat-1], cellp->dT);
@@ -525,11 +517,11 @@ void Cell_fPass(ss_vect<double> &x, long &lastpos)
         CopyVec(n, x, Cell[kicks[i][j-1]].BeamPos);
         if (M->Pthick == thick) {
           PB2 = M->PB[Quad+HOMmax];
-          M->PB[Quad+HOMmax] = 0.0;
-          thin_kick(M->Porder, M->PB, elemp->PL, 0.0, 0.0, x);
+          M->PB[Quad+HOMmax] = 0e0;
+          thin_kick(M->Porder, M->PB, elemp->PL, 0e0, 0e0, x);
           M->PB[Quad+HOMmax] = PB2;
         } else
-          thin_kick(M->Porder, M->PB, 1.0, 0.0, 0.0, x);
+          thin_kick(M->Porder, M->PB, 1e0, 0e0, 0e0, x);
 
         if (!CheckAmpl(x, kicks[i][j-1])) {
 	  lastpos = kicks[i][j-1]; return;
@@ -569,7 +561,7 @@ void Cell_fPass_M(ss_vect<double> &xref, Matrix &mat, long &lastpos)
         thin_kick_M, thin_kick                                               */
 
   long       i= 0, j = 0;
-  double     PB2 = 0.0;
+  double     PB2 = 0e0;
   CellType   *cellp;
   elemtype   *elemp;
   MpoleType  *M;
@@ -587,13 +579,13 @@ void Cell_fPass_M(ss_vect<double> &xref, Matrix &mat, long &lastpos)
 
         if (M->Pthick == thick) {
           PB2 = M->PB[Quad+HOMmax];
-          M->PB[Quad+HOMmax] = 0.0;
-          thin_kick_M(M->Porder, M->PB, elemp->PL, 0.0, xref, mat);
-          thin_kick(M->Porder, M->PB, elemp->PL, 0.0, 0.0, xref);
+          M->PB[Quad+HOMmax] = 0e0;
+          thin_kick_M(M->Porder, M->PB, elemp->PL, 0e0, xref, mat);
+          thin_kick(M->Porder, M->PB, elemp->PL, 0e0, 0e0, xref);
           M->PB[Quad+HOMmax] = PB2;
         } else {
-          thin_kick_M(M->Porder, M->PB, 1.0, 0.0, xref, mat);
-          thin_kick(M->Porder, M->PB, 1.0, 0.0, 0.0, xref);
+          thin_kick_M(M->Porder, M->PB, 1e0, 0e0, xref, mat);
+          thin_kick(M->Porder, M->PB, 1e0, 0e0, 0e0, xref);
         }
 
         if (!CheckAmpl(xref, kicks[i][j-1])) {
@@ -610,14 +602,14 @@ void Cell_fPass_M(ss_vect<double> &xref, Matrix &mat, long &lastpos)
 bool Cell_GetCOD_M(long imax, double eps, double dP, long &lastpos)
 {
   long    i = 0, j = 0;
-  double  dxabs = 0.0;
+  double  dxabs = 0e0;
   Vector  x0, x1, dx;
   Matrix  A;
 
   if (globval.MatMeth) Cell_Concat(dP);
 
   CopyVec(n, globval.CODvect, x0);
-  x0[delta_] = dP; x0[ct_] = 0.0; i = 0;
+  x0[delta_] = dP; x0[ct_] = 0e0; i = 0;
 
   do {
     i++;
@@ -671,25 +663,28 @@ bool Cell_GetCOD_M(long imax, double eps, double dP, long &lastpos)
 bool Cell_getCOD(long imax, double eps, double dP, long &lastpos)
 {
   long             j, n, n_iter;
+  int              no;
   double           dxabs;
   iVector          jj;
   ss_vect<double>  x0, x1, dx;
   ss_vect<tps>     I, dx0, map;
+
+  no = no_tps; danot_(1);
   
   n = (globval.Cavity_on)? 6 : 4; globval.dPparticle = dP;
 
   if (n == 6) {
     // initial guess is zero for 3 D.O.F.
-    x0[x_] = 0.0; x0[px_] = 0.0; x0[y_] = 0.0; x0[py_] = 0.0;
-    x0[delta_] = 0.0; x0[ct_] = 0.0;
+    x0[x_] = 0e0; x0[px_] = 0e0; x0[y_] = 0e0; x0[py_] = 0e0;
+    x0[delta_] = 0e0; x0[ct_] = 0e0;
   } else {
     // or eta*dP for 2 1/2 D.O.F.
     x0[x_] = Cell[0].Eta[X_]*dP; x0[px_] = Cell[0].Etap[X_]*dP;
     x0[y_] = Cell[0].Eta[Y_]*dP; x0[py_] = Cell[0].Etap[Y_]*dP;
-    x0[delta_] = dP; x0[ct_] = 0.0;
+    x0[delta_] = dP; x0[ct_] = 0e0;
   }
 
-  for (j = 0; j < 2*nd_tps; j++)
+  for (j = 0; j < ss_dim; j++)
     jj[j] = (j < n)? 1 : 0;
 
   if (trace) {
@@ -712,7 +707,7 @@ bool Cell_getCOD(long imax, double eps, double dP, long &lastpos)
 
 //      prt_trace();
 
-      dxabs = 1e30; break;
+      dxabs = NAN; break;
     }
 
     if (trace) {
@@ -720,7 +715,7 @@ bool Cell_getCOD(long imax, double eps, double dP, long &lastpos)
 	   << setw(3) << n_iter
 	   << " err = " << setw(7) << dxabs << "/" << setw(7) << eps
 	   << setprecision(5)
-	   << "  x0 =" << setw(13) << x0;
+	   << "  x0 =" << setw(13) << x0 << endl;
     }
   } while ((dxabs >= eps) && (n_iter <= imax));
 
@@ -736,9 +731,11 @@ bool Cell_getCOD(long imax, double eps, double dP, long &lastpos)
     cout << scientific << setprecision(5)
 	 << " x0=" << setw(13) << x0 << endl;
     cout << scientific << setprecision(5)
-	 << "  x=" << setw(13) << map.cst();
+	 << "  x=" << setw(13) << map.cst() << endl;
   }
 
+  danot_(no);
+  
   return status.codflag;
 }
 
@@ -826,7 +823,7 @@ void Cell_Init(void)
   }
 
   /* Computes s-location of each element in the structure */
-  Stotal = 0.0;
+  Stotal = 0e0;
   for (i = 0; i <= globval.Cell_nLoc; i++) {
     Stotal += Cell[i].Elem.PL; Cell[i].S = Stotal;
   }

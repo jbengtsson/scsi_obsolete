@@ -160,7 +160,7 @@ operator<<(basic_ostream<CharT, Traits> &os, const ss_vect<double> &a)
   s.flags(os.flags()); s.imbue(os.getloc());
   for (i = 0; i < 6; i++)
     s << setprecision(os.precision()) << setw(os.width()) << a[i];
-  s << endl;
+//   s << endl;
   return os << s.str();
 }
 

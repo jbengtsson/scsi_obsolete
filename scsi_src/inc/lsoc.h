@@ -8,6 +8,11 @@
 
 */
 
+extern int                n_bpm_[2], n_corr_[2];
+extern long unsigned int  *bpms_[2], *corrs_[2];
+
+void zero_trims(void);
+
 void prt_gcmat(const int plane);
 
 void gcmat(const int plane);
@@ -18,10 +23,13 @@ void gcmat(const int n_bpm, const long int bpms[],
 
 void gcmat(const int bpm, const int corr, const int plane);
 
-void gcmat1(const int bpm, const int corr, const int plane);
+void lsoc(const int plane);
 
-void lsoc(const int niter, const int plane);
+void gtcmat(const int plane);
 
-void lsoc(const int niter, const int bpm, const int corr, const int plane);
+void gtcmat(const int n_bpm, const long int bpms[],
+           const int n_corr, const long int corrs[], const int plane,
+           const bool svd);
 
-void lsoc1(const int niter, const int bpm, const int corr, const int plane);
+void lstc(const int plane, const long int lastpos);
+

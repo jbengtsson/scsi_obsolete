@@ -516,7 +516,7 @@ bool InvMat2(double a[4][4])
 				}
     ++(ipiv[icol]);
     if (irow != icol) {
-      for (l=0;l<=n;l++) SWAP(a[irow][l],a[icol][l])
+      for (l=0;l<n;l++) SWAP(a[irow][l],a[icol][l])
 			   //~ for (l=0;l<=n;l++) SWAP(b[irow][l],b[icol][l])
 			   }
     indxr[i]=irow;

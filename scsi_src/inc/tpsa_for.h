@@ -48,8 +48,10 @@ extern "C" {
   void idprset_(const int &);
   void exp1d_(const int &, const int &, int &,
 	      const double &, const int &);
+  void daflo_(const int [], const int &, int &);
   void expnd2_(const int &, const int [], int [],
 	       const double &, const int &);
+  void daflod_(const int [], const int [], int []);
   void etinv_(const int [], int []);
   void etpin_(const int [], int [], const int []);
   void etcct_(const int [], const int [], int []);

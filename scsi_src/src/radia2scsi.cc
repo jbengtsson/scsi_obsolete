@@ -56,13 +56,7 @@ void splint(const double xa[], const U ya[], const U y2a[],
       klo = k;
   }
   h = xa[khi]-xa[klo];
-  if (h == 0.0) /*Orginal
-	nrerror("Bad xa input to routine splint");*/
-	{
-		printf("Bad xa input to routine splint");
-		exit(-1);
-	}
-	
+  if (h == 0.0) nrerror("Bad xa input to routine splint");
   a = (xa[khi]-x)/h; b = (x-xa[klo])/h;
   y = a*ya[klo]+b*ya[khi]+((a*a*a-a)*y2a[klo]+(b*b*b-b)*y2a[khi])*(h*h)/6.0;
 }
@@ -116,6 +110,8 @@ void Read_IDfile(char *fic_radia, double &L, int &nx, int &nz,
   
   printf("\n");
   printf("Reading ID filename %s \n", fic_radia);
+  printf("E      = %6.3f GeV\n", globval.Energy);
+  printf("(Brho) = %6.3f\n", Brho);
   
   /* first line */
   fscanf(fi, "%[^\n]\n", dummy); /* Read a full line */
@@ -217,9 +213,9 @@ void Read_IDfile(char *fic_radia, double &L, int &nx, int &nz,
       fscanf(fi, "%*f");
       for (j = 0; j < nx; j++) {
 	fscanf(fi, "%lf", &B2[i][j]);
-	B2[i][j] /= sqr(Brho);
+	B2[i][j] /= L*sqr(Brho);
 	if (fabs(B2[i][j]) < ZERO_RADIA)
-	  B2[i][j] = 0.0;
+	  B2[i][j] = 0e0;
 	if (traceID) printf("%+12.8lf ", B2[i][j]);
       }
       fscanf(fi, "\n");
@@ -302,6 +298,7 @@ void LinearInterpolation2(T &X, T &Z, T &TX, T &TZ, T &B2,
   U = (X - WITH->tabx[ix])/xstep; T1 = -(Z - WITH->tabz[iz])/zstep;
   
   if (order == 1) { // first order kick map interpolation
+    if (traceID) printf("first order kick map interpolation\n");
     if (ix >= 0 && iz >= 0) {
       THX = (1.0-U)*(1.0-T1)*WITH->thetax1[iz][ix]
 	    + U*(1.0-T1)*WITH->thetax1[iz][ix+1]
@@ -333,6 +330,7 @@ void LinearInterpolation2(T &X, T &Z, T &TX, T &TZ, T &B2,
   }
   
   if (order == 2) { // second order kick map interpolation
+    if (traceID) printf("second order kick map interpolation\n");
     if (ix >= 0 && iz >= 0) {
       THX =
 	(1.0-U)*(1.0-T1)*WITH->thetax[iz][ix]
@@ -369,6 +367,10 @@ void LinearInterpolation2(T &X, T &Z, T &TX, T &TZ, T &B2,
 	     is_double<T>::cst(THZ),
 	     WITH->thetaz[iz][ix], WITH->thetaz[iz][ix+1],
 	     WITH->thetaz[iz+1][ix], WITH->thetaz[iz+1][ix+1]);
+      printf("B2 = % lf 11= % lf 12= %lf 21 = %lf 22 =%lf \n",
+	     is_double<T>::cst(THZ),
+	     WITH->B2[iz][ix], WITH->B2[iz][ix+1],
+	     WITH->B2[iz+1][ix],WITH->B2[iz+1][ix+1]);
     }
   }
   TX = THX; TZ = THZ;

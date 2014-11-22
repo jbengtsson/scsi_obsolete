@@ -10,8 +10,6 @@
 
 #include "scsi_lib.h"
 
-#include "gslport.cc"
-
 #include "field.cc"
 
 #if NO == 1
@@ -98,9 +96,9 @@ template void radiate(ss_vect<double> &, const double, const double,
 template void radiate(ss_vect<tps> &, const double, const double,
 		      const tps []);
 
-template void radiate_ID(ss_vect<double> &, const double, const double);
+template void radiate_ID(ss_vect<double> &, const double, const double &);
 
-template void radiate_ID(ss_vect<tps> &, const double, const tps);
+template void radiate_ID(ss_vect<tps> &, const double, const tps &);
 
 template void Drift(double, ss_vect<double> &);
 
@@ -110,9 +108,9 @@ template void bend_fringe(double, ss_vect<double> &);
 
 template void bend_fringe(double, ss_vect<tps> &);
 
-template static void EdgeFocus(double, double, double, ss_vect<double> &);
+template void EdgeFocus(double, double, double, ss_vect<double> &);
 
-template static void EdgeFocus(double, double, double, ss_vect<tps> &);
+template void EdgeFocus(double, double, double, ss_vect<tps> &);
 
 template void quad_fringe(double, ss_vect<double> &);
 

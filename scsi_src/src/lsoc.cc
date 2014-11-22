@@ -9,15 +9,24 @@
 */
 
 
-bool               first_h = true, first_v = true;
-int                n_bpm_[2], n_corr_[2];
-long unsigned int  *bpms_[2], *corrs_[2];
-double             *w_lsoc[2], **A_lsoc[2], **U_lsoc[2], **V_lsoc[2];
+static bool               first_h[] = {true, true}, first_v[] = {true, true};
+       int                n_bpm_[2], n_corr_[2];
+       long unsigned int  *bpms_[2], *corrs_[2];
+static double             *w_lsoc[2], **A_lsoc[2], **U_lsoc[2], **V_lsoc[2];
+static double             *w_lstc[2], **A_lstc[2], **U_lstc[2], **V_lstc[2];
 
-//GSL add
-gsl_vector		   *vw_lsoc[2], *S;
-gsl_matrix         *mA_lsoc[2], *mU_lsoc[2], *mV_lsoc[2];
-//end GSL add
+
+void zero_trims(void)
+{
+  int       j, k;
+  long int  loc;
+
+  for (k = 0; k < 2; k++)
+    for (j = 1; j <= n_corr_[k]; j++) {
+      loc = corrs_[k][j];
+      set_bn_design_elem(Cell[loc].Fnum, Cell[loc].Knum, Dip, 0.0, 0.0);
+    }
+}
 
 
 void prt_gcmat(const int plane)
@@ -50,26 +59,26 @@ void prt_gcmat(const int plane)
   fprintf(outf, "# A[%d][%d] = \n", n_bpm_[k], n_corr_[k]);
   for (i = 1; i <= n_bpm_[k]; i++) {
     for (j = 1; j <= n_corr_[k]; j++)
-      fprintf(outf, "% .3e ", A_lsoc[k][i][j]);
+      fprintf(outf, "% .13e ", A_lsoc[k][i][j]);
     fprintf(outf, "\n");
   }
 
   fprintf(outf, "# U[%d][%d] = \n", n_bpm_[k], n_corr_[k]);
   for (i = 1; i <= n_bpm_[k]; i++) {
     for (j = 1; j <= n_corr_[k]; j++)
-      fprintf(outf, "% .3e ", U_lsoc[k][i][j]);
+      fprintf(outf, "% .13e ", U_lsoc[k][i][j]);
     fprintf(outf, "\n");
   }
 
   fprintf(outf, "# w[%d]    = \n", n_corr_[k]);
   for (j = 1; j <= n_corr_[k]; j++)
-    fprintf(outf, "% .3e ", w_lsoc[k][j]);
+    fprintf(outf, "% .13e ", w_lsoc[k][j]);
   fprintf(outf, "\n");
   fprintf(outf, "# V[%d][%d] = \n", n_bpm_[k], n_corr_[k]);
 
   for (i = 1; i <= n_corr_[k]; i++) {
     for (j = 1; j <= n_corr_[k]; j++)
-      fprintf(outf, "% .3e ", V_lsoc[k][i][j]);
+      fprintf(outf, "% .13e ", V_lsoc[k][i][j]);
     fprintf(outf, "\n");
   }
 
@@ -79,7 +88,7 @@ void prt_gcmat(const int plane)
 
 void gcmat(const int plane)
 {
-  /* Get correlation matrix
+  /* Get orbit response matrix
 
                 -----------
               \/beta  beta
@@ -112,10 +121,7 @@ void gcmat(const int plane)
     for (j = 1; j <= n_corr_[k]; j++)
       U_lsoc[k][i][j] = A_lsoc[k][i][j];
 
-  /*Orginal
   dsvdcmp(U_lsoc[k], n_bpm_[k], n_corr_[k], w_lsoc[k], V_lsoc[k]);
-  */
-  gsl_linalg_SV_decomp (mU_lsoc[k], mV_lsoc[k], S, vw_lsoc[k]);
 
   printf("\n");
   printf("gcmat singular values:\n");
@@ -142,41 +148,19 @@ void gcmat(const int n_bpm, const long int bpms[],
 
   k = plane - 1;
 
-  first = (plane == 1)? first_h : first_v;
+  first = (plane == 1)? first_h[0] : first_v[0];
   if (first) {
     if (plane == 1)
-      first_h = false;
+      first_h[0] = false;
     else
-      first_v = false;
+      first_v[0] = false;
 
-	/*Orginal
     bpms_[k] = lvector(1, n_bpm); corrs_[k] = lvector(1, n_corr);
-	*/
-	
-	//GSL add
-	bpms_[k] = gslport_lvector(1, n_bpm);
-	corrs_[k] = gslport_lvector(1, n_corr);
-	//end GSL add
 
-	/*Orginal
     A_lsoc[k] = dmatrix(1, n_bpm, 1, n_corr);
     U_lsoc[k] = dmatrix(1, n_bpm, 1, n_corr);
     w_lsoc[k] = dvector(1, n_corr);
     V_lsoc[k] = dmatrix(1, n_corr, 1, n_corr);
-	*/
-	
-	//GSL add
-	mA_lsoc[k] = gsl_matrix_alloc(n_bpm, n_corr);
-	GSL2NRDM2(dmA_lsoc, mA_lsoc[k], A_lsoc[k],0);
-    mU_lsoc[k] = gsl_matrix_alloc(n_bpm, n_corr);	
-	GSL2NRDM2(dmU_lsoc, mU_lsoc[k], U_lsoc[k],0);
-	vw_lsoc[k] = gsl_vector_alloc(n_corr);
-	GSL2NRDV2(vw_lsoc[k],w_lsoc[k]);
-    mV_lsoc[k] = gsl_matrix_alloc(n_corr, n_corr);	
-	GSL2NRDM2(dmAV_lsoc, mV_lsoc[k], V_lsoc[k],0);
-	
-	S = gsl_vector_alloc(n_corr);
-	//end GSL add
   }
 
   for (i = 1; i <= n_bpm; i++)
@@ -209,218 +193,166 @@ void gcmat(const int bpm, const int corr, const int plane)
 }
 
 
-void gcmat1(const int bpm, const int corr, const int plane)
+void lsoc(const int plane)
 {
-  /* Get correlation matrix
+  int       j, k;
+  long int  loc;
+  double    *b, *x;
+
+  k = plane - 1;
+
+  b = dvector(1, n_bpm_[k]); x = dvector(1, n_corr_[k]);
+
+  for (j = 1; j <= n_bpm_[k]; j++) {
+    loc = bpms_[k][j];
+    b[j] = -Cell[loc].BeamPos[2*k] + Cell[loc].dS[k];
+  }
+      
+  dsvbksb(U_lsoc[k], w_lsoc[k], V_lsoc[k], n_bpm_[k], n_corr_[k], b, x);
+
+  for (j = 1; j <= n_corr_[k]; j++) {
+    loc = corrs_[k][j];
+    if (plane == 1)
+      set_dbnL_design_elem(Cell[loc].Fnum, Cell[loc].Knum, Dip, -x[j], 0.0);
+    else
+      set_dbnL_design_elem(Cell[loc].Fnum, Cell[loc].Knum, Dip, 0.0, x[j]);
+  }
+
+  free_dvector(b, 1, n_bpm_[k]); free_dvector(x, 1, n_corr_[k]);
+}
+
+
+void gtcmat(const int plane)
+{
+  /* Get trajectory response matrix
 
                 -----------
-              \/beta  beta
-                    i     j
-        A   = ------------- cos(nu pi - 2 pi|nu  - nu |)
-         ij   2 sin(pi nu)                     i     j
+        A   = \/beta  beta  sin(2 pi(nu  - nu ))
+         ij         i     j            i     j
 
   */
 
-  bool      first;
   int       i, j, k;
-  long int  loc;
-  double    nu, betai, betaj, nui, nuj, spiq;
+  long int  loc_bpm, loc_corr;
+  double    betai, betaj, nui, nuj;
 
   const double  eps = 1e-10;
 
-  k = plane - 1; n_bpm_[k] = GetnKid(bpm); n_corr_[k] = GetnKid(corr);
-
-  first = (plane == 1)? first_h : first_v;
-  if (first) {
-    if (plane == 1)
-      first_h = false;
-    else
-      first_v = false;
-	  
-	/*Original
-    A_lsoc[k] = dmatrix(1, n_bpm_[k], 1, n_corr_[k]);
-    U_lsoc[k] = dmatrix(1, n_bpm_[k], 1, n_corr_[k]);
-    w_lsoc[k] = dvector(1, n_corr_[k]);
-    V_lsoc[k] = dmatrix(1, n_corr_[k], 1, n_corr_[k]);
-	*/
-	
-	//GSL add
-	mA_lsoc[k] = gsl_matrix_alloc(n_bpm_[k], n_corr_[k]);
-	GSL2NRDM2(dmA_lsoc, mA_lsoc[k], A_lsoc[k],0);
-    mU_lsoc[k] = gsl_matrix_alloc(n_bpm_[k], n_corr_[k]);	
-	GSL2NRDM2(dmU_lsoc, mU_lsoc[k], U_lsoc[k],0);
-	vw_lsoc[k] = gsl_vector_alloc(n_corr_[k]);
-	GSL2NRDV2(vw_lsoc[k],w_lsoc[k]);
-    mV_lsoc[k] = gsl_matrix_alloc(n_corr_[k], n_corr_[k]);	
-	GSL2NRDM2(dmAV_lsoc, mV_lsoc[k], V_lsoc[k],0);
-	
-	S = gsl_vector_alloc(n_corr_[k]);
-	//end GSL add
-  }
-
-  nu = globval.TotalTune[k]; spiq = sin(M_PI*nu);
+  k = plane - 1;
 
   for (i = 1; i <= n_bpm_[k]; i++) {
-    loc = Elem_GetPos(bpm, i);
-    betai = Cell[loc].Beta[k]; nui = Cell[loc].Nu[k];
+    loc_bpm = bpms_[k][i];
+    betai = Cell[loc_bpm].Beta[k]; nui = Cell[loc_bpm].Nu[k];
     for (j = 1; j <= n_corr_[k]; j++) {
-      loc = Elem_GetPos(corr, j);
-      betaj = Cell[loc].Beta[k]; nuj = Cell[loc].Nu[k];
-      A_lsoc[k][i][j] =
-	sqrt(betai*betaj)/(2.0*spiq)*cos(nu*M_PI-fabs(2.0*M_PI*(nui-nuj)));
+      loc_corr = corrs_[k][j];
+      betaj = Cell[loc_corr].Beta[k]; nuj = Cell[loc_corr].Nu[k];
+      if (loc_bpm > loc_corr)
+	A_lstc[k][i][j] = sqrt(betai*betaj)*sin(2.0*M_PI*(nui-nuj));
+      else
+	A_lstc[k][i][j] = 0e0;
     }
   }
 
   for (i = 1; i <= n_bpm_[k]; i++)
     for (j = 1; j <= n_corr_[k]; j++)
-      U_lsoc[k][i][j] = A_lsoc[k][i][j];
+      U_lstc[k][i][j] = A_lstc[k][i][j];
 
-  /*Orgianl
-  dsvdcmp(U_lsoc[k], n_bpm_[k], n_corr_[k], w_lsoc[k], V_lsoc[k]);
-  */
-  
-  //GSL add
-  gsl_linalg_SV_decomp (mU_lsoc[k], mV_lsoc[k], S, vw_lsoc[k]);
-  //end GSL add
-  
-  for (j = 1; j <= n_corr_[k]; j++)
-    if (w_lsoc[k][j] < eps) {
-      printf("gcmat: singular beam response matrix"
-	     " %12.3e, plane = %d, j = %d\n", w_lsoc[k][j], plane, j);
-      prt_gcmat(plane);
-      exit_(1);
+  dsvdcmp(U_lstc[k], n_bpm_[k], n_corr_[k], w_lstc[k], V_lstc[k]);
+
+  printf("\n");
+  printf("gcmat singular values:\n");
+  for (j = 1; j <= n_corr_[k]; j++) {
+    printf("%11.3e", w_lstc[k][j]);
+    if (w_lstc[k][j] < eps) {
+      w_lstc[k][j] = 0.0;
+      printf(" (zeroed)");
     }
+    if (j % 5 == 0) printf("\n");
+  }
+  if (n_corr_[k] % 5 != 0) printf("\n");
+
+  if (trace) prt_gcmat(plane);
 }
 
 
-void lsoc(const int niter, const int plane)
+void gtcmat(const int n_bpm, const long int bpms[],
+	    const int n_corr, const long int corrs[], const int plane,
+	    const bool svd)
 {
-  int       i, j, k;
-  long int  loc;
-  double    *b, *x;
-  
-  //GSL add
-  gsl_vector *vb;
-  gsl_vector *vx;
-  //end GSL add
+  bool  first;
+  int   i, k;
 
   k = plane - 1;
 
-  /*Orginal
-  b = dvector(1, n_bpm_[k]); x = dvector(1, n_corr_[k]);
-  */
-  
-  //GSL add
-  vb = gsl_vector_alloc(n_bpm_[k]);
-  vx = gsl_vector_alloc(n_corr_[k]);
-  GSL2NRDV2(vb, b);
-  GSL2NRDV2(vx, x);
-  //end GSL add
+  first = (plane == 1)? first_h[1] : first_v[1];
+  if (first) {
+    if (plane == 1)
+      first_h[1] = false;
+    else
+      first_v[1] = false;
 
-  for (i = 1; i <= niter; i++) {
-    for (j = 1; j <= n_bpm_[k]; j++) {
-      loc = bpms_[k][j];
+    bpms_[k] = lvector(1, n_bpm); corrs_[k] = lvector(1, n_corr);
+
+    A_lstc[k] = dmatrix(1, n_bpm, 1, n_corr);
+    U_lstc[k] = dmatrix(1, n_bpm, 1, n_corr);
+    w_lstc[k] = dvector(1, n_corr);
+    V_lstc[k] = dmatrix(1, n_corr, 1, n_corr);
+  }
+
+  for (i = 1; i <= n_bpm; i++)
+    bpms_[k][i] = bpms[i-1];
+
+  for (i = 1; i <= n_corr; i++)
+    corrs_[k][i] = corrs[i-1];
+
+  n_bpm_[k] = n_bpm; n_corr_[k] = n_corr;
+
+  if (svd) gtcmat(plane);
+}
+
+
+void lstc(const int plane, const long int lastpos)
+{
+  int       j, k;
+  long int  loc;
+  double    *b, *x;
+
+  k = plane - 1;
+
+  b = dvector(1, n_bpm_[k]); x = dvector(1, n_corr_[k]);
+
+  for (j = 1; j <= n_bpm_[k]; j++) {
+    loc = bpms_[k][j];
+    if (loc < lastpos)
       b[j] = -Cell[loc].BeamPos[2*k] + Cell[loc].dS[k];
-    }
+    else
+      b[j] = 0e0;
+
+    if (trace) cout << scientific << setprecision(5)
+		    << "b[" << setw(3) << j << "] = "
+		    << setw(12) << b[j] << endl;
+  }
       
-	/*Orginal
-    dsvbksb(U_lsoc[k], w_lsoc[k], V_lsoc[k], n_bpm_[k], n_corr_[k], b, x);
-	*/
-	
-	//GSL add
-	gsl_vector *vs = gsl_vector_alloc(n_corr_[k]);
-	gsl_vector *work = gsl_vector_alloc(n_corr_[k]);
-	gsl_linalg_SV_decomp (mU_lsoc[k], mV_lsoc[k], vs, work);
-	gsl_linalg_SV_solve(mU_lsoc[k], mV_lsoc[k],vs,vb,vx);
-	gsl_vector_free(vs);
-	gsl_vector_free(work);
-	//end GSL add
+  dsvbksb(U_lstc[k], w_lstc[k], V_lstc[k], n_bpm_[k], n_corr_[k], b, x);
 
-    for (j = 1; j <= n_corr_[k]; j++) {
-      loc = corrs_[k][j];
-      if (plane == 1)
-	set_dbnL_design_elem(Cell[loc].Fnum, Cell[loc].Knum, Dip, -x[j], 0.0);
-      else
-        set_dbnL_design_elem(Cell[loc].Fnum, Cell[loc].Knum, Dip, 0.0, x[j]);
+  for (j = 1; j <= n_corr_[k]; j++) {
+    loc = corrs_[k][j];
+    if (plane == 1) {
+      if (trace) cout << scientific << setprecision(5)
+		      << "(b_1L)[" << setw(3) << j << "] = "
+		      << setw(12)<< -x[j] << endl;
+
+      set_dbnL_design_elem(Cell[loc].Fnum, Cell[loc].Knum, Dip,
+			   -x[j], 0.0);
+    } else {
+      if (trace) cout << scientific << setprecision(5)
+		      << "(a_1L)[" << setw(3) << j << "] = "
+		      << setw(12)<< x[j] << endl;
+
+      set_dbnL_design_elem(Cell[loc].Fnum, Cell[loc].Knum, Dip,
+			   0.0, x[j]);
     }
   }
 
-  /*Orginal
   free_dvector(b, 1, n_bpm_[k]); free_dvector(x, 1, n_corr_[k]);
-  */
-  
-  //GSL add
-  gsl_vector_free(vb);
-  gsl_vector_free(vx);
-  //end GSL add
-  
-}
-
-
-void lsoc(const int niter, const int bpm, const int corr, const int plane)
-{
-
-  lsoc(niter, plane);
-}
-
-
-void lsoc1(const int niter, const int bpm, const int corr, const int plane)
-{
-  int       i, j, k;
-  long int  loc;
-  double    *b, *x;
-  
-   //GSL add
-  gsl_vector *vb;
-  gsl_vector *vx;
-  //end GSL add
-
-  k = plane - 1;
-
-  /*Orginal
-  b = dvector(1, n_bpm_[k]); x = dvector(1, n_corr_[k]);
-  */
-  
-  //GSL add
-  vb = gsl_vector_alloc(n_bpm_[k]);
-  vx = gsl_vector_alloc(n_corr_[k]);
-  GSL2NRDV2(vb, b);
-  GSL2NRDV2(vx, x);
-  //end GSL add
-
-  for (i = 1; i <= niter; i++) {
-    for (j = 1; j <= n_bpm_[k]; j++) {
-      loc = Elem_GetPos(bpm, j);
-      b[j] = -Cell[loc].BeamPos[2*k] + Cell[loc].dS[k];
-    }
-	
-    /*Orginal
-    dsvbksb(U_lsoc[k], w_lsoc[k], V_lsoc[k], n_bpm_[k], n_corr_[k], b, x);
-	*/
-	
-	//GSL add
-	gsl_vector *vs = gsl_vector_alloc(n_corr_[k]);
-	gsl_vector *work = gsl_vector_alloc(n_corr_[k]);
-	gsl_linalg_SV_decomp (mU_lsoc[k], mV_lsoc[k], vs, work);
-	gsl_linalg_SV_solve(mU_lsoc[k], mV_lsoc[k],vs,vb,vx);
-	gsl_vector_free(vs);
-	gsl_vector_free(work);
-	//end GSL add
-
-    for (j = 1; j <= n_corr_[k]; j++)
-      if (plane == 1)
-        SetdKpar(corr, j, Dip, -x[j]);
-      else
-        SetdKpar(corr, j, -Dip, x[j]);
-  }
-
-  /*Orginal
-  free_dvector(b, 1, n_bpm_[k]); free_dvector(x, 1, n_corr_[k]);
-  */
-  
-  //GSL add
-  gsl_vector_free(vb);
-  gsl_vector_free(vx);
-  //end GSL add
-  
 }

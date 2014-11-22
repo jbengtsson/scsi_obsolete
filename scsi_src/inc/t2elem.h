@@ -8,6 +8,8 @@ extern bool    sympl;
 extern int     FieldMap_filetype;
 extern double  cl_rad, q_fluct, I2, I4, I5;
 
+double det_mat(const int n, double **A);
+
 template<typename T>
 T get_p_s(const ss_vect<T> &);
 
@@ -47,7 +49,7 @@ template<typename T>
 void bend_fringe(double hb, ss_vect<T> &x);
 
 template<typename T>
-static void EdgeFocus(double irho, double phi, double gap, ss_vect<T> &x);
+void EdgeFocus(double irho, double phi, double gap, ss_vect<T> &x);
 
 template<typename T>
 void quad_fringe(double b2, ss_vect<T> &x);
