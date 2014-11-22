@@ -298,6 +298,7 @@
       implicit none
       integer i,ie,iv,ndim,ndim2,nt,ntt
 ! ROUTINES USING THE MAP IN AD-FORM
+! Note, no must be set to nomax
       parameter (ndim=3)
       parameter (ndim2=6)
       parameter (ntt=40)
