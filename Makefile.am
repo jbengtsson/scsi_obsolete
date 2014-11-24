@@ -1,1 +1,0 @@
-SUBDIRS = scsi_src
