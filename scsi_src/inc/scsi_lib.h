@@ -61,8 +61,6 @@ using namespace std;
 #include "ety.h"
 #include "eigenv.h"
 
-#include "num_rec.h"
-
 #include "radia2scsi.h"
 #include "pascalio.h"
 

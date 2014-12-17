@@ -123,20 +123,32 @@ void identity_mat(const int n, double** A)
 }
 
 
+double det_mat_gsl(const int n, gsl_matrix *tmpA)
+{
+  double det;
+  int signum;
+  gsl_permutation *p = gsl_permutation_alloc(n);
+
+  gsl_linalg_LU_decomp(tmpA , p , &signum);
+  det = gsl_linalg_LU_det(tmpA , signum);
+  gsl_permutation_free(p);
+  gsl_matrix_free(tmpA);
+   
+  return det;
+}
+
+
 double det_mat(const int n, double **A)
 {
-  int     i, *indx;
-  double  **U, d;
-
-  indx = ivector(1, n); U = dmatrix(1, n, 1, n);
-
-  dmcopy(A, n, n, U); dludcmp(U, n, indx, &d);
-
-  for (i = 1; i <= n; i++)
-    d *= U[i][i];
-
-  free_dmatrix(U, 1, n, 1, n); free_ivector(indx, 1, n);
-
+  gsl_matrix *tmpA = gsl_matrix_alloc(n,n);
+  int ii,jj;
+  for (ii=1; ii <=n; ii++) {
+    for (jj=1; jj <=n; jj++){
+      gsl_matrix_set (tmpA, ii-1, jj-1, A[ii][jj]);
+    }
+  }
+	
+  double d = det_mat_gsl(n,tmpA);
   return d;
 }
 
@@ -152,6 +164,19 @@ double trace_mat(const int n, double **A)
 
   return d;
 }
+
+double trace_mat_gsl(const int n, gsl_matrix *m)
+{
+  int     i;
+  double  d;
+
+  d = 0.0;
+  for (i = 0; i < n; i++)
+    d += gsl_matrix_get(m, i, i);
+
+  return d;
+}
+
 
 // partial template-class specialization
 // primary version
@@ -3157,7 +3182,11 @@ void splint_(const double xa[], const U ya[], const U y2a[],
     else klo = k;
   }
   h = xa[khi]-xa[klo];
-  if (h == 0.0) nrerror("Bad xa input to routine splint_");
+  if (h == 0.0) {
+    printf("Bad xa input to routine splint_\n");
+    exit(1);	
+  }
+
   a = (xa[khi]-x)/h;
   b = (x-xa[klo])/h;
   y = a*ya[klo]+b*ya[khi]+((a*a*a-a)*y2a[klo]+(b*b*b-b)*y2a[khi])*(h*h)/6.0;
@@ -3258,20 +3287,26 @@ void get_B_DIAMOND(const char *filename, FieldMapType *FM)
 
   FM->n[Y_] = 2*ny - 1;
 
-  FM->x[X_] = dvector(1, FM->n[X_]); FM->x[Y_] = dvector(1, FM->n[Y_]);
-  FM->x[Z_] = dvector(1, FM->n[Z_]);
-    
-  FM->BoBrho[X_]  = df3tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  FM->BoBrho[Y_]  = df3tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  FM->BoBrho[Z_]  = df3tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  FM->BoBrho2[X_] = df3tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  FM->BoBrho2[Y_] = df3tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  FM->BoBrho2[Z_] = df3tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
+  FM->vx[X_] = gsl_vector_alloc(FM->n[X_]); 
+  GSL2NRDV2(FM->vx[X_],FM->x[X_]);
+  
+  FM->vx[Y_] = gsl_vector_alloc(FM->n[Y_]);
+  GSL2NRDV2(FM->vx[Y_],FM->x[Y_]);
+  
+  FM->vx[Z_] = gsl_vector_alloc(FM->n[Z_]);
+  GSL2NRDV2(FM->vx[Z_],FM->x[Z_]);
+ 
+  FM->BoBrho[X_]  = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
+  FM->BoBrho[Y_]  = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
+  FM->BoBrho[Z_]  = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
+  FM->BoBrho2[X_] = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
+  FM->BoBrho2[Y_] = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
+  FM->BoBrho2[Z_] = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
 
-  FM->AoBrho[X_]  = df3tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  FM->AoBrho[Y_]  = df3tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  FM->AoBrho2[X_] = df3tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  FM->AoBrho2[Y_] = df3tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
+  FM->AoBrho[X_]  = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
+  FM->AoBrho[Y_]  = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
+  FM->AoBrho2[X_] = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
+  FM->AoBrho2[Y_] = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
 
   for (i = 1; i <= 2; i++)
     inf.getline(line, max_str);
@@ -3421,20 +3456,26 @@ void get_B_NSLS_II(const char *filename, FieldMapType *FM)
 	 &x_min[Z_], &x_max[Z_], &FM->dx[Z_], &FM->n[Z_]);
   x_min[Z_] *= 1e-2; x_max[Z_] *= 1e-2; FM->dx[Z_] *= 1e-2;
 
-  FM->x[X_] = dvector(1, FM->n[X_]); FM->x[Y_] = dvector(1, FM->n[Y_]);
-  FM->x[Z_] = dvector(1, FM->n[Z_]);
-    
-  FM->BoBrho[X_]  = df3tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  FM->BoBrho[Y_]  = df3tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  FM->BoBrho[Z_]  = df3tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  FM->BoBrho2[X_] = df3tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  FM->BoBrho2[Y_] = df3tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  FM->BoBrho2[Z_] = df3tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
+  FM->vx[X_] = gsl_vector_alloc(FM->n[X_]); 
+  GSL2NRDV2(FM->vx[X_],FM->x[X_]);
+  
+  FM->vx[Y_] = gsl_vector_alloc(FM->n[Y_]);
+  GSL2NRDV2(FM->vx[Y_],FM->x[Y_]);
+  
+  FM->vx[Z_] = gsl_vector_alloc(FM->n[Z_]);
+  GSL2NRDV2(FM->vx[Z_],FM->x[Z_]);
 
-  FM->AoBrho[X_]  = df3tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  FM->AoBrho[Y_]  = df3tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  FM->AoBrho2[X_] = df3tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  FM->AoBrho2[Y_] = df3tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
+  FM->BoBrho[X_]  = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
+  FM->BoBrho[Y_]  = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
+  FM->BoBrho[Z_]  = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
+  FM->BoBrho2[X_] = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
+  FM->BoBrho2[Y_] = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
+  FM->BoBrho2[Z_] = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
+
+  FM->AoBrho[X_]  = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
+  FM->AoBrho[Y_]  = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
+  FM->AoBrho2[X_] = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
+  FM->AoBrho2[Y_] = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
 
   for (i = 1; i <= FM->n[X_]; i++)
     for (j = 1; j <= FM->n[Y_]; j++)
@@ -3548,20 +3589,26 @@ void get_B_Oleg1(const char *filename, FieldMapType *FM)
 	 &x_min[Z_], &x_max[Z_], &FM->dx[Z_], &FM->n[Z_]);
   FM->dx[Z_] *= 1e-3;
 
-  FM->x[X_] = dvector(1, FM->n[X_]); FM->x[Y_] = dvector(1, FM->n[Y_]);
-  FM->x[Z_] = dvector(1, FM->n[Z_]);
-    
-  FM->BoBrho[X_]  = df3tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  FM->BoBrho[Y_]  = df3tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  FM->BoBrho[Z_]  = df3tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  FM->BoBrho2[X_] = df3tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  FM->BoBrho2[Y_] = df3tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  FM->BoBrho2[Z_] = df3tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
+  FM->vx[X_] = gsl_vector_alloc(FM->n[X_]); 
+  GSL2NRDV2(FM->vx[X_],FM->x[X_]);
+  
+  FM->vx[Y_] = gsl_vector_alloc(FM->n[Y_]);
+  GSL2NRDV2(FM->vx[Y_],FM->x[Y_]);
+  
+  FM->vx[Z_] = gsl_vector_alloc(FM->n[Z_]);
+  GSL2NRDV2(FM->vx[Z_],FM->x[Z_]);
 
-  FM->AoBrho[X_]  = df3tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  FM->AoBrho[Y_]  = df3tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  FM->AoBrho2[X_] = df3tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  FM->AoBrho2[Y_] = df3tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
+  FM->BoBrho[X_]  = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
+  FM->BoBrho[Y_]  = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
+  FM->BoBrho[Z_]  = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
+  FM->BoBrho2[X_] = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
+  FM->BoBrho2[Y_] = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
+  FM->BoBrho2[Z_] = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
+
+  FM->AoBrho[X_]  = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
+  FM->AoBrho[Y_]  = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
+  FM->AoBrho2[X_] = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
+  FM->AoBrho2[Y_] = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
 
   for (n = 1; n <= FM->n[Z_]; n++)
     for (j = 1; j <= FM->n[Y_]; j++)
@@ -3684,20 +3731,26 @@ void get_B_Oleg2(const char *filename, FieldMapType *FM)
        << setw(10) << x_min[X_] << setw(10) << x_min[Y_]
        << setw(10) << x_min[Z_] << endl;
 
-  FM->x[X_] = dvector(1, FM->n[X_]); FM->x[Y_] = dvector(1, FM->n[Y_]);
-  FM->x[Z_] = dvector(1, FM->n[Z_]);
-    
-  FM->BoBrho[X_]  = df3tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  FM->BoBrho[Y_]  = df3tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  FM->BoBrho[Z_]  = df3tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  FM->BoBrho2[X_] = df3tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  FM->BoBrho2[Y_] = df3tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  FM->BoBrho2[Z_] = df3tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
+  FM->vx[X_] = gsl_vector_alloc(FM->n[X_]); 
+  GSL2NRDV2(FM->vx[X_],FM->x[X_]);
+  
+  FM->vx[Y_] = gsl_vector_alloc(FM->n[Y_]);
+  GSL2NRDV2(FM->vx[Y_],FM->x[Y_]);
+  
+  FM->vx[Z_] = gsl_vector_alloc(FM->n[Z_]);
+  GSL2NRDV2(FM->vx[Z_],FM->x[Z_]);
 
-  FM->AoBrho[X_]  = df3tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  FM->AoBrho[Y_]  = df3tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  FM->AoBrho2[X_] = df3tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  FM->AoBrho2[Y_] = df3tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
+  FM->BoBrho[X_]  = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
+  FM->BoBrho[Y_]  = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
+  FM->BoBrho[Z_]  = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
+  FM->BoBrho2[X_] = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
+  FM->BoBrho2[Y_] = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
+  FM->BoBrho2[Z_] = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
+
+  FM->AoBrho[X_]  = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
+  FM->AoBrho[Y_]  = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
+  FM->AoBrho2[X_] = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
+  FM->AoBrho2[Y_] = gslport_tensor(1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
 
   for (n = 1; n <= FM->n[Z_]; n++) {
     FM->x[Z_][n] = (n == 1)? x_min[Z_] : FM->x[Z_][n-1] + FM->dx[Z_];
@@ -3763,21 +3816,6 @@ void get_B_Oleg2(const char *filename, FieldMapType *FM)
 
   cout << "field map loaded: " << filename << endl;
 
-/*  free_dvector(FM->x[X_], 1, FM->n[X_]);
-  free_dvector(FM->x[Y_], 1, FM->n[Y_]);
-  free_dvector(FM->x[Z_], 1, FM->n[Z_]);
-    
-  free_df3tensor(FM->BoBrho[X_],  1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  free_df3tensor(FM->BoBrho[Y_],  1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  free_df3tensor(FM->BoBrho[Z_],  1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  free_df3tensor(FM->BoBrho2[X_], 1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  free_df3tensor(FM->BoBrho2[Y_], 1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  free_df3tensor(FM->BoBrho2[Z_], 1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-
-  free_df3tensor(FM->AoBrho[X_],  1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  free_df3tensor(FM->AoBrho[Y_],  1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  free_df3tensor(FM->AoBrho2[X_], 1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);
-  free_df3tensor(FM->AoBrho2[Y_], 1, FM->n[Z_], 1, FM->n[X_], 1, FM->n[Y_]);*/
 }
 
 

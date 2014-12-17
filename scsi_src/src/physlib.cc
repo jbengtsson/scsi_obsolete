@@ -1108,41 +1108,39 @@ void Sinfft(int n, double xr[])
 void sin_FFT(int n, double xr[])
 {
   /* DFT with sine window */
-  int     i;
-  double  *xi;
+  int    i;
+  double data_xi[2*n+1];
 
-  xi = dvector(1, 2*n);
-
-  for (i = 1; i <= n; i++) {
-    xi[2*i-1] = sin((double)i/n*M_PI)*xr[i-1]; xi[2*i] = 0.0;
+  for (i = 0;i < n;i++) {
+    data_xi[2*i] = sin((double)i/n*M_PI)*xr[i];
+    data_xi[2*i+1] = 0.0;
   }
-  dfour1(xi, (unsigned long)n, 1);
-  for (i = 1; i <= n; i++)
-    xr[i-1] = sqrt(pow(xi[2*i-1], 2)+pow(xi[2*i], 2))*2.0/n;
 
-  free_dvector(xi, 1, 2*n);
-}
+  gsl_fft_complex_radix2_forward(data_xi, 1, n);
+
+  for (i = 0; i < n; i++) {
+    xr[i] = sqrt(pow(data_xi[2*i],2)+pow(data_xi[2*i+1],2))*2.0/n;
+  }
+ }
 
 
 void sin_FFT(int n, double xr[], double xi[])
 {
   /* DFT with sine window */
-  int      i;
-  double  *xri;
+  int    i;
+  double data_xri[2*n+1];
 
-  xri = dvector(1, 2*n);
-
-  for (i = 1; i <= n; i++) {
-    xri[2*i-1] = sin((double)i/n*M_PI)*xr[i-1];
-    xri[2*i] = sin((double)i/n*M_PI)*xi[i-1];
-  }
-  dfour1(xri, (unsigned long)n, 1);
-  for (i = 1; i <= n; i++) {
-    xr[i-1] = sqrt(pow(xri[2*i-1], 2)+pow(xri[2*i], 2))*2.0/n;
-    xi[i-1] = atan2(xri[2*i], xri[2*i-1]);
+  for (i = 0; i < n;  i++) {
+    data_xri[2*i] = sin((double)i/n*M_PI)*xr[i];
+    data_xri[2*i+1] = sin((double)i/n*M_PI)*xi[i];
   }
 
-  free_dvector(xri, 1, 2*n);
+  gsl_fft_complex_radix2_forward(data_xri,1,n);
+
+  for (i = 0; i < n; i++) {
+    xr[i] = sqrt(pow(data_xri[2*i],2)+pow(data_xri[2*i],2))*2.0/n;
+    xr[i] = atan2(data_xri[2*i+1], data_xri[2*i]);
+  }
 }
 
 
@@ -2623,9 +2621,12 @@ void findcodS(double dP)
   int          dim;    // 4D or 6D tracking
   long         lastpos;
 
-  vcod = dvector(1, 6);
+  gsl_vector *vvcod;
       
-  // starting point
+  vvcod = gsl_vector_alloc(6);
+  GSL2NRDV2(vvcod,vcod);
+
+ // starting point
   for (k = 1; k <= 6; k++)
     vcod[k] = 0.0;  
   
@@ -2656,7 +2657,8 @@ void findcodS(double dP)
 	    x0[0], x0[1], x0[2], x0[3], x0[4], x0[5]);
     Cell_Pass(0, globval.Cell_nLoc, x0, lastpos);
   }
-  free_dvector(vcod,1,6);
+
+  gsl_vector_free(vvcod);
 }
 
 /****************************************************************************/
@@ -2931,12 +2933,23 @@ void Newton_RaphsonS(int ntrial, double x[], int n, double tolx)
   int    k, i, *indx;
   double  errx, d, *bet, *fvect, **alpha;
 
+  gsl_vector *vbet;
+  gsl_vector *vfvect;
+  gsl_vector *vx;
+  gsl_matrix *malpha;
+
   errx = 0.0;
-  // NR arrays start from 1 and not 0 !!!       
-  indx = ivector(1, n);
-  bet = dvector(1, n);
-  fvect = dvector(1, n);
-  alpha = dmatrix(1, n, 1, n);
+
+  vbet = gsl_vector_alloc(n);
+  GSL2NRDV2(vbet,bet);
+  
+  vfvect = gsl_vector_alloc(n);
+  GSL2NRDV2(vfvect,fvect);
+  
+  vx = gsl_vector_alloc(n);
+  
+  malpha = gsl_matrix_alloc(n,n);
+  GSL2NRDM2(dmalpha,malpha,alpha,0); 
 
   for (k = 1; k <= ntrial; k++) {      // loop over number of iterations
     // supply function values at x in fvect and Jacobian matrix in fjac
@@ -2948,8 +2961,16 @@ void Newton_RaphsonS(int ntrial, double x[], int n, double tolx)
     for (i = 1; i <= n; i++)
       bet[i] = x[i] - fvect[i];  // right side of linear equation
     // solve linear equations using LU decomposition using NR routines
-    dludcmp(alpha, n, indx, &d);
-    dlubksb(alpha, n, indx, bet);
+
+    int is;
+    gsl_permutation * p = gsl_permutation_alloc (n);
+    gsl_linalg_LU_decomp (malpha, p, &is);
+    gsl_linalg_LU_solve (malpha, p, vbet, vx);
+	 
+    gsl_vector_memcpy(vbet, vx);
+  
+    gsl_permutation_free(p);
+
     errx = 0.0;  // check root convergence
     for (i = 1; i <= n; i++) {    // update solution
       errx += fabs(bet[i]);
@@ -2968,8 +2989,10 @@ void Newton_RaphsonS(int ntrial, double x[], int n, double tolx)
   // check whever closed orbit found out
   if ((k >= ntrial) && (errx >= tolx * 100)) status.codflag = false;
 
-  free_dmatrix(alpha,1,n,1,n); free_dvector(bet,1,n); free_dvector(fvect,1,n);
-  free_ivector(indx,1,n);
+  gsl_matrix_free(malpha);
+  gsl_vector_free(vbet);
+  gsl_vector_free(vx);
+  gsl_vector_free(vfvect);
 }
 
 

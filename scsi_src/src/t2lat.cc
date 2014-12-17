@@ -3291,14 +3291,19 @@ static bool Lat_DealElement(FILE **fi_, FILE **fo_, long *cc_, long *ll_,
 
       // stuff for spline interpolation
       if (!WITH5->linear) {
-	WITH5->tx = dmatrix(1,WITH5->nz,1,WITH5->nx);
-	WITH5->tz = dmatrix(1,WITH5->nz,1,WITH5->nx);
+	WITH5->mtx = gsl_matrix_alloc(WITH5->nz,WITH5->nx); 
+	GSL2NRDM2(pmtx,WITH5->mtx,WITH5->tx,0);	
+	WITH5->mtz = gsl_matrix_alloc(WITH5->nz,WITH5->nx);
+	GSL2NRDM2(pmtz,WITH5->mtz,WITH5->tz,0);
 	WITH5->tab1 = (double *)malloc((WITH5->nx)*sizeof(double));
 	WITH5->tab2 = (double *)malloc((WITH5->nz)*sizeof(double));
-	WITH5->f2x = dmatrix(1,WITH5->nz,1,WITH5->nx);
-	WITH5->f2z = dmatrix(1,WITH5->nz,1,WITH5->nx);
+	WITH5->mf2x = gsl_matrix_alloc(WITH5->nz,WITH5->nx);
+	GSL2NRDM2(pmf2x,WITH5->mf2x,WITH5->f2x,0);
+	WITH5->mf2z = gsl_matrix_alloc(WITH5->nz,WITH5->nx);
+	GSL2NRDM2(pmf2z,WITH5->mf2z,WITH5->f2z,0);
 	Matrices4Spline(WITH5);
       }
+
       // to put somewhere
       //      /** Free memory **/
       //      free(tab1);
