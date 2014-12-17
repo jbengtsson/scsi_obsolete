@@ -81,6 +81,9 @@ double   **SkewRespMat, *VertCouple, *SkewStrengthCorr, *eta_y;
 double   *b, *w, **V, **U;
 double   disp_wave_y;
 
+gsl_matrix *mSkewRespMat, *mV, *mU;
+gsl_vector *vVertCouple, *vSkewStrengthCorr, *veta_y, *vb, *vw;
+
 // ID_corr global variables
 
 const int  n_b2_max    = 500;  // max no of quad corrector families
@@ -97,6 +100,9 @@ double        Nu_X, Nu_Y, Nu_X0, Nu_Y0;
 double        **A1, *Xsext, *Xsext0, *b2Ls_, *w1, **U1, **V1;
 double        *Xoct, *b4s, **Aoct;
 Vector2       dnu0, nu_0;
+
+gsl_matrix    *mA1, *mU1, *mV1;
+gsl_vector    *vXsext, *vXsext0, *vb2Ls_, *vw1;
 
 // for IBS
 int     i_, j_;
@@ -2431,7 +2437,9 @@ void FindSQ_SVDmat(double **SkewRespMat, double **U,
       U[i][j] = SkewRespMat[i][j];
 
   // prepare matrices for SVD
-  dsvdcmp(U, N_COUPLE, N_SKEW, w, V);
+  gsl_vector *work = gsl_vector_alloc(N_SKEW);
+  gsl_linalg_SV_decomp(mU, mV, vw, work);
+  gsl_vector_free(vw);
 
   // zero singular values
   printf("\n");
@@ -2460,15 +2468,39 @@ void FindMatrix(double **SkewRespMat, const double deta_y_max)
   double    **betaHC, **nuHC, **betaVC, **nuVC;
   FILE      *SkewMatFile, *fp;
 
+  gsl_vector *vetaSQ;
+  gsl_matrix *mbetaSQ, *mnuSQ, *mbetaBPM, *mnuBPM, *mbetaHC, *mnuHC, *mbetaVC;
+  gsl_matrix *mnuVC;
+
   const int     Xi = 1, Yi = 2;
   const double  pi = M_PI, twopi = 2.0*M_PI;
 
-
-  etaSQ = dvector(1, N_SKEW); betaSQ = dmatrix(1, N_SKEW, 1, 2);
-  nuSQ = dmatrix(1, N_SKEW, 1, 2);
-  betaBPM = dmatrix(1, N_BPM, 1, 2); nuBPM = dmatrix(1, N_BPM, 1, 2);
-  betaHC = dmatrix(1, N_HCOR, 1, 2); nuHC = dmatrix(1, N_HCOR, 1, 2);
-  betaVC = dmatrix(1, N_VCOR, 1, 2); nuVC = dmatrix(1, N_VCOR, 1, 2);
+  vetaSQ = gsl_vector_alloc(N_SKEW); 
+  GSL2NRDV2(vetaSQ, etaSQ);
+  
+  mbetaSQ = gsl_matrix_alloc(N_SKEW, 2);
+  GSL2NRDM2(pmbetaSQ, mbetaSQ, betaSQ, 0);
+  
+  mnuSQ = gsl_matrix_alloc(N_SKEW, 2);
+  GSL2NRDM2(pmnuSQ, mnuSQ, nuSQ, 0);
+  
+  mbetaBPM = gsl_matrix_alloc(N_BPM, 2);
+  GSL2NRDM2(pmbetaBPM, mbetaBPM, betaBPM, 0);
+  
+  mnuBPM = gsl_matrix_alloc(N_BPM, 2);
+  GSL2NRDM2(pmnuBPM, mnuBPM, nuBPM, 0);
+  
+  mbetaHC = gsl_matrix_alloc(N_HCOR, 2); 
+  GSL2NRDM2(pmbetaHC, mbetaHC, betaHC, 0);
+  
+  mnuHC = gsl_matrix_alloc(N_HCOR, 2);
+  GSL2NRDM2(pmnuHC, mnuHC, nuHC, 0);
+  
+  mbetaVC = gsl_matrix_alloc(N_VCOR, 2); 
+  GSL2NRDM2(pmbetaVC, mbetaVC, betaVC, 0);
+  
+  mnuVC = gsl_matrix_alloc(N_VCOR, 2);
+  GSL2NRDM2(pmnuVC, mnuVC, nuVC, 0);  
 
   nuX = globval.TotalTune[X_]; nuY = globval.TotalTune[Y_];
 
@@ -2564,11 +2596,15 @@ void FindMatrix(double **SkewRespMat, const double deta_y_max)
   }
   fclose(fp);
 
-  free_dvector(etaSQ, 1, N_SKEW); free_dmatrix(betaSQ, 1, N_SKEW, 1, 2);
-  free_dmatrix(nuSQ, 1, N_SKEW, 1, 2);
-  free_dmatrix(betaBPM, 1, N_BPM, 1, 2); free_dmatrix(nuBPM, 1, N_BPM, 1, 2);
-  free_dmatrix(betaHC, 1, N_HCOR, 1, 2); free_dmatrix(nuHC, 1, N_HCOR, 1, 2);
-  free_dmatrix(betaVC, 1, N_VCOR, 1, 2); free_dmatrix(nuVC, 1, N_VCOR, 1, 2);
+  gsl_vector_free(vetaSQ);
+  gsl_matrix_free(mbetaSQ);
+  gsl_matrix_free(mnuSQ);
+  gsl_matrix_free(mbetaBPM);
+  gsl_matrix_free(mnuBPM);
+  gsl_matrix_free(mbetaHC);
+  gsl_matrix_free(mnuHC);
+  gsl_matrix_free(mbetaVC);
+  gsl_matrix_free(mnuVC);
 } // FindMatrix
 
 
@@ -2608,12 +2644,29 @@ void ini_skew_cor(const double deta_y_max)
 
   N_COUPLE = N_BPM*(1+N_HCOR+N_VCOR);
 
-  SkewRespMat = dmatrix(1, N_COUPLE, 1, N_SKEW);
-  VertCouple = dvector(1, N_COUPLE);
-  SkewStrengthCorr = dvector(1, N_SKEW);
-  b = dvector(1, N_COUPLE); w = dvector(1, N_SKEW);
-  V = dmatrix(1, N_SKEW, 1, N_SKEW); U = dmatrix(1, N_COUPLE, 1, N_SKEW);
-  eta_y = dvector(1, N_BPM);
+  mSkewRespMat = gsl_matrix_alloc(N_COUPLE, N_SKEW);
+  GSL2NRDM2(dmSRM,mSkewRespMat,SkewRespMat,0);
+  
+  vVertCouple = gsl_vector_alloc(N_COUPLE);
+  GSL2NRDV2(vVertCouple, VertCouple);
+  
+  vSkewStrengthCorr = gsl_vector_alloc(N_SKEW);
+  GSL2NRDV2(vSkewStrengthCorr, SkewStrengthCorr);
+  
+  vb = gsl_vector_alloc(N_COUPLE);
+  GSL2NRDV2(vb, b);
+  
+  vw = gsl_vector_alloc(N_SKEW);
+  GSL2NRDV2(vw, w);
+  
+  mV = gsl_matrix_alloc(N_SKEW, N_SKEW); 
+  GSL2NRDM2(dmV,mV,V,0);
+  
+  mU = gsl_matrix_alloc(N_COUPLE, N_SKEW);
+  GSL2NRDM2(dmU,mU,U,0);
+  
+  veta_y = gsl_vector_alloc(N_BPM);
+  GSL2NRDV2(veta_y, eta_y);
 
   printf("\n");
   printf("Number of trims:                   horizontal = %d, vertical = %d\n",
@@ -2641,7 +2694,13 @@ void FindCoupVector(double *VertCouple)
   long      lastpos;
   double    *orbitP, *orbitN;
 
-  orbitP = dvector(1, N_BPM); orbitN = dvector(1, N_BPM);
+  gsl_vector *vorbitP, *vorbitN;
+
+  vorbitP = gsl_vector_alloc(N_BPM);
+  GSL2NRDV2(vorbitP, orbitP);
+  
+  vorbitN = gsl_vector_alloc(N_BPM);
+  GSL2NRDV2(vorbitN, orbitN);
 
   // Find vertical dispersion
   Cell_Geteta(0, globval.Cell_nLoc, true, 0e0);
@@ -2695,7 +2754,8 @@ void FindCoupVector(double *VertCouple)
 	VHweight*(orbitP[i]-orbitN[i])*0.5/kick;
   } // vcorr cycle
 
-  free_dvector(orbitP, 1, N_BPM); free_dvector(orbitN, 1, N_BPM);
+  gsl_vector_free(vorbitP);
+  gsl_vector_free(vorbitN);
 } // FindCoupVector
 
 
@@ -2772,7 +2832,7 @@ void corr_eps_y(void)
     for (j = N_BPM+1; j <= N_COUPLE; j++)
       b[j] = -VertCouple[j];
 
-    dsvbksb(U, w, V, N_COUPLE, N_SKEW, b, SkewStrengthCorr);
+    gsl_linalg_SV_solve(mU,mV,vw,vb,vSkewStrengthCorr);
 
     printf("Applying correction\n");
     // Add correction
@@ -2913,7 +2973,9 @@ void SVD(const int m, const int n, double **M, double beta_nu[],
       for (j = 1; j <= n; j++)
 	U1[i][j] = M[i][j];
 
-    dsvdcmp(U1, m, n, w1, V1);
+    gsl_vector *work = gsl_vector_alloc(n);
+    gsl_linalg_SV_decomp(mU1,mV1,vw1, work);
+    gsl_vector_free(work);
 
     if (trace) { 
       printf("\n");
@@ -2932,7 +2994,13 @@ void SVD(const int m, const int n, double **M, double beta_nu[],
     if (trace) if (n % 8 != 0) printf("\n");
   }
  
-  dsvbksb(U1, w1, V1, m, n, beta_nu, b2Ls_);
+  gsl_vector *vbeta_nu = gsl_vector_alloc(n);
+  int i_vbeta;
+  for(i_vbeta=0;i_vbeta<n;i_vbeta++)
+	gsl_vector_set(vbeta_nu,i_vbeta,beta_nu[i_vbeta]);
+	
+  gsl_linalg_SV_solve(mU1,mV1,vw1,vbeta_nu,vb2Ls_);
+  gsl_vector_free(vbeta_nu);
 }
 
 
@@ -3213,10 +3281,32 @@ void ini_ID_corr(const bool IDs)
   get_SQ(); Nconstr = 4*Nsext + 2;
 
   // Note, allocated vectors and matrices are deallocated in ID_corr
-  Xsext = dvector(1, Nconstr); Xsext0 = dvector(1, Nconstr);
-  b2Ls_ = dvector(1, Nquad); A1 = dmatrix(1, Nconstr, 1, Nquad);
-  U1 = dmatrix(1, Nconstr, 1, Nquad); w1 = dvector(1, Nquad);
-  V1 = dmatrix(1, Nquad, 1, Nquad);
+
+  bool checkNquad = false;
+  if(Nquad==0) {Nquad = 1; checkNquad = true;}
+	
+  vXsext = gsl_vector_alloc(Nconstr); 
+  GSL2NRDV2(vXsext, Xsext);
+	
+  vXsext0 = gsl_vector_alloc(Nconstr);
+  GSL2NRDV2(vXsext0, Xsext0);
+	
+  vb2Ls_ = gsl_vector_alloc(Nquad); 
+  GSL2NRDV2(vb2Ls_, b2Ls_);
+	
+  mA1 = gsl_matrix_alloc(Nconstr, Nquad);
+  GSL2NRDM2(dmA1,mA1,A1,0);
+	
+  mU1 = gsl_matrix_alloc(Nconstr, Nquad); 
+  GSL2NRDM2(dmU1,mU1,U1,0);
+	
+  vw1 = gsl_vector_alloc(Nquad);
+  GSL2NRDV2(vw1, w1);
+	
+  mV1 = gsl_matrix_alloc(Nquad, Nquad);
+  GSL2NRDM2(dmV1,mV1,V1,0);
+	
+  if(checkNquad) Nquad = 0;
 
   for (k = 1; k <= Nquad; k++)
     b2Ls_[k] = 0.0;
@@ -3332,10 +3422,14 @@ bool ID_corr(const int N_calls, const int N_steps, const bool IDs)
 
   // Allow for repeated calls to ID_corr, allocation is done in ini_ID_corr.
   if (false) {
-    free_dvector(Xsext, 1, Nconstr); free_dvector(Xsext0, 1, Nconstr);
-    free_dvector(b2Ls_, 1, Nquad); free_dmatrix(A1, 1, Nconstr, 1, Nquad);
-    free_dmatrix(U1, 1, Nconstr, 1, Nquad); free_dvector(w1, 1, Nquad);
-    free_dmatrix(V1, 1, Nquad, 1, Nquad);
+    gsl_vector_free(vXsext);
+    gsl_vector_free(vXsext0);
+    gsl_vector_free(vb2Ls_);
+    gsl_vector_free(vw1);
+	
+    gsl_matrix_free(mA1);
+    gsl_matrix_free(mU1);
+    gsl_matrix_free(mV1);
   }
 
   printf("\n");
@@ -3696,6 +3790,20 @@ double f_int_Touschek(const double u)
 } 
 
 
+double gsl_f_int_Touschek(double u, void *params)
+{
+ double alpha = *(double *) params;
+  double  f;
+
+  if (u > 0.0)
+    f = (1.0/u-log(1.0/u)/2.0-1.0)*exp(-u_Touschek/u); 
+  else
+    f = 0.0;
+
+  return alpha*f;
+} 
+
+
 double Touschek_loc(const long int i, const double gamma,
 		    const double delta_RF,
 		    const double eps_x, const double eps_y,
@@ -3742,7 +3850,17 @@ double Touschek_loc(const long int i, const double gamma,
 
   u_Touschek = sqr(delta_RF/(gamma*sigma_xp));
 
-  dtau_inv = dqromb(f_int_Touschek, 0e0, 1e0)/(sigma_x*sigma_y*sigma_xp);
+  double result, error;
+  double alphal = 1.0;
+  gsl_function F;
+  F.function = &gsl_f_int_Touschek;
+  F.params = &alphal;
+	
+  gsl_integration_workspace * w = gsl_integration_workspace_alloc (1000);
+  gsl_integration_qags (&F, 0, 1.0, 0, 1e-7, 1000, w, &result, &error);
+	
+  dtau_inv = result/(sigma_x*sigma_y*sigma_xp);
+  gsl_integration_workspace_free (w);		
 
   return dtau_inv;
 }
@@ -3933,6 +4051,18 @@ double Touschek(const double Qb, const double delta_RF,const bool consistent,
       dqromb(f_int_Touschek, 0e0, 1e0)
       /(sigma_x*sigma_xp*sigma_y*sqr(delta_p))*L;
 
+    double result, error;
+    double alpha = 1.0;
+    gsl_function F;
+    F.function = &gsl_f_int_Touschek;
+    F.params = &alpha;
+	
+    gsl_integration_workspace * w = gsl_integration_workspace_alloc (1000);
+    gsl_integration_qags (&F, 0, 1.0, 0, 1e-7, 1000, w, &result, &error);
+	
+    tau_inv +=result/(sigma_x*sigma_xp*sigma_y*sqr(delta_p))*L;
+    gsl_integration_workspace_free (w);		
+
     fflush(stdout);
   }
 
@@ -3970,24 +4100,15 @@ double f_int_IBS(const double chi)
 }
 
 
-double get_int_IBS(void)
+double gsl_f_int_IBS(double chi, void *params)
 {
-  int     k;
+ double alpha = *(double *) params;
   double  f;
 
-  const int     n_decades = 30;
-  const double  base      = 10e0;
+  f = exp(-chi)*log(chi/chi_m)/chi;
 
-  f = 0e0;
-  for (k = 0; k <= n_decades; k++) {
-    if (k == 0)
-      f += dqromo(f_int_IBS, chi_m, pow(base, k), dmidsql);
-    else
-      f += dqromb(f_int_IBS, pow(base, k-1), pow(base, k));
-  }
-
-  return f;
-}
+  return alpha*f;
+} 
 
 
 void IBS(const double Qb, const double eps_SR[], double eps[])
@@ -4077,8 +4198,19 @@ void IBS(const double Qb, const double eps_SR[], double eps[])
 
     if (!integrate)
       incr = f_IBS(chi_m)/sigma_y;
-    else
-      incr = get_int_IBS()/sigma_y;
+    else {
+      double result, error;
+      double alpha = 1.0;
+      gsl_function F;
+      F.function = &gsl_f_int_IBS;
+      F.params = &alpha;
+	
+      gsl_integration_workspace * w = gsl_integration_workspace_alloc (1000);
+      gsl_integration_qags (&F, 0, 1.0, 0, 1e-7, 1000, w, &result, &error);
+	
+      incr += result;
+      gsl_integration_workspace_free (w);
+    }
 
     D_delta += incr*L; D_x += incr*curly_H*L;
   }
@@ -4115,32 +4247,20 @@ void IBS(const double Qb, const double eps_SR[], double eps[])
 }
 
 
-double f_int_IBS_BM(const double lambda)
-{
-  double  f;
-
-  f =
-    sqrt(lambda)*(a_k_IBS*lambda+b_k_IBS)
-    /pow(cube(lambda)+a_IBS*sqr(lambda)+b_IBS*lambda+c_IBS, 3.0/2.0);
-
-  return f;
-}
-
-
 double get_int_IBS_BM(void)
 {
   int     k;
   double  f;
 
   const int     n    = 30;
-  const double  decade = 10e0;
+  // const double  decade = 10e0;
 
   f = 0e0;
   for (k = 0; k <= n; k++) {
-    if (k == 0)
-      f += dqromb(f_int_IBS_BM, 0e0, pow(decade, k));
-    else
-      f += dqromo(f_int_IBS_BM, pow(decade, k-1), pow(decade, k), dmidsql);
+    // if (k == 0)
+    //   f += dqromb(f_int_IBS_BM, 0e0, pow(decade, k));
+    // else
+    //   f += dqromo(f_int_IBS_BM, pow(decade, k-1), pow(decade, k), dmidsql);
   }
 
   return f;
@@ -4957,10 +5077,17 @@ void get_alphac2(void)
 }
 
 
-float f_bend(float b0L[])
+double f_bend(const gsl_vector *vb0L, void *params)
 {
   long int  lastpos;
   Vector    ps;
+
+  float b0L[vb0L->size];
+  int i;
+  for(i = 0; i < (int)vb0L->size; i++)
+    b0L[i] = gsl_vector_get(vb0L, i);
+  
+  double *p = (double *)params;
 
   const int   n_prt = 10;
 
@@ -4987,24 +5114,58 @@ void bend_cal_Fam(const int Fnum)
   /* Adjusts b1L_sys to zero the orbit for a given gradient. */
   const int  n_prm = 1;
 
-  int       iter;
-  float     *b0L, **xi, fret;
   Vector    ps;
 
-  const float  ftol = 1e-15;
+  double par[1] = {1};
+  
+  const gsl_multimin_fminimizer_type *AA = gsl_multimin_fminimizer_nmsimplex2;
+  gsl_multimin_fminimizer *s = NULL;
+  gsl_vector *step, *x;
+  gsl_multimin_function minex_func;
 
-  b0L = vector(1, n_prm); xi = matrix(1, n_prm, 1, n_prm);
+  size_t iter = 0;
+  int status;
+  double size;
+  
+  /* Starting point */
+  x = gsl_vector_alloc (n_prm);
+  gsl_vector_set_all(x, 0.0);
+
+  /* Set initial step sizes to 1 */
+  step = gsl_vector_alloc (n_prm);
+  gsl_vector_set_all (step, 1.0);
+
+  /* Initialize method and iterate */
+  minex_func.n = n_prm;
+  minex_func.f = f_bend;
+  minex_func.params = par;
+  
+  s = gsl_multimin_fminimizer_alloc(AA, n_prm);
+  gsl_multimin_fminimizer_set (s, &minex_func, x, step);
 
   cout << endl;
   cout << "bend_cal: " << ElemFam[Fnum-1].ElemF.PName << ":" << endl;
 
-  Fnum_Cart = Fnum;  b0L[1] = 0.0; xi[1][1] = 1e-3;
+  Fnum_Cart = Fnum;
 
   cout << endl;
   n_iter_Cart = 0;
-  powell(b0L, xi, n_prm, ftol, &iter, &fret, f_bend);
 
-  free_vector(b0L, 1, n_prm); free_matrix(xi, 1, n_prm, 1, n_prm);
+  do {
+    iter++;
+    status = gsl_multimin_fminimizer_iterate(s);
+      
+    if (status) 
+    break;
+
+    size = gsl_multimin_fminimizer_size (s);
+    status = gsl_multimin_test_size (size, 1e-15);
+
+  } while (status == GSL_CONTINUE);
+ 
+  gsl_vector_free(x);
+  gsl_vector_free(step);
+  gsl_multimin_fminimizer_free (s);
 }
 
 

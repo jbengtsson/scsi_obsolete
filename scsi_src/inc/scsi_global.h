@@ -131,6 +131,10 @@ struct FieldMapType {
   double  ***BoBrho[3], ***BoBrho2[3];  // [B_x, B_y, B_z]
   double  ***AoBrho[2], ***AoBrho2[2];  /* [Ax(x, y, z), Ay(x, y, z)],
 					   spline info */
+		
+  //GSL add		
+  gsl_vector	*vx[3]; //coresponds to *x[3]
+  //end GSL add
 };
 
 
@@ -155,6 +159,14 @@ struct InsertionType {
   double thetaz[IDZMAX][IDXMAX], thetaz1[IDZMAX][IDXMAX];
   bool   long_comp; // flag for longitudinal comp
   double B2[IDZMAX][IDXMAX]; // B^2_perp
+
+  //GSL add
+  gsl_matrix* mtx; // gsl matrix, coresponds to tx
+  gsl_matrix* mtz; //gsl matrix, coresponds to tz
+  gsl_matrix* mf2x; //gsl matrix, coresponds to f2x
+  gsl_matrix* mf2z; //gsl matrix, coresponds to f2z
+  //end GSL add
+
   double **tx, **tz, **f2x, **f2z;
   double **tx1, **tz1, **f2x1, **f2z1; // a voir
   double *tab1, *tab2; // tab of x and z meshes from Radia code

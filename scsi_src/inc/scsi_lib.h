@@ -30,6 +30,19 @@
 #include <string>
 using namespace std;
 
+//GSL add
+#include <gsl/gsl_matrix.h>
+#include <gsl/gsl_permutation.h>
+#include <gsl/gsl_linalg.h>
+#include <gsl/gsl_vector.h>
+#include <gsl/gsl_integration.h>
+#include <gsl/gsl_errno.h>
+#include <gsl/gsl_fft_complex.h>
+#include <gsl/gsl_multimin.h>
+#include "gslport.h"
+//end GSL add
+
+// Tracy-3
 #include "field.h"
 #include "mathlib.h"
 
