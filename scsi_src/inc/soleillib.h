@@ -4,7 +4,7 @@
                  SLS, PSI      1995 - 1997
    M. Boege      SLS, PSI      1998          C translation
    L. Nadolski   SOLEIL        2002          Link to NAFF, Radia field maps
-   J. Bengtsson  NSLS-II, BNL  2004 -        
+   J. Bengtsson  NSLS-II, BNL  2004 -
 
 */
 
@@ -39,7 +39,7 @@ void TracCO(double x, double px, double y, double py, double dp, double ctau,
                  long nmax, long pos, long *lastn, long *lastpos, FILE *outf1);
 void Dyna(long Nbx, long Nbz, long Nbtour, double xmax, double zmax,
                double energy, bool diffusion);
-                            
+
 /* Frequency map analysis */
 void NuDp(long Nb, long Nbtour, double emax);
 void fmap(long Nbx, long Nbz, long Nbtour, double xmax, double zmax,
@@ -62,7 +62,7 @@ void PassA(double *phi, double delta0, double step);
 void PassB(double phi0, double *delta, double step);
 double Hsynchrotron(double phi, double delta);
 
-/* Miscelleneous */ 
+/* Miscelleneous */
 void Enveloppe2(double x, double px, double y, double py,
                       double dp, double nturn);
 void Phase3(long pos, double x,double px,double y, double py,double energy,

@@ -6,7 +6,7 @@
 extern "C" {
   // Interface to FORTRAN TPSA-library
   void daini_(const int &, const int &, const int &);
-  void daall_(int &, const int &, const char [], 
+  void daall_(int &, const int &, const char [],
 	      const int &, const int &);
   void dadal_(int &, const int &);
   void dacon_(int &, const double &);
@@ -38,7 +38,7 @@ extern "C" {
   void daimp_(const double [], const int [], const int [], int &);
   void dainv_(const int [], const int &, int [], const int &);
 //  void dapin_(const int [], const int &, int [], const int &, const int []);
-  void daexp_(const int &, double [], int [], int [], char []); 
+  void daexp_(const int &, double [], int [], int [], char []);
   void dacct_(const int [], const int &, const int [], const int &,
 	      int [], const int &);
 

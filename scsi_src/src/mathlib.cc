@@ -4,7 +4,7 @@
                  SLS, PSI      1995 - 1997
    M. Boege      SLS, PSI      1998          C translation
    L. Nadolski   SOLEIL        2002          Link to NAFF, Radia field maps
-   J. Bengtsson  NSLS-II, BNL  2004 -        
+   J. Bengtsson  NSLS-II, BNL  2004 -
 
 */
 
@@ -69,9 +69,9 @@ void setrancut(const double cut)
 }
 
 
-#define maxiter         100 
+#define maxiter         100
 double normranf(void)
-{  
+{
   int i, j;
   double f, w;
 
@@ -98,7 +98,7 @@ double dtor(const double d) { return (d*M_PI/180.0); }
 double GetAngle(const double x, const double y)
 {
   double z;
-  
+
 //  if (pi == 0e0)
 //    fprintf(stdout,"** pi not initialized in GetAngle\n");
   if (x != 0e0)

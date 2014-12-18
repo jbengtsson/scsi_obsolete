@@ -4,7 +4,7 @@
                  SLS, PSI      1995 - 1997
    M. Boege      SLS, PSI      1998          C translation
    L. Nadolski   SOLEIL        2002          Link to NAFF, Radia field maps
-   J. Bengtsson  NSLS-II, BNL  2004 -        
+   J. Bengtsson  NSLS-II, BNL  2004 -
 
 */
 
@@ -21,7 +21,7 @@ inline bool CheckAmpl(const ss_vect<T> &x, const long int loc)
 
   if (globval.Aperture_on)
     not_lost = is_double<T>::cst(x[x_]) > Cell[loc].maxampl[X_][0] &&
-               is_double<T>::cst(x[x_]) < Cell[loc].maxampl[X_][1] && 
+               is_double<T>::cst(x[x_]) < Cell[loc].maxampl[X_][1] &&
                fabs(is_double<T>::cst(x[y_])) < Cell[loc].maxampl[Y_][1];
   else
     not_lost = is_double<T>::cst(x[x_]) > -max_ampl &&
@@ -34,7 +34,7 @@ inline bool CheckAmpl(const ss_vect<T> &x, const long int loc)
       status.lossplane = 1;
     else if (fabs(is_double<T>::cst(x[y_])) > Cell[loc].maxampl[Y_][1])
       status.lossplane = 2;
-	    
+
     if (trace)
       printf("CheckAmpl: Particle lost in plane %d at element:"
 	     " %5ld s = %10.5f, x = %12.5e, z= %12.5e\n",
@@ -128,7 +128,7 @@ void Cell_SetdP(const double dP)
   elemtype     *elemp;
 
   globval.dPparticle = dP;
-  
+
   for (i = 1; i <= globval.Elem_nFam; i++) {
     elemfamp  = &ElemFam[i-1]; elemp = &elemfamp->ElemF;
     switch (elemp->Pkind) {
@@ -175,7 +175,7 @@ void Cell_Pass(const long i0, const long i1, ss_vect<T> &x, long &lastpos)
 
   if (globval.MatMeth && (x[delta_] != globval.dPparticle))
     Cell_SetdP(is_double<T>::cst(x[delta_]));
-    
+
   if (globval.radiation) globval.dE = 0e0;
 
   if (globval.emittance) {
@@ -273,7 +273,7 @@ bool linearel(long i)
 {
   /* Purpose: called by Cell_Concat
        bool function
-         true if linear element 
+         true if linear element
            ie element is:
              straight section
              dipole w/s index (w/o skew quad)
@@ -328,7 +328,7 @@ bool linearel(long i)
   case undef:
     break;
   }
-  
+
   return status;
 }
 
@@ -379,7 +379,7 @@ void Cell_Concat(double dP)
   if (dP != globval.dPparticle) {
     Cell_SetdP(dP); cellconcat = false;
   }
-  
+
   if (cellconcat) return;
 
   if (trace) printf("concatenating\n");
@@ -506,7 +506,7 @@ void Cell_fPass(ss_vect<double> &x, long &lastpos)
 
   if (!CheckAmpl(x, 1))
     lastpos = 1;
-  else { 
+  else {
     lastpos = globval.Cell_nLoc;
     for (i = 0; i < ntransfmat; i++) {
       LinsTrans(transfmat[i], x);
@@ -539,8 +539,8 @@ void Cell_fPass_M(ss_vect<double> &xref, Matrix &mat, long &lastpos)
   /* Purpose: called by Cell_MatGetCOD
        Compute the oneturn matrix and propagates xref through it using
        matrix formalism
-       Nota: f means full 
-       
+       Nota: f means full
+
    Input:
        lastpos last position if unstable
        x  starting vector
@@ -555,7 +555,7 @@ void Cell_fPass_M(ss_vect<double> &xref, Matrix &mat, long &lastpos)
        transfmat contains transfert matrix for each linear element
        ntransfmat number of transfer matrices
        Cell contains all elements
-       
+
    Specific functions:
         CheckAmpl, MulLsMat, LinsTrans
         thin_kick_M, thin_kick                                               */
@@ -670,7 +670,7 @@ bool Cell_getCOD(long imax, double eps, double dP, long &lastpos)
   ss_vect<tps>     I, dx0, map;
 
   no = no_tps; danot_(1);
-  
+
   n = (globval.Cavity_on)? 6 : 4; globval.dPparticle = dP;
 
   if (n == 6) {
@@ -695,7 +695,7 @@ bool Cell_getCOD(long imax, double eps, double dP, long &lastpos)
   do {
     n_iter++; map.identity(); map += x0;
 
-    Cell_Pass(0, globval.Cell_nLoc, map, lastpos); 
+    Cell_Pass(0, globval.Cell_nLoc, map, lastpos);
 
     if (lastpos == globval.Cell_nLoc) {
       x1 = map.cst(); dx = x0 - x1; dx0 = PInv(map-I-x1, jj)*dx;
@@ -735,7 +735,7 @@ bool Cell_getCOD(long imax, double eps, double dP, long &lastpos)
   }
 
   danot_(no);
-  
+
   return status.codflag;
 }
 
@@ -779,19 +779,19 @@ void Cell_Init(void)
     case drift:
       Drift_Init(i);
       break;
-      
+
     case Mpole:
       Mpole_Init(i);
       break;
-      
+
     case Wigl:
       Wiggler_Init(i);
       break;
-      
+
     case FieldMap:
       FieldMap_Init(i);
       break;
-      
+
     case Insertion:
       Insertion_Init(i);
       break;

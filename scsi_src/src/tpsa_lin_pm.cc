@@ -21,7 +21,7 @@ const int           n_max   = 100;     // max iterations for LieExp
 
 const int           bufsize = 250000;  /* Note, max no of monomials is
 					  (no+nv)!/(nv!*no!) */
- 
+
 
 long int fact(long int n)
 {
@@ -416,7 +416,7 @@ istream& operator>>(istream &is, tps &a)
 	     << no1 << setw(11) << rbuf[n];
 	for (i = 0; i < ss_dim; i++)
 	  cout << setw(3) << jj[i];
-	cout << endl; 
+	cout << endl;
       }
 
 //      hash_(no_tps, ss_dim, jj, ibuf1[n-1], ibuf2[n-1]);
@@ -444,7 +444,7 @@ ostream& operator<<(ostream &os, const tps &a)
   s << "NO = " << no_tps << ", NV = " << nv_tps << endl;
 
   for (i = 1; i <= 66; i++)
-    s << "-"; 
+    s << "-";
   s << endl;
 
   if (header) {
@@ -481,7 +481,7 @@ ostream& operator<<(ostream &os, const tps &a)
 	<< endl;
     }
   }
-  
+
   n = 0;
   for (j = 0; j <= nv_tps; j++)
     if (fabs(a.ltps[j]) >= eps_tps) n++;

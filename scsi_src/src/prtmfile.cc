@@ -4,7 +4,7 @@
                  SLS, PSI      1995 - 1997
    M. Boege      SLS, PSI      1998          C translation
    L. Nadolski   SOLEIL        2002          Link to NAFF, Radia field maps
-   J. Bengtsson  NSLS-II, BNL  2004 -        
+   J. Bengtsson  NSLS-II, BNL  2004 -
 
 
    To generate a lattice flat file.
@@ -89,7 +89,7 @@ void prtName(FILE *fp, const int i,
 void prtHOM(FILE *fp, const int n_design, const mpolArray PB, const int Order)
 {
   int i, nmpole;
-  
+
   nmpole = 0;
   for (i = 1; i <= Order; i++)
     if ((PB[HOMmax-i] != 0.0) || (PB[HOMmax+i] != 0.0)) nmpole++;

@@ -4,7 +4,7 @@
                  SLS, PSI      1995 - 1997
    M. Boege      SLS, PSI      1998          C translation
    L. Nadolski   SOLEIL        2002          Link to NAFF, Radia field maps
-   J. Bengtsson  NSLS-II, BNL  2004 -        
+   J. Bengtsson  NSLS-II, BNL  2004 -
 
 */
 
@@ -70,7 +70,7 @@ void Get_Disp_dp(void)
       Compute the induced amplitude for a particle getting for a energy offset dP
         process similar to a Touschek scattering
         The induced maplitude is trnasported to the first element of the lattice
-        by scaling the maplitude with energy dependent betafunctions        
+        by scaling the maplitude with energy dependent betafunctions
 
    Input:
        spos : position where Touschek scattering occurs
@@ -109,7 +109,7 @@ void InducedAmplitude(long spos)
   /* Ouverture fichier moustache */
   if ((outf = fopen(nomfic, "w")) == NULL)
   {
-    fprintf(stdout, "Erreur à l'ouverture de %s\n",nomfic);
+    fprintf(stdout, "Erreur a l'ouverture de %s\n",nomfic);
     exit_(1);
   }
 
@@ -118,7 +118,7 @@ void InducedAmplitude(long spos)
 	        "       Hx          Hz            etax        etaxp\n#\n");
 
   lastpos = 1;
-  
+
   for (k = 0; k <= imax ; k++)  {
     dP = -dpmax + 2*dpmax*k/imax;
     /* Coordonnees initiales */
@@ -216,8 +216,8 @@ void Hfonction(long pos, double dP,Vector2 H)
        at position pos and for a energy offset dP
 
        For a givien delta
-       H = gamma xcod² + 2*alpha*xcod*xcod' + beta*xcod'*xcod'
-       
+       H = gamma xcod^2 + 2*alpha*xcod*xcod' + beta*xcod'*xcod'
+
    Input:
        none
 
@@ -262,7 +262,7 @@ void Hcofonction(long pos, double dP,Vector2 H)
           Cell.Beta[i]*Cell.BeamPos[i+2]*Cell.BeamPos[i+2];
 }
 
-  
+
 /****************************************************************************/
 /* void SetErr(void)
 
@@ -641,7 +641,7 @@ void NuDx(long Nbx, long Nbz, long Nbtour, double xmax, double zmax,
     /////////////
 
   if (fabs(xmax) > 0.0){
-    
+
     /* Opening file */
     if ((outf = fopen(ficx, "w")) == NULL) {
       fprintf(stdout, "NuDx: error while opening file %s\n", ficx);
@@ -692,7 +692,7 @@ void NuDx(long Nbx, long Nbz, long Nbtour, double xmax, double zmax,
       fprintf(stdout, "NuDx: error while opening file %s\n", ficz);
       exit_(1);
     }
-    
+
     fprintf(outf,"# tracy-3.5 -- %s -- %s \n", ficz, asctime2(newtime));
     fprintf(outf,"# nu = f(z) \n");
     fprintf(outf,"#    x[mm]         z[mm]          fx            fz \n");
@@ -776,7 +776,7 @@ double get_D(const double df_x, const double df_y)
    Comments:
        15/10/03 run for the diffusion: nasty patch for retrieving the closed orbit
        16/02/03 patch removed
-       
+
 ****************************************************************************/
 #define NTERM2  10
 void fmap(long Nbx, long Nbz, long Nbtour, double xmax, double zmax,
@@ -815,10 +815,10 @@ void fmap(long Nbx, long Nbz, long Nbtour, double xmax, double zmax,
  fprintf(outf,"#    x[mm]          z[mm]           fx             fz"
 	 "            dfx            dfz      D=log_10(sqrt(df_x^2+df_y^2))\n");
 
- 
+
  if ((Nbx < 1) || (Nbz < 1))
    fprintf(stdout,"fmap: Error Nbx=%ld Nbz=%ld\n",Nbx,Nbz);
- 
+
  // steps in both planes
  xstep = xmax/sqrt((double)Nbx);
  zstep = zmax/sqrt((double)Nbz);
@@ -830,7 +830,7 @@ void fmap(long Nbx, long Nbz, long Nbtour, double xmax, double zmax,
  xp = xp0;
  zp = zp0;
 
-// Tracking part + NAFF 
+// Tracking part + NAFF
  for (i = -Nbx; i <= Nbx; i++) {
    x  = x0 + sgn(i)*sqrt((double)abs(i))*xstep;
    if (!matlab) fprintf(outf,"\n");
@@ -856,7 +856,7 @@ void fmap(long Nbx, long Nbz, long Nbtour, double xmax, double zmax,
       nux1 = 0.0; nuz1 = 0.0;
       nux2 = 0.0; nuz2 = 0.0;
      }
-     
+
      // printout value
      if (!diffusion) {
        fprintf(outf,"%14.6e %14.6e %14.6e %14.6e\n",
@@ -932,7 +932,7 @@ void fmapdp(long Nbx, long Nbe, long Nbtour, double xmax, double emax,
  double x0 = 1e-6, xp0 = 0.0, zp0 = 0.0;
  double xstep = 0.0, estep = 0.0;
  double nux1 = 0.0, nuz1 = 0.0, nux2 = 0.0, nuz2 = 0.0;
- 
+
  int nb_freq[2] = {0, 0};
  long nturn = Nbtour;
  bool status=true;
@@ -977,7 +977,7 @@ void fmapdp(long Nbx, long Nbe, long Nbtour, double xmax, double emax,
      if ((globval.Cavity_on == true) && (dp < 0.0)){
        x  = x0 - sgn(j)*sqrt((double)abs(j))*xstep;
         diffusion = false;
-     }   
+     }
      else
        x  = x0 + sgn(j)*sqrt((double)abs(j))*xstep;
 
@@ -990,7 +990,7 @@ void fmapdp(long Nbx, long Nbe, long Nbtour, double xmax, double emax,
          Get_NAFF(NTERM2, Nbtour, Tab0, fx2, fz2, nb_freq); // gets frequency vectors
          Get_freq(fx2,fz2,&nux2,&nuz2); // gets nux and nuz
        }
-     } // unstable trajectory       
+     } // unstable trajectory
      else { //zeroing output
       nux1 = 0.0; nuz1 = 0.0;
       nux2 = 0.0; nuz2 = 0.0;
@@ -1080,7 +1080,7 @@ void NuDp(long Nb, long Nbtour, double emax)
   if (Nb <= 1L)
     fprintf(stdout,"NuDp: Error Nb=%ld\n",Nb);
 
-  // start loop over energy  
+  // start loop over energy
   dp0 = -emax;
 
   for (i = 0L; i < Nb; i++) {
@@ -1090,7 +1090,7 @@ void NuDp(long Nb, long Nbtour, double emax)
     z    = z0  ;
     zp   = zp0 ;
     ctau = ctau0;
-    
+
     Trac_Simple(x,xp,z,zp,dp,ctau,Nbtour,Tab,&status); // tracking around closed orbit
     if (status) {
        Get_NAFF(NTERM, Nbtour, Tab, fx, fz, nb_freq); // get frequency vectors
@@ -1100,7 +1100,7 @@ void NuDp(long Nb, long Nbtour, double emax)
        nux1 = 0.0; nuz1 = 0.0;
        status = true;
     }
-    
+
     //~ getcod(dp, lastpos); // get cod for printout
     findcod(dp);
 
@@ -1182,7 +1182,7 @@ void Phase(double x,double xp,double y, double yp,double energy, double ctau, lo
     Tab[4][i] = 0.0;
     Tab[5][i] = 0.0;
   }
-  
+
   Trac_Simple(x,xp,y,yp,energy,ctau,Nbtour,Tab,&status);
   for (i = 0; i < Nbtour; i++) {
     fprintf(outf,"% .5e % .5e % .5e % .5e % .5e % .5e\n",
@@ -1250,7 +1250,7 @@ void PhasePoly(long pos, double x0,double px0, double z0, double pz0, double del
 //  xsynch[3] = globval.CODvect[3];
 //  xsynch[4] = globval.CODvect[4];
 //  xsynch[5] = globval.CODvect[5];
-  
+
   if ((outf = fopen(fic, "w")) == NULL)  {
     fprintf(stdout, "Phase: error while opening file %s\n", fic);
     exit_(1);
@@ -1337,11 +1337,11 @@ void PhasePortrait(double x0,double px0,double z0, double pz0, double delta0,
 
   fprintf(outf,"# TRACY II v. 2.6  -- %s \n", asctime2(newtime));
   fprintf(outf,"#  x           xp            z           zp           dp          ctau\n#\n");
-  
+
   x = x0; px = px0;
   z = z0; pz = pz0;
-  delta = delta0; 
-  
+  delta = delta0;
+
   switch (num) {
     case 0:
       start = x0; break;
@@ -1579,7 +1579,7 @@ void Multipole(void)
          x018i = 0.0, x024i = 0.0;
   double theta = 0.0, brho = 0.0, dummyf = 0.0 ;
   char *dummy = NULL;
-  
+
   FILE *fi;
   const char fic_hcorr[] = "hcor.dat";
   const char fic_vcorr[] = "vcor.dat";
@@ -1644,7 +1644,7 @@ void Multipole(void)
   *                        x0ni w/ n = p-1 for a 2p-poles
   */
  /***********************************************************************************/
- 
+
   x0i   = 1.0/20e-3;  /* 1/radius */
   x02i  = x0i*x0i;
   x03i  = x02i*x0i;
@@ -1753,10 +1753,10 @@ void Multipole(void)
  /*                                                                                 */
  /***********              Set multipoles for sextupole              ****************/
  /*
-  *                        x0ni w/ n = p-3 for a 2p-poles 
+  *                        x0ni w/ n = p-3 for a 2p-poles
   */
  /***********************************************************************************/
- 
+
   b3    = 0.0;
   x0i   = 1.0/35e-3;
   x02i  = x0i*x0i;
@@ -2120,12 +2120,12 @@ void MomentumAcceptance(long deb, long fin, double ep_min, double ep_max,
   struct tm     *newtime;  // for time
   Vector        codvector[Cell_nLocMax];
   bool          cavityflag, radiationflag;
-  
+
   x0.zero();
 
   /* Get time and date */
   newtime = GetTime();
-  
+
   /************************/
   /* Fin des declarations */
 
@@ -2139,7 +2139,7 @@ void MomentumAcceptance(long deb, long fin, double ep_min, double ep_max,
 
   fprintf(outf1,"# TRACY II v. 2.6  -- %s \n", asctime2(newtime));
   fprintf(outf1,"#  i        x           xp            z           zp           dp          ctau\n#\n");
-  
+
 
   pos = deb; /* starting position in the ring */
 
@@ -2149,9 +2149,9 @@ void MomentumAcceptance(long deb, long fin, double ep_min, double ep_max,
 
   // cod search has to be done in 4D since in 6D it is zero
   cavityflag = globval.Cavity_on;
-  radiationflag = globval.radiation;  
+  radiationflag = globval.radiation;
   globval.Cavity_on = false;  /* Cavity on/off */
-  globval.radiation = false;  /* radiation on/off */  
+  globval.radiation = false;  /* radiation on/off */
 
    // Allocation of an array of pointer array
   tabz0  = (double **)malloc((nstepp)*sizeof(double*));
@@ -2178,7 +2178,7 @@ void MomentumAcceptance(long deb, long fin, double ep_min, double ep_max,
 
     // find and store closed orbit for dP energy offset
     set_vectorcod(codvector, dP);
-       
+
    // coordinates around closed orbit specially usefull for 6D
     x0[0] = codvector[0][0];
     x0[1] = codvector[0][1];
@@ -2257,13 +2257,13 @@ void MomentumAcceptance(long deb, long fin, double ep_min, double ep_max,
       }
       else {
         dp2 = ep_max;
-      }      
+      }
       if (trace)  printf("i=%4ld pos=%4ld dp=%6.4g\n",i,pos,dp2);
       if (0) fprintf(stdout,"pos=%4ld z0 =% 10.5f  pz0 =% 10.5f  \n", pos, tabz0[i-1L][pos-1L], tabpz0[i-1L][pos-1L]);
       Trac(x, px, tabz0[i-1L][pos], tabpz0[i-1L][pos-1L], dp2+delta , ctau0, nturn, pos, lastn, lastpos, outf1);
     }
     while (((lastn) == nturn) && (i != nstepp));
-    
+
     if ((lastn) == nturn) dp1 = dp2;
 
     getelem(lastpos,&Clost);
@@ -2288,11 +2288,11 @@ void MomentumAcceptance(long deb, long fin, double ep_min, double ep_max,
   // NEGATIVE MOMENTUM ACCEPTANCE
   /***************************************************************/
   /***************************************************************/
-  
+
   fprintf(outf2,"\n"); /* A void line */
 
   pos = deb; /* starting position in the ring */
-  
+
   /***************************************************************/
   fprintf(stdout,"Computing initial conditions ... \n");
   /***************************************************************/
@@ -2301,8 +2301,8 @@ void MomentumAcceptance(long deb, long fin, double ep_min, double ep_max,
   cavityflag        = globval.Cavity_on;
   radiationflag     = globval.radiation;
   globval.Cavity_on = false;  /* Cavity on/off */
-  globval.radiation = false;  /* radiation on/off */  
-  
+  globval.radiation = false;  /* radiation on/off */
+
    // Allocation of an array of pointer array
   tabz0  = (double **)malloc((nstepm)*sizeof(double*));
   tabpz0 = (double **)malloc((nstepm)*sizeof(double*));
@@ -2322,7 +2322,7 @@ void MomentumAcceptance(long deb, long fin, double ep_min, double ep_max,
     if (nstepm != 1L) {
       dP = em_max - (nstepm - i)*(em_max - em_min)/(nstepm - 1L);
     }
-    else {      
+    else {
       dP = em_max;
     }
     // store closed orbit
@@ -2371,13 +2371,13 @@ void MomentumAcceptance(long deb, long fin, double ep_min, double ep_max,
     }
   }
 
-  globval.Cavity_on = cavityflag;  
+  globval.Cavity_on = cavityflag;
   globval.radiation = radiationflag;
 
   /***************************************************************/
   fprintf(stdout,"Computing negative momentum acceptance ... \n");
   /***************************************************************/
-    
+
   do {
     //~ getcod(dP=0.0, lastpos);       /* determine closed orbit */
     findcod(dP=0.0);
@@ -2432,12 +2432,12 @@ void MomentumAcceptance(long deb, long fin, double ep_min, double ep_max,
   }
   free(tabz0);
   free(tabpz0);
-  
+
   fflush(NULL); // force writing at the end (BUG??)
   fclose(outf1);
   fclose(outf2);
 }
-  
+
 /****************************************************************************/
 /* set_vectorcod(double codvector[Cell_nLocMax][6], double dP)
 
@@ -2445,7 +2445,7 @@ void MomentumAcceptance(long deb, long fin, double ep_min, double ep_max,
       Store closed orbit computed for a Dp energy offset
 
    Input:
-       dP  offset energy 
+       dP  offset energy
 
    Output:
        codvector : closed orbit all around the ring
@@ -2470,10 +2470,10 @@ void set_vectorcod(Vector  codvector[], double dP)
   Vector    zerovector;
 
   zerovector.zero();
-  
+
   //~ getcod(dP, lastpos);  /* determine closed orbit */
   findcod(dP);
-  
+
   if (status.codflag == 1) { /* cod exists */
     for (k = 1L; k <= globval.Cell_nLoc; k++){
       getelem(k,&Cell);
@@ -2610,7 +2610,7 @@ void spectrum(long Nbx, long Nbz, long Nbtour, double xmax, double zmax,
 
        fprintf(stdout,"\n");
        fprintf(xoutf,"\n");
-       fprintf(zoutf,"\n");       
+       fprintf(zoutf,"\n");
      }
 //     else {
 //       fprintf(outf,"%14.6e %14.6e %14.6e %14.6e %14.6e %14.6e\n",
@@ -2906,7 +2906,7 @@ void fmapfull(long Nbx, long Nbz, long Nbtour, double xmax, double zmax,
        }
        for (k = nb_freq[1]; k < NTERM; k++){
          nuz1[k] = 0.0;
-       }          
+       }
        if (diffusion){
          Get_Tabshift(Tab,Tab0,Nbtour,Nbtour); // shift data for second round NAFF
          Get_NAFF(NTERM, Nbtour, Tab0, fx2, fz2, nb_freq); // gets frequency vectors
@@ -2933,7 +2933,7 @@ void fmapfull(long Nbx, long Nbz, long Nbtour, double xmax, double zmax,
         nuz2[k] = 0.0;
       }
      }
-     
+
      // printout value
      if (!diffusion){
        fprintf(outf,"%14.6e %14.6e ", x, z);
@@ -3092,7 +3092,7 @@ void Dyna(long Nbx, long Nbz, long Nbtour, double xmax, double zmax,
       }
     }
   }
-  
+
   fclose(outf);
 }
 
@@ -3160,7 +3160,7 @@ void Phase3(long pos, double x,double px,double y, double py,double energy,
   long        lastpos = 0,lastn = 0;
   struct tm   *newtime;
   Vector      x1;
-  
+
   /* Get time and date */
   newtime = GetTime();
 
@@ -3178,12 +3178,12 @@ void Phase3(long pos, double x,double px,double y, double py,double energy,
 
   trace = true;
   x1[0] = x;   x1[1] = px;     x1[2] = y;
-  x1[3] = py;  x1[4] = energy; x1[5] = ctau;  
+  x1[3] = py;  x1[4] = energy; x1[5] = ctau;
   Cell_Pass(0L, pos-1L, x1, lastpos);
 
   x  = x1[0];       px= x1[1];   y = x1[2];
   py = x1[3];  energy = x1[4]; ctau =x1[5];
-  
+
   Trac(x,px,y,py,energy,ctau, Nbtour, pos, lastn, lastpos, outf);
   fclose(outf);
 }
@@ -3201,11 +3201,11 @@ void Phase3(long pos, double x,double px,double y, double py,double energy,
                        eVRF (                                               )
                      - -----( cos(phi) - cos(phis) + (phi - phis) sin(phis) )
                         ET  (                                               )
-                        
+
 
       Integration method Ruth integrator H(phi, delta) = A(delta) + B(phi)
-      
-   Parameters:   
+
+   Parameters:
        omegaRF RF frequency/2pi
        eVRF    RF voltage in electron volt
        phis    synchronous phase
@@ -3215,7 +3215,7 @@ void Phase3(long pos, double x,double px,double y, double py,double energy,
 
    Input:
        none
-               
+
    Output:
        longitudinale.out
 
@@ -3247,7 +3247,7 @@ void PhaseLongitudinalHamiltonien(void)
   long i,j;
   const double t = T;        // To get a one turn map
   double phi, delta, H0;
-  long imax = 1000L,         // turn number 
+  long imax = 1000L,         // turn number
        jmax = 25L;          // starting condition number
 
   /* Constant stepsize for Ruth's and Forest's Integrator */
@@ -3257,7 +3257,7 @@ void PhaseLongitudinalHamiltonien(void)
 	const double D2 =-0.175603595979829E0;
 	const double C2 = 0.135120719195966E1;
 	const double C3 =-0.170241438391932E1;
-  
+
   FILE *outf;
   const char fic[] = "longitudinal.out";
   struct tm *newtime;
@@ -3272,14 +3272,14 @@ void PhaseLongitudinalHamiltonien(void)
     fprintf(stdout, "PhaseLongitudinalHamiltonien: error while opening file %s\n", fic);
     exit_(1);
   }
-    
-  printf("Last stable orbit %f\n", acos(1.0-T*E/eVRF*Hsynchrotron(0.0,-0.098)));  
+
+  printf("Last stable orbit %f\n", acos(1.0-T*E/eVRF*Hsynchrotron(0.0,-0.098)));
 
   fprintf(outf,"# TRACY II v. 2.6  -- %s \n", asctime2(newtime));
   fprintf(outf,"#  i          ctau              dp             DH/H               H \n#\n");
 
   for (j = 0L; j < jmax; j++)
-  {  
+  {
     phi = 0.061417777*j; delta = 0.0001;
     H0 = Hsynchrotron(phi,delta);
     fprintf(outf,"%4ld % 16.8f % 16.8f % 16.8e % 16.8f\n",0L,fmod(phi,2.0*M_PI)*0.8512/2.0/M_PI,delta, 0.0, H0);
@@ -3302,7 +3302,7 @@ void PhaseLongitudinalHamiltonien(void)
     }
       fprintf(outf,"\n");
   }
-  fclose(outf);      
+  fclose(outf);
 }
 
 
@@ -3428,7 +3428,7 @@ void PassB(double phi0, double *delta, double step)
 
    Specific functions:
        none
-       
+
    Comments:
        none
 
@@ -3436,7 +3436,7 @@ void PassB(double phi0, double *delta, double step)
 double Hsynchrotron(double phi, double delta)
 {
   double H = 0.0;
-  
+
   H  = omegaRF*2.0*M_PI*(dCoC*delta + alpha1*delta*delta/2.0 + alpha2*delta*delta*delta/3.0);
   H -= eVRF/E/T*(cos(phi) - cos(phis) + (phi-phis)*sin(phis));
   return H;
@@ -3541,7 +3541,7 @@ void Enveloppe2(double x, double px, double y, double py, double dp, double ntur
   for (j = 1; j < nturn; j++) {
     /* loop over full ring */
    for (i = 0; i<= globval.Cell_nLoc; i++) {
- 
+
       getelem(i, &Cell);
       Cell_Pass(i, i+1, x1, lastpos);
       if (lastpos != i+1)

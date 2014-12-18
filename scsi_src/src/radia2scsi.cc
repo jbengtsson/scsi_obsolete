@@ -4,7 +4,7 @@
                  SLS, PSI      1995 - 1997
    M. Boege      SLS, PSI      1998          C translation
    L. Nadolski   SOLEIL        2002          Link to NAFF, Radia field maps
-   J. Bengtsson  NSLS-II, BNL  2004 -        
+   J. Bengtsson  NSLS-II, BNL  2004 -
 
 */
 
@@ -46,7 +46,7 @@ void splint(const double xa[], const U ya[], const U y2a[],
   int     klo, khi, k;
   double  h;
   T       a, b;
-  
+
   klo = 1; khi = n;
   while (khi-klo > 1) {
     k = (khi+klo) >> 1;
@@ -72,7 +72,7 @@ void splin2(const double x1a[], const double x2a[],
 {
   int  j;
   T    ytmp[m+1], yytmp[m+1];
-  
+
   for (j = 1; j <= m; j++)
     splint(x2a, ya[j], y2a[j], n, x2, yytmp[j]);
   spline(x1a, yytmp, m, 1.0e30, 1.0e30, ytmp);
@@ -110,12 +110,12 @@ void Read_IDfile(char *fic_radia, double &L, int &nx, int &nz,
     printf("Read_IDfile: Error while opening file %s \n", fic_radia);
     exit_(1);
   }
-  
+
   printf("\n");
   printf("Reading ID filename %s \n", fic_radia);
   printf("E      = %6.3f GeV\n", globval.Energy);
   printf("(Brho) = %6.3f\n", Brho);
-  
+
   /* first line */
   fscanf(fi, "%[^\n]\n", dummy); /* Read a full line */
   printf("%s\n", dummy);
@@ -140,7 +140,7 @@ void Read_IDfile(char *fic_radia, double &L, int &nx, int &nz,
   /* Number of Vertical points */
   fscanf(fi, "%d\n", &nz);
   printf("nz = %d\n", nz);
-  
+
   /* Check dimensions */
   if (nx > IDXMAX || nz > IDZMAX) {
     printf("Read_IDfile:  Increase the size of insertion tables \n");
@@ -148,22 +148,22 @@ void Read_IDfile(char *fic_radia, double &L, int &nx, int &nz,
 	   nx, IDXMAX, nz, IDZMAX);
     exit_(1);
   }
-  
+
   /* ninth line */
   fscanf(fi, "%[^\n]\n", dummy);
   printf("%s\n", dummy);
   /* tenth line */
   fscanf(fi, "%[^\n]\n", dummy);
 //   printf("%s\n", dummy);
-  
+
   for (j = 0; j < nx; j++)
     fscanf(fi, "%lf", &tabx[j]);
   fscanf(fi, "%[^\n]\n", dummy);
-  
+
   /* Array creation for thetax */
   for (i = 0; i < nz; i++) {
     fscanf(fi, "%lf", &tabz[i]);
-    
+
     for (j = 0; j < nx; j++) {
       fscanf(fi, "%lf", &thetax[i][j]);
       if (fabs(thetax[i][j]) < ZERO_RADIA)
@@ -173,7 +173,7 @@ void Read_IDfile(char *fic_radia, double &L, int &nx, int &nz,
     fscanf(fi, "\n");
     if (traceID) printf("\n");
   }
-  
+
   fscanf(fi, "%[^\n]\n", dummy);
   printf("%s\n", dummy);
   fscanf(fi, "%[^\n]\n", dummy);
@@ -181,7 +181,7 @@ void Read_IDfile(char *fic_radia, double &L, int &nx, int &nz,
   for (j = 0; j < nx; j++) {
     fscanf(fi, "%lf", &tabx[j]);
   }
-  
+
   /* Array creation for thetaz */
   for (i = 0; i < nz; i++) {
     fscanf(fi, "%*f");
@@ -195,7 +195,7 @@ void Read_IDfile(char *fic_radia, double &L, int &nx, int &nz,
     fscanf(fi, "\n");
     if (traceID) printf("\n");
   }
-  
+
   /* Array creation for B2 */
   strcpy(dummy, "");
   fscanf(fi, "%[^\n]\n", dummy);
@@ -211,7 +211,7 @@ void Read_IDfile(char *fic_radia, double &L, int &nx, int &nz,
 
     for (j = 0; j < nx; j++)
       fscanf(fi, "%lf", &tabx[j]);
-  
+
     for (i = 0; i < nz; i++) {
       fscanf(fi, "%*f");
       for (j = 0; j < nx; j++) {
@@ -225,14 +225,14 @@ void Read_IDfile(char *fic_radia, double &L, int &nx, int &nz,
       if (traceID) printf("\n");
     }
   }
-  
+
   if (traceID)
     for (j = 0; j < nx; j++)
       printf("tabx[%d] =% lf\n", j, tabx[j]);
   if (traceID)
     for (j = 0; j < nz; j++)
       printf("tabz[%d] =% lf\n", j, tabz[j]);
-  
+
   fclose(fi);
 }
 
@@ -248,14 +248,14 @@ void LinearInterpolation2(T &X, T &Z, T &TX, T &TZ, T &B2,
   double         zstep = 0.0;
   int            nx = 0, nz = 0;
   InsertionType  *WITH;
-  
+
   WITH = Cell.Elem.ID; nx = WITH->nx; nz = WITH->nz;
-  
+
   xstep = WITH->tabx[1]-WITH->tabx[0]; /* increasing values */
   zstep = WITH->tabz[0]-WITH->tabz[1]; /* decreasing values */
-  
+
   if (traceID) printf("xstep = % f zstep = % f\n", xstep, zstep);
-  
+
   /* test wether X and Z within the transverse map area */
   if (X < WITH->tabx[0] || X > WITH->tabx[nx-1]) {
     printf("LinearInterpolation2: X out of borders \n");
@@ -264,7 +264,7 @@ void LinearInterpolation2(T &X, T &Z, T &TX, T &TZ, T &B2,
     out = true;
     return;
   }
-  
+
   if (Z > WITH->tabz[0] || Z < WITH->tabz[nz-1]) {
     printf("LinearInterpolation2: Z out of borders \n");
     printf("Z = % lf but tabz[0] = % lf and tabz[nz-1] = % lf\n",
@@ -272,9 +272,9 @@ void LinearInterpolation2(T &X, T &Z, T &TX, T &TZ, T &B2,
     out = true;
     return;
   }
-  
+
   out = false;
-  
+
   /* looking for the index for X */
   i = 0;
   while (X >= WITH->tabx[i]  && i <= nx-1) {
@@ -284,7 +284,7 @@ void LinearInterpolation2(T &X, T &Z, T &TX, T &TZ, T &B2,
 	     i, is_double<T>::cst(X), WITH->tabx[i], WITH->tabx[i+1]);
   }
   ix = i - 1;
-  
+
   /* looking for the index for Z */
   i = 0;
   while (Z <= WITH->tabz[i] && i <= nz-1) {
@@ -294,12 +294,12 @@ void LinearInterpolation2(T &X, T &Z, T &TX, T &TZ, T &B2,
 	     i, is_double<T>::cst(Z), WITH->tabz[i], WITH->tabz[i+1]);
   }
   iz = i - 1;
-  
+
   if (traceID) printf("Indices are ix=%d and iz=%d\n", ix, iz);
-  
+
   /** Bilinear Interpolation **/
   U = (X - WITH->tabx[ix])/xstep; T1 = -(Z - WITH->tabz[iz])/zstep;
-  
+
   if (order == 1) { // first order kick map interpolation
     if (traceID) printf("first order kick map interpolation\n");
     if (ix >= 0 && iz >= 0) {
@@ -307,13 +307,13 @@ void LinearInterpolation2(T &X, T &Z, T &TX, T &TZ, T &B2,
 	    + U*(1.0-T1)*WITH->thetax1[iz][ix+1]
 	    + (1.0-U)*T1*WITH->thetax1[iz+1][ix]
 	    + U*T1*WITH->thetax1[iz+1][ix+1];
-      
+
       THZ = (1.0-U)*(1.0-T1)*WITH->thetaz1[iz][ix]
 	    + U*(1.0-T1)*WITH->thetaz1[iz][ix+1]
 	    + (1.0-U)*T1*WITH->thetaz1[iz+1][ix]
 	    + U*T1*WITH->thetaz1[iz+1][ix+1];
     }
-    
+
     if (traceID) {
       printf("X=% f interpolation : U= % lf T =% lf\n",
 	     is_double<T>::cst(X), is_double<T>::cst(U),
@@ -331,7 +331,7 @@ void LinearInterpolation2(T &X, T &Z, T &TX, T &TZ, T &B2,
 	     WITH->thetaz1[iz+1][ix],WITH->thetaz1[iz+1][ix+1]);
     }
   }
-  
+
   if (order == 2) { // second order kick map interpolation
     if (traceID) printf("second order kick map interpolation\n");
     if (ix >= 0 && iz >= 0) {
@@ -340,7 +340,7 @@ void LinearInterpolation2(T &X, T &Z, T &TX, T &TZ, T &B2,
 	+ U*(1.0-T1)*WITH->thetax[iz][ix+1]
 	+ (1.0-U)*T1*WITH->thetax[iz+1][ix]
 	+ U*T1*WITH->thetax[iz+1][ix+1];
-      
+
       THZ =
 	(1.0-U)*(1.0-T1)*WITH->thetaz[iz][ix]
 	+ U*(1.0-T1)*WITH->thetaz[iz][ix+1]
@@ -354,7 +354,7 @@ void LinearInterpolation2(T &X, T &Z, T &TX, T &TZ, T &B2,
 	  + (1.0-U)*T1*WITH->B2[iz+1][ix]
 	  + U*T1*WITH->B2[iz+1][ix+1];
     }
-    
+
     if (traceID) {
       printf("X=% f interpolation : U= % lf T =% lf\n",
 	     is_double<T>::cst(X), is_double<T>::cst(U),
@@ -383,30 +383,30 @@ void LinearInterpolation2(T &X, T &Z, T &TX, T &TZ, T &B2,
 /****************************************************************************/
 /* void SplineInterpolation2(double X, double Z, double &TX, double &TZ,
                              CellType &Cell, bool &out)
- 
+
    Purpose:
         Computes thx and thz in X and Z values using a bilinear interpolation
         interpolation of the array thetax(x, z) and thetaz(x, z)
- 
+
    Input:
        X, Z location of the interpolation
        Cell elment containing ID device
- 
+
    Output:
        TX, TZ thetax and thetaz interpolated at X and Z
        out true if interpolation out of table
- 
+
    Return:
        none
- 
+
    Global variables:
        none
- 
+
    Specific functions:
- 
+
    Comments:
        none
- 
+
 ****************************************************************************/
 template<typename T>
 void SplineInterpolation2(T &X, T &Z, T &thetax, T &thetaz,

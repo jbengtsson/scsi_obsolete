@@ -1,6 +1,6 @@
 /* NSLS-II specific library
 
-   J. Bengtsson  NSLS-II, BNL  2004 -        
+   J. Bengtsson  NSLS-II, BNL  2004 -
 
    T. Shaftan, I. Pinayev, Y. Luo, C. Montag, B. Nash
 
@@ -64,7 +64,7 @@ const char  CodCorLatFileName[]  = "codcorlat.out";
 const char  SkewMatFileName[]    = "skewmat.out";
 const char  eta_y_FileName[]     = "eta_y.out";
 const char  deta_y_FileName[]    = "deta_y.out";
- 
+
 
 const int  N_Fam_max = 15;
 
@@ -110,7 +110,7 @@ double  **C_;
 
 ss_vect<tps>  map;
 MNF_struct    MNF;
- 
+
 
 // conversion
 
@@ -143,15 +143,15 @@ void prt_trace (void)
   size_t  size;
   char    **strings;
   size_t  i;
-     
+
   size = backtrace(array, max_entries);
   strings = backtrace_symbols(array, size);
-     
+
   printf("prt_trace: obtained %zd stack frames\n", size);
-     
+
   for (i = 0; i < size; i++)
     printf ("%s\n", strings[i]);
-     
+
   free (strings);
 }
 #endif
@@ -188,7 +188,7 @@ void file_wr(ofstream &outf, const char file_name[])
 FILE* file_read(const char file_name[])
 {
   FILE      *fp;
-  
+
   fp = fopen(file_name, "r");
   if (fp == NULL) {
     printf("File not found: %s\n", file_name);
@@ -203,7 +203,7 @@ FILE* file_read(const char file_name[])
 FILE* file_write(const char file_name[])
 {
   FILE      *fp;
-  
+
   fp = fopen(file_name, "w");
   if (fp == NULL) {
     printf("Could not create file: %s\n", file_name);
@@ -505,7 +505,7 @@ void GetEmittance(const int Fnum, const bool prt)
   //   Sum_k(alpha_k) = 2*U_0/E
   // or
   //   J_x + J_y + J_z = 4.
-  
+
   for (i = 0; i < DOF; i++) {
     // partition numbers
     globval.J[i] =
@@ -583,7 +583,7 @@ void GetEmittance(const int Fnum, const bool prt)
 	   1e3*globval.tau[X_], 1e3*globval.tau[Y_], 1e3*globval.tau[Z_]);
     printf("\n");
     printf("alphac:                         "
-	   "alphac      = %8.4e\n", globval.Alphac); 
+	   "alphac      = %8.4e\n", globval.Alphac);
     printf("\n");
     printf("Fractional tunes:               "
 	   "nu_x        = %7.5f, nu_y   = %7.5f, nu_z   = %7.5f\n",
@@ -966,7 +966,7 @@ void CheckAlignTol(const char *OutputFile)
   double s;
   double PdSsys[2], PdSrms[2], PdSrnd[2], dS[2], dT[2];
   fstream fout;
-  
+
   gs_Fnum = globval.gs;   gs_nKid = GetnKid(gs_Fnum);
   ge_Fnum = globval.ge;   ge_nKid = GetnKid(ge_Fnum);
   if (gs_nKid == ge_nKid)
@@ -981,12 +981,12 @@ void CheckAlignTol(const char *OutputFile)
     cout << "error in opening the file  " << endl;
     exit_(0);
   }
-  
-  fout << "Girders, Quads, Sexts:  " << endl; 
+
+  fout << "Girders, Quads, Sexts:  " << endl;
   for (i = 1; i <= n_girders; i++){
     fout << i << ":" << endl;
     loc_gs = Elem_GetPos(gs_Fnum, i); loc_ge = Elem_GetPos(ge_Fnum, i);
-    
+
     loc = loc_gs;
     PdSsys[X_] = Cell[loc].Elem.M->PdSsys[X_];
     PdSsys[Y_] = Cell[loc].Elem.M->PdSsys[Y_];
@@ -1004,10 +1004,10 @@ void CheckAlignTol(const char *OutputFile)
          << "   " << Cell[loc].Elem.M->PdTrms << "  "
 	 << Cell[loc].Elem.M->PdTrnd << "   " << dS[X_]     << "  " <<  dS[Y_]
 	 << "   " << atan2( dT[1], dT[0] )  << endl;
-    
+
     for (j = loc_gs+1; j < loc_ge; j++) {
       if ((Cell[j].Elem.Pkind == Mpole) &&
-	  (Cell[j].Elem.M->n_design >= Quad || 
+	  (Cell[j].Elem.M->n_design >= Quad ||
 	   Cell[j].Elem.M->n_design >= Sext)) {
         loc = j;
 	PdSsys[X_] = Cell[loc].Elem.M->PdSsys[X_];
@@ -1029,7 +1029,7 @@ void CheckAlignTol(const char *OutputFile)
 	     << "   " << atan2( dT[1], dT[0] )  << endl;
       }
     }
-    
+
     loc = loc_ge;
     PdSsys[X_] = Cell[loc].Elem.M->PdSsys[X_];
     PdSsys[Y_] = Cell[loc].Elem.M->PdSsys[Y_];
@@ -1051,7 +1051,7 @@ void CheckAlignTol(const char *OutputFile)
 
   }
 
-  fout << "  " << endl;  
+  fout << "  " << endl;
   fout << "Dipoles:  " << endl;
   dip_Fnum = ElemIndex("B1"); dip_nKid = GetnKid(dip_Fnum);
   for (i = 1; i <= dip_nKid; i++){
@@ -1069,14 +1069,14 @@ void CheckAlignTol(const char *OutputFile)
 	 << "  " <<  PdSsys[X_] << "  " <<  PdSsys[Y_]
 	 << "   " << PdSrms[X_] << "  " <<  PdSrms[Y_]
 	 << "   " << PdSrnd[X_] << "  " <<  PdSrnd[Y_]
-	 << "   " << Cell[loc].Elem.M->PdTrms 
+	 << "   " << Cell[loc].Elem.M->PdTrms
 	 << "  " << Cell[loc].Elem.M->PdTrnd
 	 << "   " << dS[X_]     << "  " <<  dS[Y_]
 	 << "   " << atan2( dT[1], dT[0] )  << endl;
   }
-  
+
   fout.close();
-} 
+}
 
 
 void misalign_rms_elem(const int Fnum, const int Knum,
@@ -1088,7 +1088,7 @@ void misalign_rms_elem(const int Fnum, const int Knum,
 
   loc = Elem_GetPos(Fnum, Knum); mp = Cell[loc].Elem.M;
 
-  mp->PdSrms[X_] = dx_rms; mp->PdSrms[Y_] = dy_rms; mp->PdTrms = dr_rms; 
+  mp->PdSrms[X_] = dx_rms; mp->PdSrms[Y_] = dy_rms; mp->PdTrms = dr_rms;
   if (new_rnd) {
     if (normal) {
       mp->PdSrnd[X_] = normranf(); mp->PdSrnd[Y_] = normranf();
@@ -1111,7 +1111,7 @@ void misalign_sys_elem(const int Fnum, const int Knum,
 
   loc = Elem_GetPos(Fnum, Knum); mp = Cell[loc].Elem.M;
 
-  mp->PdSsys[X_] = dx_sys; mp->PdSsys[Y_] = dy_sys; mp->PdTsys = dr_sys; 
+  mp->PdSsys[X_] = dx_sys; mp->PdSsys[Y_] = dy_sys; mp->PdTsys = dr_sys;
 
   Mpole_SetdS(Fnum, Knum); Mpole_SetdT(Fnum, Knum);
 }
@@ -1196,7 +1196,7 @@ void misalign_rms_girders(const int gs, const int ge,
     cout << "set_girders: no of GS != no of GE" << endl;
     exit (1);
   }
-  
+
   misalign_rms_fam(gs, dx_rms, dy_rms, dr_rms, new_rnd);
   misalign_rms_fam(ge, dx_rms, dy_rms, dr_rms, new_rnd);
 
@@ -1220,7 +1220,7 @@ void misalign_rms_girders(const int gs, const int ge,
 	for (k = 0; k <= 1; k++)
 	  Cell[j].Elem.M->PdSsys[k]
 	    = dx_gs[k] + (dx_ge[k]-dx_gs[k])*(s-s_gs)/(s_ge-s_gs);
-	Cell[j].Elem.M->PdTsys = 
+	Cell[j].Elem.M->PdTsys =
 	  Cell[loc_gs].Elem.M->PdTrms*Cell[loc_gs].Elem.M->PdTrnd;
       }
     }
@@ -1244,7 +1244,7 @@ void misalign_sys_girders(const int gs, const int ge,
     cout << "set_girders: no of GS != no of GE" << endl;
     exit (1);
   }
-  
+
   misalign_sys_fam(gs, dx_sys, dy_sys, dr_sys);
   misalign_sys_fam(ge, dx_sys, dy_sys, dr_sys);
 
@@ -1268,7 +1268,7 @@ void misalign_sys_girders(const int gs, const int ge,
 	for (k = 0; k <= 1; k++)
 	  Cell[j].Elem.M->PdSsys[k]
 	    = dx_gs[k] + (dx_ge[k]-dx_gs[k])*(s-s_gs)/(s_ge-s_gs);
-	Cell[j].Elem.M->PdTsys = 
+	Cell[j].Elem.M->PdTsys =
 	  Cell[loc_gs].Elem.M->PdTrms*Cell[loc_gs].Elem.M->PdTrnd;
       }
     }
@@ -1314,7 +1314,7 @@ void LoadAlignTol(const char *AlignFile, const bool Scale_it,
 	sscanf(line, "%*s %d", &seed_val);
 	seed_val += 2*seed;
 	printf("setting random seed to %d\n", seed_val);
-	iniranf(seed_val); 
+	iniranf(seed_val);
       } else {
 	sscanf(line,"%*s %s %lf %lf %lf", type, &dx, &dy, &dr);
 	dr_deg = dr*180.0/M_PI;
@@ -1340,7 +1340,7 @@ void LoadAlignTol(const char *AlignFile, const bool Scale_it,
 
 	if (Scale_it) {
 	  dx *= Scale; dy *= Scale; dr *= Scale;
-	} 
+	}
 
 	if (strcmp("all", Name) == 0) {
 	  printf("misaligning all:         dx = %e, dy = %e, dr = %e\n",
@@ -1400,7 +1400,7 @@ void LoadAlignTol(const char *AlignFile, const bool Scale_it,
 	      misalign_rms_fam(Fnum, dx, dy, dr_deg, new_rnd);
 	    else
 	      misalign_sys_fam(Fnum, dx, dy, dr_deg);
-	  } else 
+	  } else
 	    printf("LoadAlignTol: undefined element %s\n", Name);
 	}
       }
@@ -1414,19 +1414,19 @@ void LoadAlignTol(const char *AlignFile, const bool Scale_it,
 
 // apertures
 
-void set_aper_elem(const int Fnum, const int Knum, 
-		   const double Dxmin, const double Dxmax, 
-		   const double Dymin, const double Dymax) 
-{ 
-  int  k; 
- 
-    k = Elem_GetPos(Fnum, Knum); 
-    Cell[k].maxampl[X_][0] = Dxmin; Cell[k].maxampl[X_][1] = Dxmax; 
-    Cell[k].maxampl[Y_][0] = Dymin; Cell[k].maxampl[Y_][1] = Dymax; 
- } 
+void set_aper_elem(const int Fnum, const int Knum,
+		   const double Dxmin, const double Dxmax,
+		   const double Dymin, const double Dymax)
+{
+  int  k;
+
+    k = Elem_GetPos(Fnum, Knum);
+    Cell[k].maxampl[X_][0] = Dxmin; Cell[k].maxampl[X_][1] = Dxmax;
+    Cell[k].maxampl[Y_][0] = Dymin; Cell[k].maxampl[Y_][1] = Dymax;
+ }
 
 void set_aper_fam(const int Fnum,
-		  const double Dxmin, const double Dxmax, 
+		  const double Dxmin, const double Dxmax,
 		  const double Dymin, const double Dymax)
 {
   int k;
@@ -1435,7 +1435,7 @@ void set_aper_fam(const int Fnum,
     set_aper_elem(Fnum, k, Dxmin, Dxmax, Dymin, Dymax);
 }
 
-void set_aper_type(const int type, const double Dxmin, const double Dxmax, 
+void set_aper_type(const int type, const double Dxmin, const double Dxmax,
 		   const double Dymin, const double Dymax)
 {
   long int   k;
@@ -1450,10 +1450,10 @@ void set_aper_type(const int type, const double Dxmin, const double Dxmax,
 }
 
 
-void LoadApers(const char *AperFile, const double scl_x, const double scl_y) 
+void LoadApers(const char *AperFile, const double scl_x, const double scl_y)
 {
   char    line[max_str], Name[max_str];
-  int     Fnum; 
+  int     Fnum;
   double  dxmin, dxmax, dymin, dymax;  // min and max x and apertures
   FILE    *fp;
 
@@ -1475,12 +1475,12 @@ void LoadApers(const char *AperFile, const double scl_x, const double scl_y)
 		 " dxmin = %e, dxmax = %e, dymin = %e, dymax = %e\n",
 		 dxmin, dxmax, dymin, dymax);
 	set_aper_type(All, dxmin, dxmax, dymin, dymax);
-	//	ini_aper(dxmin, dxmax, dymin, dymax); 
+	//	ini_aper(dxmin, dxmax, dymin, dymax);
       } else if (strcmp("quad", Name)==0) {
 	if(prt)
 	  printf("setting apertures at all quads to"
 		 " dxmin = %e, dxmax = %e, dymin = %e, dymax = %e\n",
-		 dxmin, dxmax, dymin, dymax);  
+		 dxmin, dxmax, dymin, dymax);
 	set_aper_type(Quad, dxmin, dxmax, dymin, dymax);
       } else if (strcmp("sext", Name) == 0) {
 	if(prt)
@@ -1496,13 +1496,13 @@ void LoadApers(const char *AperFile, const double scl_x, const double scl_y)
 		   " dxmin = %e, dxmax = %e, dymin = %e, dymax = %e\n",
 		   Name, dxmin, dxmax, dymin, dymax);
 	  set_aper_fam(Fnum, dxmin, dxmax, dymin, dymax);
-	} else 
+	} else
 	  printf("LoadApers: lattice does not contain element %s\n", Name);
       }
     } else
       printf("%s", line);
   }
-    
+
   fclose(fp);
 }
 
@@ -1741,7 +1741,7 @@ void set_bnL_design_type(const int type,
     for (k = 1; k <= globval.Cell_nLoc; k++)
       if ((Cell[k].Elem.Pkind == Mpole) && (Cell[k].Elem.M->n_design == type))
 	set_bnL_design_elem(Cell[k].Fnum, Cell[k].Knum, n, bnL, anL);
-  } else 
+  } else
     printf("Bad type argument to set_bnL_design_type()\n");
 }
 
@@ -1765,7 +1765,7 @@ void set_bnL_sys_elem(const int Fnum, const int Knum,
     // thin kick
     elem.M->PBsys[HOMmax+n] = bnL; elem.M->PBsys[HOMmax-n] = anL;
   }
-  
+
   Mpole_SetPB(Fnum, Knum, n); Mpole_SetPB(Fnum, Knum, -n);
 
   if (trace) {
@@ -1818,7 +1818,7 @@ void set_bnL_rms_elem(const int Fnum, const int Knum,
   elemtype  elem;
 
   bool  prt = false;
-  
+
   if (n < 1) {
     cout << "set_bnL_rms_elem: n < 1 (" << n << ")" << endl;
     exit(1);
@@ -1842,7 +1842,7 @@ void set_bnL_rms_elem(const int Fnum, const int Knum,
       elem.M->PBrnd[HOMmax+n] = ranf(); elem.M->PBrnd[HOMmax-n] = ranf();
     }
   }
-  
+
   if (prt)
     printf("set_bnL_rms_elem:  Fnum = %d, Knum = %d"
 	   ", bnL = %e, anL = %e %e %e\n",
@@ -1874,7 +1874,7 @@ void set_bnL_rms_type(const int type,
 		      const bool new_rnd)
 {
   long int   k;
-  
+
   if (n < 1) {
     cout << "get_bnL_rms_type: n < 1 (" << n << ")" << endl;
     exit(1);
@@ -1905,7 +1905,7 @@ void set_bnr_sys_elem(const int Fnum, const int Knum,
   // errors are relative to design values for (Dip, Quad, Sext, ...)
   mp->PBsys[HOMmax+n] = bnr*mp->PBpar[HOMmax+nd];
   mp->PBsys[HOMmax-n] = anr*mp->PBpar[HOMmax+nd];
-  
+
   Mpole_SetPB(Fnum, Knum, n); Mpole_SetPB(Fnum, Knum, -n);
 
   if (prt)
@@ -1957,7 +1957,7 @@ void set_bnr_rms_elem(const int Fnum, const int Knum,
   MpoleType  *mp;
 
   bool  prt = false;
-  
+
   if (n < 1) {
     cout << "set_bnr_rms_elem: n < 1 (" << n << ")" << endl;
     exit(1);
@@ -1981,7 +1981,7 @@ void set_bnr_rms_elem(const int Fnum, const int Knum,
   }
 
   Mpole_SetPB(Fnum, Knum, n); Mpole_SetPB(Fnum, Knum, -n);
-  
+
   if (prt) {
     printf("set_bnr_rms_elem:  Fnum = %d, Knum = %d, n = %d, n_design = %d"
 	   ", new_rnd = %d, r_# = (%e, %e)\n",
@@ -2015,7 +2015,7 @@ void set_bnr_rms_type(const int type,
 		      const bool new_rnd)
 {
   long int   k;
-  
+
   if (n < 1) {
     cout << "set_bnr_rms_type: n < 1 (" << n << ")" << endl;
     exit(1);
@@ -2138,7 +2138,7 @@ void SetFieldValues_type(const int N, const bool rms, const double r0,
 
 void SetFieldErrors(const char *name, const bool rms, const double r0,
 		    const int n, const double Bn, const double An,
-		    const bool new_rnd) 
+		    const bool new_rnd)
 {
   int     Fnum;
 
@@ -2154,7 +2154,7 @@ void SetFieldErrors(const char *name, const bool rms, const double r0,
     Fnum = ElemIndex(name);
     if(Fnum > 0)
       SetFieldValues_fam(Fnum, rms, r0, n, Bn, An, new_rnd);
-    else 
+    else
       printf("SetFieldErrors: undefined element %s\n", name);
   }
 }
@@ -2176,8 +2176,8 @@ char* get_prm(char **p)
 
 
 void LoadFieldErr(const char *FieldErrorFile, const bool Scale_it,
-		  const double Scale, const bool new_rnd) 
-{  
+		  const double Scale, const bool new_rnd)
+{
   bool      rms, set_rnd;
   char      line[max_str], name[max_str], type[max_str], *prm, *p;
   int       k, n, seed_val;
@@ -2186,17 +2186,17 @@ void LoadFieldErr(const char *FieldErrorFile, const bool Scale_it,
 
   file_rd(inf, FieldErrorFile);
 
-  set_rnd = false; 
+  set_rnd = false;
   cout << endl;
   while (!inf.getline(line, max_str).eof()) {
     if (strstr(line, "#") == NULL) {
       // New seed?
-      sscanf(line, "%s", name); 
+      sscanf(line, "%s", name);
       if (strcmp("seed", name) == 0) {
 	set_rnd = true;
-	sscanf(line, "%*s %d", &seed_val); 
+	sscanf(line, "%*s %d", &seed_val);
 	cout << "setting random seed to " << seed_val << endl;
-	iniranf(seed_val); 
+	iniranf(seed_val);
       } else {
 	sscanf(line, "%*s %s %lf", type, &r0);
 	printf("%-4s %3s %7.1le", name, type, r0);
@@ -2321,7 +2321,7 @@ void Align_BPMs(const int n)
 
       j++;
     } while (j <= n_step);
-      
+
     if (aligned)
       Mpole_SetdS(globval.bpm, i);
     else
@@ -2358,11 +2358,11 @@ void get_dbeta_dnu(double m_dbeta[], double s_dbeta[],
   double    dbeta, dnu;
 
   Ring_GetTwiss(false, 0.0);
-  
+
   for (k = 0; k <= 1; k++) {
     m_dbeta[k] = 0.0; s_dbeta[k] = 0.0; m_dnu[k] = 0.0; s_dnu[k] = 0.0;
   }
-  
+
   for (j = 0; j < n_sext; j++) {
     ind = sexts[j];
     for (k = 0; k <= 1; k++) {
@@ -2401,16 +2401,16 @@ bool CorrectCOD_N(const char *ae_file, const int n_orbit,
   for (i = 1; i <= n_scale; i++) {
     // Scale the rms values
     LoadAlignTol(ae_file, true, (double)i/(double)n_scale, false, k);
-    
+
     if (bba) {
       // Beam based alignment
       Align_BPMs(Quad);
     }
 
-    cod = CorrectCOD(n_orbit); 
-    
+    cod = CorrectCOD(n_orbit);
+
     if (!cod) break;
-    
+
     get_dbeta_dnu(m_dbeta, s_dbeta, m_dnu, s_dnu);
     printf("\n");
     printf("RMS dbeta_x/beta_x = %4.2f%%,   dbeta_y/beta_y = %4.2f%%\n",
@@ -2425,7 +2425,7 @@ bool CorrectCOD_N(const char *ae_file, const int n_orbit,
 
 // Control of vertical beam size
 
-void FindSQ_SVDmat(double **SkewRespMat, double **U, 
+void FindSQ_SVDmat(double **SkewRespMat, double **U,
 		   double **V, double *w, int N_COUPLE, int N_SKEW)
 {
   int i, j;
@@ -2475,32 +2475,32 @@ void FindMatrix(double **SkewRespMat, const double deta_y_max)
   const int     Xi = 1, Yi = 2;
   const double  pi = M_PI, twopi = 2.0*M_PI;
 
-  vetaSQ = gsl_vector_alloc(N_SKEW); 
+  vetaSQ = gsl_vector_alloc(N_SKEW);
   GSL2NRDV2(vetaSQ, etaSQ);
-  
+
   mbetaSQ = gsl_matrix_alloc(N_SKEW, 2);
   GSL2NRDM2(pmbetaSQ, mbetaSQ, betaSQ, 0);
-  
+
   mnuSQ = gsl_matrix_alloc(N_SKEW, 2);
   GSL2NRDM2(pmnuSQ, mnuSQ, nuSQ, 0);
-  
+
   mbetaBPM = gsl_matrix_alloc(N_BPM, 2);
   GSL2NRDM2(pmbetaBPM, mbetaBPM, betaBPM, 0);
-  
+
   mnuBPM = gsl_matrix_alloc(N_BPM, 2);
   GSL2NRDM2(pmnuBPM, mnuBPM, nuBPM, 0);
-  
-  mbetaHC = gsl_matrix_alloc(N_HCOR, 2); 
+
+  mbetaHC = gsl_matrix_alloc(N_HCOR, 2);
   GSL2NRDM2(pmbetaHC, mbetaHC, betaHC, 0);
-  
+
   mnuHC = gsl_matrix_alloc(N_HCOR, 2);
   GSL2NRDM2(pmnuHC, mnuHC, nuHC, 0);
-  
-  mbetaVC = gsl_matrix_alloc(N_VCOR, 2); 
+
+  mbetaVC = gsl_matrix_alloc(N_VCOR, 2);
   GSL2NRDM2(pmbetaVC, mbetaVC, betaVC, 0);
-  
+
   mnuVC = gsl_matrix_alloc(N_VCOR, 2);
-  GSL2NRDM2(pmnuVC, mnuVC, nuVC, 0);  
+  GSL2NRDM2(pmnuVC, mnuVC, nuVC, 0);
 
   nuX = globval.TotalTune[X_]; nuY = globval.TotalTune[Y_];
 
@@ -2548,8 +2548,8 @@ void FindMatrix(double **SkewRespMat, const double deta_y_max)
       alpha = 0.5*sqrt(betaSQ[i][Xi]*betaHC[k][Xi])*
 	cos(twopi*fabs(nuSQ[i][Xi]-nuHC[k][Xi])-pi*nuX)/sin(pi*nuX);
       // find vertical orbit due to the kick
-      for (j = 1; j <= N_BPM; j++) 
-	SkewRespMat[N_BPM+(k-1)*N_HCOR+j][i] = 
+      for (j = 1; j <= N_BPM; j++)
+	SkewRespMat[N_BPM+(k-1)*N_HCOR+j][i] =
           HVweight*0.5*alpha*sqrt(betaSQ[i][Yi]*betaBPM[j][Yi])*
 	  cos(twopi*fabs(nuSQ[i][Yi]-nuBPM[j][Yi])-pi*nuY)/sin(pi*nuY);
     } //for (k=1; k<=N_HCOR; k++)
@@ -2560,8 +2560,8 @@ void FindMatrix(double **SkewRespMat, const double deta_y_max)
       alpha = 0.5*sqrt(betaSQ[i][Yi]*betaVC[k][Yi])*
 	cos(twopi*fabs(nuSQ[i][Yi]-nuVC[k][Yi])-pi*nuY)/sin(pi*nuY);
       // find horizontal orbit due to the kick
-      for (j = 1; j <= N_BPM; j++) 
-	SkewRespMat[N_BPM+N_BPM*N_HCOR+(k-1)*N_VCOR+j][i] = 
+      for (j = 1; j <= N_BPM; j++)
+	SkewRespMat[N_BPM+N_BPM*N_HCOR+(k-1)*N_VCOR+j][i] =
           VHweight*0.5*alpha*sqrt(betaSQ[i][Xi]*betaBPM[j][Xi])*
 	  cos(twopi*fabs(nuSQ[i][Xi]-nuBPM[j][Xi])-pi*nuX)/sin(pi*nuX);
     } //for (k=1; k<=N_VCOR; k++)
@@ -2570,7 +2570,7 @@ void FindMatrix(double **SkewRespMat, const double deta_y_max)
 
   SkewMatFile = file_write(SkewMatFileName);
   for (i = 1; i <= N_SKEW; i++) {
-    for (j = 1; j <= N_COUPLE; j++) 
+    for (j = 1; j <= N_COUPLE; j++)
       fprintf(SkewMatFile, "%9.2e ", SkewRespMat[j][i]);
     fprintf(SkewMatFile, "\n");
   }
@@ -2646,25 +2646,25 @@ void ini_skew_cor(const double deta_y_max)
 
   mSkewRespMat = gsl_matrix_alloc(N_COUPLE, N_SKEW);
   GSL2NRDM2(dmSRM,mSkewRespMat,SkewRespMat,0);
-  
+
   vVertCouple = gsl_vector_alloc(N_COUPLE);
   GSL2NRDV2(vVertCouple, VertCouple);
-  
+
   vSkewStrengthCorr = gsl_vector_alloc(N_SKEW);
   GSL2NRDV2(vSkewStrengthCorr, SkewStrengthCorr);
-  
+
   vb = gsl_vector_alloc(N_COUPLE);
   GSL2NRDV2(vb, b);
-  
+
   vw = gsl_vector_alloc(N_SKEW);
   GSL2NRDV2(vw, w);
-  
-  mV = gsl_matrix_alloc(N_SKEW, N_SKEW); 
+
+  mV = gsl_matrix_alloc(N_SKEW, N_SKEW);
   GSL2NRDM2(dmV,mV,V,0);
-  
+
   mU = gsl_matrix_alloc(N_COUPLE, N_SKEW);
   GSL2NRDM2(dmU,mU,U,0);
-  
+
   veta_y = gsl_vector_alloc(N_BPM);
   GSL2NRDV2(veta_y, eta_y);
 
@@ -2679,10 +2679,10 @@ void ini_skew_cor(const double deta_y_max)
   Ring_GetTwiss(true, 0.0);
 
   printf("\n");
-  printf("Looking for response matrix\n");   
+  printf("Looking for response matrix\n");
   FindMatrix(SkewRespMat, deta_y_max);
 
-  printf("Looking for SVD matrices\n");  
+  printf("Looking for SVD matrices\n");
   FindSQ_SVDmat(SkewRespMat, U, V, w, N_COUPLE, N_SKEW);
 }
 
@@ -2698,7 +2698,7 @@ void FindCoupVector(double *VertCouple)
 
   vorbitP = gsl_vector_alloc(N_BPM);
   GSL2NRDV2(vorbitP, orbitP);
-  
+
   vorbitN = gsl_vector_alloc(N_BPM);
   GSL2NRDV2(vorbitN, orbitN);
 
@@ -2727,7 +2727,7 @@ void FindCoupVector(double *VertCouple)
     SetdKLpar(Cell[h_corr[j-1]].Fnum, Cell[h_corr[j-1]].Knum, +Dip, kick);
 
     for (i = 1; i <= N_BPM; i++)
-      VertCouple[N_BPM+(j-1)*N_HCOR+i] = 
+      VertCouple[N_BPM+(j-1)*N_HCOR+i] =
 	HVweight*(orbitN[i]-orbitP[i])*0.5/kick; // sign reversal
   } // hcorr cycle
 
@@ -2749,8 +2749,8 @@ void FindCoupVector(double *VertCouple)
     // restore corrector: "-Dip" for vertical
     SetdKLpar(Cell[v_corr[j-1]].Fnum, Cell[v_corr[j-1]].Knum, -Dip, kick);
 
-    for (i = 1; i <= N_BPM; i++) 
-      VertCouple[N_BPM+N_BPM*N_HCOR+(j-1)*N_VCOR+i] = 
+    for (i = 1; i <= N_BPM; i++)
+      VertCouple[N_BPM+N_BPM*N_HCOR+(j-1)*N_VCOR+i] =
 	VHweight*(orbitP[i]-orbitN[i])*0.5/kick;
   } // vcorr cycle
 
@@ -2836,7 +2836,7 @@ void corr_eps_y(void)
 
     printf("Applying correction\n");
     // Add correction
-    for (j = 1; j <= N_SKEW; j++) 
+    for (j = 1; j <= N_SKEW; j++)
       SetdKLpar(globval.qt, j, -Quad, SkewStrengthCorr[j]);
 
     printf("\n");
@@ -2963,7 +2963,7 @@ void SVD(const int m, const int n, double **M, double beta_nu[],
 {
   int     i, j;
 
-  if (trace) { 
+  if (trace) {
     printf("\n");
     printf("SVD: first = %1d, m = %1d n = %1d\n", first, m, n);
   }
@@ -2977,7 +2977,7 @@ void SVD(const int m, const int n, double **M, double beta_nu[],
     gsl_linalg_SV_decomp(mU1,mV1,vw1, work);
     gsl_vector_free(work);
 
-    if (trace) { 
+    if (trace) {
       printf("\n");
       printf("singular values:\n");
       printf("\n");
@@ -2993,12 +2993,12 @@ void SVD(const int m, const int n, double **M, double beta_nu[],
     }
     if (trace) if (n % 8 != 0) printf("\n");
   }
- 
+
   gsl_vector *vbeta_nu = gsl_vector_alloc(n);
   int i_vbeta;
   for(i_vbeta=0;i_vbeta<n;i_vbeta++)
 	gsl_vector_set(vbeta_nu,i_vbeta,beta_nu[i_vbeta]);
-	
+
   gsl_linalg_SV_solve(mU1,mV1,vw1,vbeta_nu,vb2Ls_);
   gsl_vector_free(vbeta_nu);
 }
@@ -3176,12 +3176,12 @@ void A_matrix(void)
     for (j = 0; j <= 1; j++) {
       qb0[j][k] = qb[j][k]; qNu0[j][k] = qNu[j][k];
     }
-  
+
   // Defining Twiss in undisturbed sexts
   for (k = 0; k < Nsext; k++)
     for (j = 0; j <= 1; j++)
       sNu0[j][k] = sNu[j][k];
-  
+
   // Now creating matrix A in X=A*B2L
   for (k = 1; k <= Nsext; k++) {
     for (j = 1; j <= Nquad; j++) {
@@ -3228,8 +3228,8 @@ void X_vector(const bool first)
       Xsext0[k+2*Nsext] = sNu[X_][k-1]; Xsext0[k+3*Nsext] = sNu[Y_][k-1];
     }
     Xsext0[4*Nsext+1] = 0.0; Xsext0[4*Nsext+2] = 0.0;
-  } else { 
-    // Now substracting from X in X=A*B2L 
+  } else {
+    // Now substracting from X in X=A*B2L
     for (k = 1; k <= Nsext; k++) {
       Xsext[k]         = scl_dbeta*(Xsext0[k]-sb[X_][k-1])/sb[X_][k-1];
       Xsext[k+Nsext]   = scl_dbeta*(Xsext0[k+Nsext]-sb[Y_][k-1])/sb[Y_][k-1];
@@ -3284,28 +3284,28 @@ void ini_ID_corr(const bool IDs)
 
   bool checkNquad = false;
   if(Nquad==0) {Nquad = 1; checkNquad = true;}
-	
-  vXsext = gsl_vector_alloc(Nconstr); 
+
+  vXsext = gsl_vector_alloc(Nconstr);
   GSL2NRDV2(vXsext, Xsext);
-	
+
   vXsext0 = gsl_vector_alloc(Nconstr);
   GSL2NRDV2(vXsext0, Xsext0);
-	
-  vb2Ls_ = gsl_vector_alloc(Nquad); 
+
+  vb2Ls_ = gsl_vector_alloc(Nquad);
   GSL2NRDV2(vb2Ls_, b2Ls_);
-	
+
   mA1 = gsl_matrix_alloc(Nconstr, Nquad);
   GSL2NRDM2(dmA1,mA1,A1,0);
-	
-  mU1 = gsl_matrix_alloc(Nconstr, Nquad); 
+
+  mU1 = gsl_matrix_alloc(Nconstr, Nquad);
   GSL2NRDM2(dmU1,mU1,U1,0);
-	
+
   vw1 = gsl_vector_alloc(Nquad);
   GSL2NRDV2(vw1, w1);
-	
+
   mV1 = gsl_matrix_alloc(Nquad, Nquad);
   GSL2NRDM2(dmV1,mV1,V1,0);
-	
+
   if(checkNquad) Nquad = 0;
 
   for (k = 1; k <= Nquad; k++)
@@ -3321,7 +3321,7 @@ void ini_ID_corr(const bool IDs)
   // Set-up matrix A in X=A*b2Ls_
   A_matrix();
 
-  // Now fill the X in X=A*b2Ls_ 
+  // Now fill the X in X=A*b2Ls_
   X_vector(true);
 }
 
@@ -3343,7 +3343,7 @@ void W_diag(void)
   dnu0[Y_] = globval.TotalTune[Y_] - Nu_Y0;
 
   b2Lsum = 0.0;
-  for (k = 1; k <= Nquad; k++) 
+  for (k = 1; k <= Nquad; k++)
     b2Lsum += sqr(b2Ls_[k]);
 
   printf("\n");
@@ -3370,7 +3370,7 @@ bool ID_corr(const int N_calls, const int N_steps, const bool IDs)
     if (IDs) set_IDs((double)i/(double)N_steps);
 
     get_SQ();                               // Read Betas and Nus
-    X_vector(false);                        // Fill in dX in dX=A*db2Ls_ 
+    X_vector(false);                        // Fill in dX in dX=A*db2Ls_
     W_diag();                               // Get statistics
     for (j = 1; j <= N_calls; j++) {
       SVD(Nconstr, Nquad, A1, Xsext, b2Ls_, 1e0, j == 1);
@@ -3395,7 +3395,7 @@ bool ID_corr(const int N_calls, const int N_steps, const bool IDs)
       printf("\n");
       printf("Iteration: %2d\n", j);
       if (get_SQ()) {
-	X_vector(false);                    // Fill in dX in dX=A*db2Ls_ 
+	X_vector(false);                    // Fill in dX in dX=A*db2Ls_
 	W_diag();                           // Get statistics
 
 	printglob();
@@ -3426,7 +3426,7 @@ bool ID_corr(const int N_calls, const int N_steps, const bool IDs)
     gsl_vector_free(vXsext0);
     gsl_vector_free(vb2Ls_);
     gsl_vector_free(vw1);
-	
+
     gsl_matrix_free(mA1);
     gsl_matrix_free(mU1);
     gsl_matrix_free(mV1);
@@ -3607,7 +3607,7 @@ void get_param(const char *param_file)
       } else if (strcmp("DA_bare", name) == 0) {
 	sscanf(line, "%*s %s", str);
 	DA_bare = (strcmp(str, "true") == 0)? true : false;
-      } else if (strcmp("delta", name) == 0) { 
+      } else if (strcmp("delta", name) == 0) {
 	sscanf(line, "%*s %lf", &delta_DA_);
       } else if (strcmp("freq_map", name) == 0) {
 	sscanf(line, "%*s %s %d %d %d %d %lf %lf %lf",
@@ -3617,13 +3617,13 @@ void get_param(const char *param_file)
       } else if (strcmp("qt", name) == 0) {
 	sscanf(line, "%*s %s", str);
 	globval.qt = ElemIndex(str);
-      } else if (strcmp("disp_wave_y", name) == 0) 
+      } else if (strcmp("disp_wave_y", name) == 0)
 	sscanf(line, "%*s %lf", &disp_wave_y);
       else if (strcmp("n_lin", name) == 0)
 	sscanf(line, "%*s %d", &n_lin);
-      else if (strcmp("VDweight", name) == 0) 
+      else if (strcmp("VDweight", name) == 0)
 	sscanf(line, "%*s %lf", &VDweight);
-      else if (strcmp("HVweight", name) == 0) 
+      else if (strcmp("HVweight", name) == 0)
 	sscanf(line, "%*s %lf", &HVweight);
       else if (strcmp("VHweight", name) == 0)
 	sscanf(line, "%*s %lf", &VHweight);
@@ -3639,7 +3639,7 @@ void get_param(const char *param_file)
 	    Q_Fam[N_Fam-1] = ElemIndex(s); s = strtok_r(NULL, " \r", &p);
 	  } else {
 	    cout << "get_param: N_Fam_max exceeded (" << N_Fam_max << ")"
-		 << endl; 
+		 << endl;
 	    exit(1);
 	  }
 	}
@@ -3673,11 +3673,11 @@ void Orb_and_Trim_Stat(void)
   double  tr; // trim strength
 
   Vector2   Sext_max, Sext_sigma, TrimMax, orb;
-  
+
   cout << "ini_skew_cor: out-of-date (globval.hcorr...)" << endl;
   exit(1);
 
-  Sext_max[X_] = 0.0; Sext_max[Y_] = 0.0; 
+  Sext_max[X_] = 0.0; Sext_max[Y_] = 0.0;
   Sext_sigma[X_] = 0.0; Sext_sigma[Y_] = 0.0;
   TrimMax[X_] = 0.0; TrimMax[Y_] = 0.0;
   N = globval.Cell_nLoc; SextCounter = 0;
@@ -3705,7 +3705,7 @@ void Orb_and_Trim_Stat(void)
 
   Sext_sigma[X_] = sqrt(Sext_sigma[X_]/SextCounter);
   Sext_sigma[Y_] = sqrt(Sext_sigma[Y_]/SextCounter);
-    
+
   printf("In sextupoles maximal horizontal orbit is:"
 	 " %5.3f mm with sigma %5.3f mm\n",
           1e3*Sext_max[X_], 1e3*Sext_sigma[X_]);
@@ -3747,7 +3747,7 @@ void prt_codcor_lat(void)
 
     fprintf(CodCorLatFile, "%7.3f  %5.2f    %5.2f  %7.4f  %5.2f  %7.4f"
 	    "  %6.3f  %6.3f  %6.3f\n",
-	    Cell[i].S, sqrt(Cell[i].Beta[X_]*Cell[i].Beta[Y_]), 
+	    Cell[i].S, sqrt(Cell[i].Beta[X_]*Cell[i].Beta[Y_]),
             Cell[i].Beta[X_], Cell[i].Nu[X_], Cell[i].Beta[Y_], Cell[i].Nu[Y_],
 	    Cell[i].Eta[X_], Cell[i].Eta[X_]*Cell[i].Beta[Y_],
             Cell[i].Nu[X_]-Cell[i].Nu[Y_]);
@@ -3782,12 +3782,12 @@ double f_int_Touschek(const double u)
   double  f;
 
   if (u > 0.0)
-    f = (1.0/u-log(1.0/u)/2.0-1.0)*exp(-u_Touschek/u); 
+    f = (1.0/u-log(1.0/u)/2.0-1.0)*exp(-u_Touschek/u);
   else
     f = 0.0;
 
   return f;
-} 
+}
 
 
 double gsl_f_int_Touschek(double u, void *params)
@@ -3796,12 +3796,12 @@ double gsl_f_int_Touschek(double u, void *params)
   double  f;
 
   if (u > 0.0)
-    f = (1.0/u-log(1.0/u)/2.0-1.0)*exp(-u_Touschek/u); 
+    f = (1.0/u-log(1.0/u)/2.0-1.0)*exp(-u_Touschek/u);
   else
     f = 0.0;
 
   return alpha*f;
-} 
+}
 
 
 double Touschek_loc(const long int i, const double gamma,
@@ -3825,9 +3825,9 @@ double Touschek_loc(const long int i, const double gamma,
 
     // Compute beam sizes for given hor/ver emittance, sigma_s,
     // and sigma_delta (for x ~ 0): sigma_x0' = sqrt(eps_x/beta_x).
-    sigma_x = sqrt(Cell[i].Beta[X_]*eps_x+sqr(Cell[i].Eta[X_]*sigma_delta)); 
-    sigma_y = sqrt(Cell[i].Beta[Y_]*eps_y); 
-    sigma_xp = (eps_x/sigma_x)*sqrt(1e0+curly_H*sqr(sigma_delta)/eps_x);  
+    sigma_x = sqrt(Cell[i].Beta[X_]*eps_x+sqr(Cell[i].Eta[X_]*sigma_delta));
+    sigma_y = sqrt(Cell[i].Beta[Y_]*eps_y);
+    sigma_xp = (eps_x/sigma_x)*sqrt(1e0+curly_H*sqr(sigma_delta)/eps_x);
   } else {
     // ZAP averages the optics functions over an element instead of the
     // integrand; incorrect.
@@ -3843,9 +3843,9 @@ double Touschek_loc(const long int i, const double gamma,
 
     // Compute beam sizes for given hor/ver emittance, sigma_s,
     // and sigma_delta (for x ~ 0): sigma_x0' = sqrt(eps_x/beta_x).
-    sigma_x = sqrt(beta[X_]*eps_x+sqr(eta[X_]*sigma_delta)); 
-    sigma_y = sqrt(beta[Y_]*eps_y); 
-    sigma_xp = (eps_x/sigma_x)*sqrt(1e0+curly_H*sqr(sigma_delta)/eps_x);  
+    sigma_x = sqrt(beta[X_]*eps_x+sqr(eta[X_]*sigma_delta));
+    sigma_y = sqrt(beta[Y_]*eps_y);
+    sigma_xp = (eps_x/sigma_x)*sqrt(1e0+curly_H*sqr(sigma_delta)/eps_x);
   }
 
   u_Touschek = sqr(delta_RF/(gamma*sigma_xp));
@@ -3855,12 +3855,12 @@ double Touschek_loc(const long int i, const double gamma,
   gsl_function F;
   F.function = &gsl_f_int_Touschek;
   F.params = &alphal;
-	
+
   gsl_integration_workspace * w = gsl_integration_workspace_alloc (1000);
   gsl_integration_qags (&F, 0, 1.0, 0, 1e-7, 1000, w, &result, &error);
-	
+
   dtau_inv = result/(sigma_x*sigma_y*sigma_xp);
-  gsl_integration_workspace_free (w);		
+  gsl_integration_workspace_free (w);
 
   return dtau_inv;
 }
@@ -3916,8 +3916,8 @@ double Touschek(const double Qb, const double delta_RF,
     N_e*sqr(r_e)*c0/(8.0*M_PI*cube(gamma)*sigma_s)
     /(sqr(delta_RF)*Cell[globval.Cell_nLoc].S);
 
-  printf("\n"); 
-  printf("Touschek lifetime [hrs]: %10.3e\n", 1e0/(3600e0*tau_inv)); 
+  printf("\n");
+  printf("Touschek lifetime [hrs]: %10.3e\n", 1e0/(3600e0*tau_inv));
 
   return(1e0/(tau_inv));
 }
@@ -3936,35 +3936,35 @@ void mom_aper(double &delta, double delta_RF, const long int k,
 
   delta_min = 0.0; delta_max = positive ? fabs(delta_RF) : -fabs(delta_RF);
   while (fabs(delta_max-delta_min) > eps) {
-    delta = (delta_max+delta_min)/2.0; 
-    
+    delta = (delta_max+delta_min)/2.0;
+
     // propagate initial conditions
-    CopyVec(6, globval.CODvect, x); Cell_Pass(0, k, x, lastpos); 
+    CopyVec(6, globval.CODvect, x); Cell_Pass(0, k, x, lastpos);
     // generate Touschek event
     x[delta_] += delta;
-  
+
     // complete one turn
-    Cell_Pass(k+1, globval.Cell_nLoc, x, lastpos); 
+    Cell_Pass(k+1, globval.Cell_nLoc, x, lastpos);
     if (lastpos < globval.Cell_nLoc)
       // particle lost
       delta_max = delta;
-    else { 
+    else {
       // track
       for(j = 0; j < n_turn; j++) {
-	Cell_Pass(0, globval.Cell_nLoc, x, lastpos); 
+	Cell_Pass(0, globval.Cell_nLoc, x, lastpos);
 
-	if ((delta_max > delta_RF) || (lastpos < globval.Cell_nLoc)) { 
+	if ((delta_max > delta_RF) || (lastpos < globval.Cell_nLoc)) {
 	  // particle lost
-	  delta_max = delta; 
-	  break; 
+	  delta_max = delta;
+	  break;
 	}
       }
-      
+
       if ((delta_max <= delta_RF) && (lastpos == globval.Cell_nLoc))
 	// particle not lost
-	delta_min = delta; 
+	delta_min = delta;
     }
-  } 
+  }
 }
 
 
@@ -4008,7 +4008,7 @@ double Touschek(const double Qb, const double delta_RF,const bool consistent,
   delta_p = min(delta_RF, delta_p); delta_m = max(-delta_RF, delta_m);
   sum_delta[0][0] += delta_p; sum_delta[0][1] += delta_m;
   sum2_delta[0][0] += sqr(delta_p); sum2_delta[0][1] += sqr(delta_m);
-  
+
   tau_inv = 0.0; curly_H0 = -1e30;
   for (k = 1; k <= globval.Cell_nLoc; k++) {
     L = Cell[k].Elem.PL;
@@ -4052,12 +4052,12 @@ double Touschek(const double Qb, const double delta_RF,const bool consistent,
     gsl_function F;
     F.function = &gsl_f_int_Touschek;
     F.params = &alpha;
-	
+
     gsl_integration_workspace * w = gsl_integration_workspace_alloc (1000);
     gsl_integration_qags (&F, 0, 1.0, 0, 1e-7, 1000, w, &result, &error);
-	
+
     tau_inv +=result/(sigma_x*sigma_xp*sigma_y*sqr(delta_p))*L;
-    gsl_integration_workspace_free (w);		
+    gsl_integration_workspace_free (w);
 
     fflush(stdout);
   }
@@ -4104,7 +4104,7 @@ double gsl_f_int_IBS(double chi, void *params)
   f = exp(-chi)*log(chi/chi_m)/chi;
 
   return alpha*f;
-} 
+}
 
 
 void IBS(const double Qb, const double eps_SR[], double eps[])
@@ -4185,7 +4185,7 @@ void IBS(const double Qb, const double eps_SR[], double eps[])
     // Compute beam sizes for given hor/ver emittance, sigma_s,
     // and sigma_delta (for x ~ 0): sigma_x0' = sqrt(eps_x/beta_x).
     sigma_x = sqrt(Cell[k].Beta[X_]*eps[X_]+sqr(Cell[k].Eta[X_]*sigma_delta));
-    sigma_xp = (eps[X_]/sigma_x)*sqrt(1.0+curly_H*sqr(sigma_delta)/eps[X_]);  
+    sigma_xp = (eps[X_]/sigma_x)*sqrt(1.0+curly_H*sqr(sigma_delta)/eps[X_]);
     sigma_y = sqrt(Cell[k].Beta[Y_]*eps[Y_]);
 
     b_max = 2.0*sqrt(M_PI)/pow(N_b/(sigma_x*sigma_y*sigma_s), 1.0/3.0);
@@ -4200,10 +4200,10 @@ void IBS(const double Qb, const double eps_SR[], double eps[])
       gsl_function F;
       F.function = &gsl_f_int_IBS;
       F.params = &alpha;
-	
+
       gsl_integration_workspace * w = gsl_integration_workspace_alloc (1000);
       gsl_integration_qags (&F, 0, 1.0, 0, 1e-7, 1000, w, &result, &error);
-	
+
       incr += result;
       gsl_integration_workspace_free (w);
     }
@@ -4267,7 +4267,7 @@ void IBS_BM(const double Qb, const double eps_SR[], double eps[])
 {
   // J. Bjorken, S. K. Mtingwa "Intrabeam Scattering" Part. Accel. 13, 115-143 (1983).
   // M. Conte, M. Martini "Intrabeam Scattering in the CERN Antiproton
-  // Accumulator" Par. Accel. 17, 1-10 (1985). 
+  // Accumulator" Par. Accel. 17, 1-10 (1985).
   // F. Zimmermann "Intrabeam Scattering with Non-Ultrarelatvistic Corrections
   // and Vertical Dispersion" CERN-AB-2006-002
   // Note, ZAP (LBL-21270)uses the Conte-Martini formalism.  However, it also
@@ -4277,7 +4277,7 @@ void IBS_BM(const double Qb, const double eps_SR[], double eps[])
   long int  k;
   int       i;
   double    gamma_z, sigma_s_SR, sigma_delta_SR, sigma_s, sigma_delta;
-  double    V, beta_m[2], sigma_m[2], alpha[2], beta[2], eta[2], etap[2]; 
+  double    V, beta_m[2], sigma_m[2], alpha[2], beta[2], eta[2], etap[2];
   double    T_trans, rho, lambda_D, r_max;
   double    r_min, r_min_Cl, r_min_QM, log_Coulomb;
   double    L, curly_H[2], phi[2], dtau_inv[3], tau_inv[3], Gamma;
@@ -4446,7 +4446,7 @@ void IBS_BM(const double Qb, const double eps_SR[], double eps[])
       b_k_IBS = b_IBS - 3e0*beta[X_]*beta[Y_]/(eps[X_]*eps[Y_]) + b2_CM;
       break;
     case 3:
-      a_k_IBS = 
+      a_k_IBS =
 	2e0*sqr(gamma)
 	*(curly_H[X_]/eps[X_]+curly_H[Y_]/eps[Y_]+1e0/sqr(sigma_delta))
 	- beta[X_]*curly_H[Y_]/(curly_H[X_]*eps[Y_])
@@ -4493,7 +4493,7 @@ void IBS_BM(const double Qb, const double eps_SR[], double eps[])
 	+ 2e0*pow(gamma, 4e0)*curly_H[Y_]/(beta[Y_]*sqr(sigma_delta))
 	- (beta[X_]/eps[X_]-2e0*beta[Y_]/eps[Y_]);
 
-      b_k_IBS = 
+      b_k_IBS =
 	sqr(gamma)*(beta[Y_]/eps[Y_]-2e0*beta[X_]/eps[X_])
 	*(curly_H[X_]/eps[X_]+1e0/sqr(sigma_delta))
 	+ (beta[Y_]/eps[Y_]-4e0*beta[X_]/eps[X_])*sqr(gamma)
@@ -4653,7 +4653,7 @@ void get_bn(const char file_name[], int n, const bool prt)
         SetL(Fnum, bnL);
       else
         SetbnL(Fnum, order, bnL);
-    
+
       L = GetL(Fnum, 1);
       if (Knum == 1) {
 	if (order == 0)
@@ -4731,7 +4731,7 @@ double get_chi2(long int n, double x[], double y[], long int m, Vector b)
 
   int     i, j;
   double  sum, z;
-  
+
   sum = 0.0;
   for (i = 0; i < n; i++) {
     z = 0.0;
@@ -4787,7 +4787,7 @@ void get_ksi2(const double d_delta)
   double    delta[2*n_points+1], nu[2][2*n_points+1], sigma;
   Vector    b;
   FILE      *fp;
-  
+
   fp = file_write("chrom2.out");
   n = 0;
   for (i = -n_points; i <= n_points; i++) {
@@ -4864,7 +4864,7 @@ bool get_nu(const double Ax, const double Ay, const double delta,
 		(double)i/(double)n, x[i], px[i], y[i], py[i]);
       fclose(fp);
     }
-    
+
     GetPeaks1(n, x, n_peaks, nu[X_], A[X_]);
     GetPeaks1(n, y, n_peaks, nu[Y_], A[Y_]);
 
@@ -4874,7 +4874,7 @@ bool get_nu(const double Ax, const double Ay, const double delta,
     lost = !ok_x || !ok_y;
   } else
     lost = true;
-  
+
   return !lost;
 }
 
@@ -5013,20 +5013,20 @@ bool orb_corr(const int n_orbit)
     if (cod) {
       codstat(xmean, xsigma, xmax, globval.Cell_nLoc, false);
       printf("\n");
-      printf("RMS orbit [mm]: (%8.1e+/-%7.1e, %8.1e+/-%7.1e)\n", 
+      printf("RMS orbit [mm]: (%8.1e+/-%7.1e, %8.1e+/-%7.1e)\n",
 	     1e3*xmean[X_], 1e3*xsigma[X_], 1e3*xmean[Y_], 1e3*xsigma[Y_]);
       lsoc(1); lsoc(2);
       cod = getcod(0.0, lastpos);
       if (cod) {
 	codstat(xmean, xsigma, xmax, globval.Cell_nLoc, false);
-	printf("RMS orbit [mm]: (%8.1e+/-%7.1e, %8.1e+/-%7.1e)\n", 
+	printf("RMS orbit [mm]: (%8.1e+/-%7.1e, %8.1e+/-%7.1e)\n",
 	       1e3*xmean[X_], 1e3*xsigma[X_], 1e3*xmean[Y_], 1e3*xsigma[Y_]);
       } else
 	printf("orb_corr: failed\n");
     } else
       printf("orb_corr: failed\n");
   }
-  
+
   prt_cod("orb_corr.out", globval.bpm, true);
 
   return cod;
@@ -5055,7 +5055,7 @@ void get_alphac2(void)
   double    delta[2*n_points+1], alphac[2*n_points+1], sigma;
   Vector    x, b;
   CellType  Cell;
-  
+
   globval.pathlength = false;
   getelem(globval.Cell_nLoc, &Cell); n = 0;
   for (i = -n_points; i <= n_points; i++) {
@@ -5082,7 +5082,7 @@ double f_bend(const gsl_vector *vb0L, void *params)
   int i;
   for(i = 0; i < (int)vb0L->size; i++)
     b0L[i] = gsl_vector_get(vb0L, i);
-  
+
 //  double *p = (double *)params;
 
   const int   n_prt = 10;
@@ -5113,7 +5113,7 @@ void bend_cal_Fam(const int Fnum)
   Vector    ps;
 
   double par[1] = {1};
-  
+
   const gsl_multimin_fminimizer_type *AA = gsl_multimin_fminimizer_nmsimplex2;
   gsl_multimin_fminimizer *s = NULL;
   gsl_vector *step, *x;
@@ -5122,7 +5122,7 @@ void bend_cal_Fam(const int Fnum)
   size_t iter = 0;
   int status;
   double size;
-  
+
   /* Starting point */
   x = gsl_vector_alloc (n_prm);
   gsl_vector_set_all(x, 0.0);
@@ -5135,7 +5135,7 @@ void bend_cal_Fam(const int Fnum)
   minex_func.n = n_prm;
   minex_func.f = f_bend;
   minex_func.params = par;
-  
+
   s = gsl_multimin_fminimizer_alloc(AA, n_prm);
   gsl_multimin_fminimizer_set (s, &minex_func, x, step);
 
@@ -5150,15 +5150,15 @@ void bend_cal_Fam(const int Fnum)
   do {
     iter++;
     status = gsl_multimin_fminimizer_iterate(s);
-      
-    if (status) 
+
+    if (status)
     break;
 
     size = gsl_multimin_fminimizer_size (s);
     status = gsl_multimin_test_size (size, 1e-15);
 
   } while (status == GSL_CONTINUE);
- 
+
   gsl_vector_free(x);
   gsl_vector_free(step);
   gsl_multimin_fminimizer_free (s);
@@ -5205,7 +5205,7 @@ void set_tune(const char file_name1[], const char file_name2[], const int n)
   // skip 1st and 2nd line
   inf1.getline(line, max_str); inf2.getline(line, max_str);
   inf1.getline(line, max_str); inf2.getline(line, max_str);
-  
+
   inf1.getline(line, max_str);
   sscanf(line, "%*s %*s %*s %s %s %s %s",
 	 names[0], names[1], names[2], names[3]);

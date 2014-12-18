@@ -4,7 +4,7 @@
                  SLS, PSI      1995 - 1997
    M. Boege      SLS, PSI      1998          C translation
    L. Nadolski   SOLEIL        2002          Link to NAFF, Radia field maps
-   J. Bengtsson  NSLS-II, BNL  2004 -        
+   J. Bengtsson  NSLS-II, BNL  2004 -
 
 
    To generate a lattice flat file.
@@ -224,7 +224,7 @@ void rdmfile(const char *mfile_dat)
 	inf.getline(line, max_str);
 	if (prt) printf("%s\n", line);
 	sscanf(line, "%lf %lf %lf",
-	       &Cell[i].dS[X_], &Cell[i].dS[Y_], &dTerror); 
+	       &Cell[i].dS[X_], &Cell[i].dS[Y_], &dTerror);
 	Cell[i].dT[X_] = cos(dtor(dTerror));
 	Cell[i].dT[Y_] = sin(dtor(dTerror));
 	Cell[i].Elem.M->PdTrms = dTerror; Cell[i].Elem.M->PdTrnd = 1e0;
@@ -315,8 +315,8 @@ void rdmfile(const char *mfile_dat)
       if (!Cell[i].Elem.ID->linear) {
 	Cell[i].Elem.ID->mtx = gsl_matrix_alloc(Cell[i].Elem.ID->nz,
 						Cell[i].Elem.ID->nx);
-	GSL2NRDM2(pmtx, Cell[i].Elem.ID->mtx, Cell[i].Elem.ID->tx, 0);	
-	
+	GSL2NRDM2(pmtx, Cell[i].Elem.ID->mtx, Cell[i].Elem.ID->tx, 0);
+
 	Cell[i].Elem.ID->mtz = gsl_matrix_alloc(Cell[i].Elem.ID->nz,
 						Cell[i].Elem.ID->nx);
 	GSL2NRDM2(pmtz, Cell[i].Elem.ID->mtz, Cell[i].Elem.ID->tz, 0);
@@ -329,7 +329,7 @@ void rdmfile(const char *mfile_dat)
 	Cell[i].Elem.ID->mf2x = gsl_matrix_alloc(Cell[i].Elem.ID->nz,
 						 Cell[i].Elem.ID->nx);
 	GSL2NRDM2(pmf2x, Cell[i].Elem.ID->mf2x, Cell[i].Elem.ID->f2x, 0);
-	
+
 	Cell[i].Elem.ID->mf2z = gsl_matrix_alloc(Cell[i].Elem.ID->nz,
 						 Cell[i].Elem.ID->nx);
 	GSL2NRDM2(pmf2z, Cell[i].Elem.ID->mf2z, Cell[i].Elem.ID->f2z, 0);
@@ -354,9 +354,9 @@ void rdmfile(const char *mfile_dat)
     else
       Cell[i].S = Cell[i-1].S + Cell[i].Elem.PL;
   }
-  
+
   globval.Cell_nLoc = i;
- 
+
   globval.dPcommon = 1e-8; globval.CODeps = 1e-14; globval.CODimax = 40;
 
   SI_init();

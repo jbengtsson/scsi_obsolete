@@ -4,7 +4,7 @@
                  SLS, PSI      1995 - 1997
    M. Boege      SLS, PSI      1998          C translation
    L. Nadolski   SOLEIL        2002          Link to NAFF, Radia field maps
-   J. Bengtsson  NSLS-II, BNL  2004 -        
+   J. Bengtsson  NSLS-II, BNL  2004 -
 
 */
 
@@ -165,13 +165,13 @@ void gcmat(const int n_bpm, const long int bpms[],
 
     mA_lsoc[k] = gsl_matrix_alloc(n_bpm, n_corr);
     GSL2NRDM2(dmA_lsoc, mA_lsoc[k], A_lsoc[k],0);
-    mU_lsoc[k] = gsl_matrix_alloc(n_bpm, n_corr);	
+    mU_lsoc[k] = gsl_matrix_alloc(n_bpm, n_corr);
     GSL2NRDM2(dmU_lsoc, mU_lsoc[k], U_lsoc[k],0);
     vw_lsoc[k] = gsl_vector_alloc(n_corr);
     GSL2NRDV2(vw_lsoc[k],w_lsoc[k]);
-    mV_lsoc[k] = gsl_matrix_alloc(n_corr, n_corr);	
+    mV_lsoc[k] = gsl_matrix_alloc(n_corr, n_corr);
     GSL2NRDM2(dmAV_lsoc, mV_lsoc[k], V_lsoc[k],0);
-	
+
     S = gsl_vector_alloc(n_corr);
   }
 
@@ -225,7 +225,7 @@ void lsoc(const int plane)
     loc = bpms_[k][j];
     b[j] = -Cell[loc].BeamPos[2*k] + Cell[loc].dS[k];
   }
-      
+
   gsl_vector *vs = gsl_vector_alloc(n_corr_[k]);
   gsl_vector *work = gsl_vector_alloc(n_corr_[k]);
   gsl_linalg_SV_decomp (mU_lsoc[k], mV_lsoc[k], vs, work);
@@ -320,13 +320,13 @@ void gtcmat(const int n_bpm, const long int bpms[],
 
     mA_lstc[k] = gsl_matrix_alloc(n_bpm, n_corr);
     GSL2NRDM2(dmA_lstc, mA_lstc[k], A_lstc[k],0);
-    mU_lstc[k] = gsl_matrix_alloc(n_bpm, n_corr);	
+    mU_lstc[k] = gsl_matrix_alloc(n_bpm, n_corr);
     GSL2NRDM2(dmU_lstc, mU_lstc[k], U_lstc[k],0);
     vw_lstc[k] = gsl_vector_alloc(n_corr);
     GSL2NRDV2(vw_lstc[k],w_lstc[k]);
-    mV_lstc[k] = gsl_matrix_alloc(n_corr, n_corr);	
+    mV_lstc[k] = gsl_matrix_alloc(n_corr, n_corr);
     GSL2NRDM2(dmAV_lstc, mV_lstc[k], V_lstc[k],0);
-	
+
     S = gsl_vector_alloc(n_corr);
   }
 

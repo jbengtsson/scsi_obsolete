@@ -4,7 +4,7 @@
                  SLS, PSI      1995 - 1997
    M. Boege      SLS, PSI      1998          C translation
    L. Nadolski   SOLEIL        2002          Link to NAFF, Radia field maps
-   J. Bengtsson  NSLS-II, BNL  2004 -        
+   J. Bengtsson  NSLS-II, BNL  2004 -
 
 */
 
@@ -14,12 +14,12 @@
 #define cube(x)  ((x)*(x)*(x))
 
 #define fract(x) ((x)-(int)(x))
-#define nint(x) ((x) < 0 ? ((long)(x-0.5)) : ((long)(x+0.5))) 
+#define nint(x) ((x) < 0 ? ((long)(x-0.5)) : ((long)(x+0.5)))
 
 #define min(a, b) ((a) < (b) ? (a) : (b))
 #define max(a, b) ((a) > (b) ? (a) : (b))
 
-#define sgn(n) ((n > 0) ? 1 : ((n < 0) ? -1 : 0)) 
+#define sgn(n) ((n > 0) ? 1 : ((n < 0) ? -1 : 0))
 
 
 extern long rseed0;

@@ -4,7 +4,7 @@
                  SLS, PSI      1995 - 1997
    M. Boege      SLS, PSI      1998          C translation
    L. Nadolski   SOLEIL        2002          Link to NAFF, Radia field maps
-   J. Bengtsson  NSLS-II, BNL  2004 -        
+   J. Bengtsson  NSLS-II, BNL  2004 -
 
 */
 
@@ -72,7 +72,7 @@ void printglob(void)
   printf(" Chambre_On   = %s     \n", status.chambre ? "TRUE " : "FALSE");
   printf("  hcorr        =  %3d        vcorr        = %3d\n\n",
 	 globval.hcorr, globval.vcorr);
-  printf("  alphac       =   %22.16e\n", globval.Alphac); 
+  printf("  alphac       =   %22.16e\n", globval.Alphac);
   printf("  nux          =  %19.16f      nuz  =  %19.16f",
          globval.TotalTune[X_], globval.TotalTune[Y_]);
   if (globval.Cavity_on)
@@ -358,7 +358,7 @@ void track(const char *file_name,
 
           Output                floqs
 
-        Phase Space               0     [x, px, y, py, delta, ct]  
+        Phase Space               0     [x, px, y, py, delta, ct]
 	Floquet Space             1     [x^, px^, y^, py^, delta, ct]
 	Action-Angle Variables    2     [2Jx, phx, 2Jy, phiy, delta, ct]
 
@@ -420,13 +420,13 @@ void track(const char *file_name,
     fprintf(outf, "         [%%]           [mm]\n");
     fprintf(outf, "#\n");
     fprintf(outf, "%4d %23.16e %23.16e %23.16e %23.16e %23.16e %23.16e\n",
-	    0, scl_1*ic1, scl_2*ic2, scl_1*ic3, scl_2*ic4, 1e2*dp, 
+	    0, scl_1*ic1, scl_2*ic2, scl_1*ic3, scl_2*ic4, 1e2*dp,
 	    1e3*globval.CODvect[ct_]);
   } else {
     fprintf(outf, "         [%%]           [deg]\n");
     fprintf(outf, "#\n");
     fprintf(outf, "%4d %23.16e %23.16e %23.16e %23.16e %23.16e %23.16e\n",
-	    0, scl_1*ic1, scl_2*ic2, scl_1*ic3, scl_2*ic4, 1e2*dp, 
+	    0, scl_1*ic1, scl_2*ic2, scl_1*ic3, scl_2*ic4, 1e2*dp,
 	    2.0*f_rf*180.0*globval.CODvect[ct_]/c0);
   }
   x2[x_] = x0[x_] + globval.CODvect[x_];
@@ -448,7 +448,7 @@ void track(const char *file_name,
 	   lastn, 1e3*x2[x_], 1e3*x2[px_], 1e3*x2[y_], 1e3*x2[py_],
 	   1e2*x2[delta_], 1e3*x2[ct_]);
   }
-    
+
   if (globval.MatMeth) Cell_Concat(dp);
 
   do {
@@ -466,7 +466,7 @@ void track(const char *file_name,
       xf[i] = x2[i] - globval.CODvect[i];
 
     for (i = delta_; i <= ct_; i++)
-      if (globval.Cavity_on && (i != ct_)) 
+      if (globval.Cavity_on && (i != ct_))
 	xf[i] = x2[i] - globval.CODvect[i];
       else
 	xf[i] = x2[i];
@@ -617,7 +617,7 @@ void Trac(double x, double px, double y, double py, double dp, double ctau,
   if (lastpos != pos) {
     printf("Trac: Particle lost \n");
     fprintf(stdout, "turn:%6ld plane: %1d"
-	    " %+10.5g %+10.5g %+10.5g %+10.5g %+10.5g %+10.5g \n", 
+	    " %+10.5g %+10.5g %+10.5g %+10.5g %+10.5g %+10.5g \n",
 	    lastn, status.lossplane, x1[0], x1[1], x1[2], x1[3], x1[4], x1[5]);
   }
 }
@@ -625,7 +625,7 @@ void Trac(double x, double px, double y, double py, double dp, double ctau,
 /****************************************************************************/
 /*bool chk_if_lost(double x0, double y0, double delta,
 		 long int nturn, bool floqs)
-		 
+
    Purpose:
        Binary search for dynamical aperture in Floquet space.
 
@@ -662,8 +662,8 @@ bool chk_if_lost(double x0, double y0, double delta,
   x[delta_] = delta; x[ct_] = 0.0;
   if (floqs)
     // transform to phase space
-    LinTrans(nfloq, globval.Ascr, x);  
-  for (i = 0; i <= 3; i++)  
+    LinTrans(nfloq, globval.Ascr, x);
+  for (i = 0; i <= 3; i++)
     x[i] += globval.CODvect[i];
 
   lastn = 0;
@@ -881,7 +881,7 @@ void dynap(FILE *fp, double r, const double delta,
   x_min = 0.0; x_max = 0.0; y_min = 0.0; y_max = 0.0;
   for (i = 0; i < npoint; i++) {
     phi = i*M_PI/(npoint-1);
-    if (i == 0) 
+    if (i == 0)
       phi = 1e-3;
     else if (i == npoint-1)
       phi -= 1e-3;
@@ -912,7 +912,7 @@ void dynap(FILE *fp, double r, const double delta,
 /* double get_aper(int n, double x[], double y[])
 
    Purpose:
-   
+
 
    Input:
        none
@@ -1555,17 +1555,17 @@ void SetaTol(int Fnum, int Knum, double dx, double dy, double dr)
 }
 
 
-void ini_aper(const double Dxmin, const double Dxmax, 
-              const double Dymin, const double Dymax) 
-{ 
-  int  k; 
- 
-  for (k = 0; k <= globval.Cell_nLoc; k++) { 
-    Cell[k].maxampl[X_][0] = Dxmin; Cell[k].maxampl[X_][1] = Dxmax; 
-    Cell[k].maxampl[Y_][0] = Dymin; Cell[k].maxampl[Y_][1] = Dymax; 
-  } 
-} 
- 
+void ini_aper(const double Dxmin, const double Dxmax,
+              const double Dymin, const double Dymax)
+{
+  int  k;
+
+  for (k = 0; k <= globval.Cell_nLoc; k++) {
+    Cell[k].maxampl[X_][0] = Dxmin; Cell[k].maxampl[X_][1] = Dxmax;
+    Cell[k].maxampl[Y_][0] = Dymin; Cell[k].maxampl[Y_][1] = Dymax;
+  }
+}
+
 void set_aper(const int Fnum, const double Dxmin, const double Dxmax,
 	      const double Dymin, const double Dymax)
 {
@@ -1604,7 +1604,7 @@ void LoadApertures(const char *ChamberFileName)
 
 
 // Load tolerances from the file
-void LoadTolerances(const char *TolFileName) 
+void LoadTolerances(const char *TolFileName)
 {
   char    line[128], FamName[32];
   int     Fnum;
@@ -1635,7 +1635,7 @@ void LoadTolerances(const char *TolFileName)
 
 
 // Load tolerances from the file
-void ScaleTolerances(const char *TolFileName, const double scl) 
+void ScaleTolerances(const char *TolFileName, const double scl)
 {
   char    line[128], FamName[32];
   int     Fnum;
@@ -1647,7 +1647,7 @@ void ScaleTolerances(const char *TolFileName, const double scl)
   do
     fgets(line, 128, tolfile);
   while (strstr(line, "#") != NULL);
-  
+
   do {
     if (strstr(line, "#") == NULL) {
       sscanf(line,"%s %lf %lf %lf", FamName, &dx, &dy, &dr);
@@ -2184,7 +2184,7 @@ void GetMean(long n, double *x)
 /* double Fract(double x)
 
    Purpose:
-      Gets fractional part of x 
+      Gets fractional part of x
 
    Input:
        none
@@ -2353,7 +2353,7 @@ void Read_Lattice(char *fic)
 
     Cell_SetdP(dP);  /* added for correcting BUG if non convergence:
                         compute on momentum linear matrices */
-  } else {   
+  } else {
     // for transfer lines
     /* Initial settings : */
     beta[X_] = 8.1; alpha[X_] = 0.0; beta[Y_] = 8.1; alpha[Y_] = 0.0;
@@ -2585,7 +2585,7 @@ void ttwiss(const Vector2 &alpha, const Vector2 &beta,
 /****************************************************************************/
 /* void findcodS(double dP)
 
-   Purpose: 
+   Purpose:
        Search for the closed orbit using a numerical method
        Algo: Newton_Raphson method
              Quadratic convergence
@@ -2622,16 +2622,16 @@ void findcodS(double dP)
   long         lastpos;
 
   gsl_vector *vvcod;
-      
+
   vvcod = gsl_vector_alloc(6);
   GSL2NRDV2(vvcod,vcod);
 
  // starting point
   for (k = 1; k <= 6; k++)
-    vcod[k] = 0.0;  
-  
-  vcod[5] = dP;  // energy offset 
-    
+    vcod[k] = 0.0;
+
+  vcod[5] = dP;  // energy offset
+
   if (globval.Cavity_on){
       dim = 6;   /* 6D tracking*/
     fprintf(stdout,"Error looking for cod in 6D\n");
@@ -2642,7 +2642,7 @@ void findcodS(double dP)
       vcod[1] = Cell[0].Eta[0]*dP; vcod[2] = Cell[0].Etap[0]*dP;
       vcod[3] = Cell[0].Eta[1]*dP; vcod[4] = Cell[0].Etap[1]*dP;
   }
-  
+
   Newton_RaphsonS(ntrial, vcod, dim, tolx);
 
   if (status.codflag == false)
@@ -2664,7 +2664,7 @@ void findcodS(double dP)
 /****************************************************************************/
 /* void findcod(double dP)
 
-   Purpose: 
+   Purpose:
        Search for the closed orbit using a numerical method
        Algo: Newton_Raphson method
              Quadratic convergence
@@ -2708,8 +2708,8 @@ void findcod(double dP)
 
   // initializations
   for (k = 0; k <= 5; k++)
-    vcod[k] = 0.0;  
-    
+    vcod[k] = 0.0;
+
   if (globval.Cavity_on){
     fprintf(stdout,"warning looking for cod in 6D\n");
     dim = 6;
@@ -2717,14 +2717,14 @@ void findcod(double dP)
     dim = 4;
     vcod[0] = Cell[0].Eta[0]*dP; vcod[1] = Cell[0].Etap[0]*dP;
     vcod[2] = Cell[0].Eta[1]*dP; vcod[3] = Cell[0].Etap[1]*dP;
-    vcod[4] = dP;  // energy offset 
+    vcod[4] = dP;  // energy offset
   }
-  
+
   Newton_Raphson(dim, vcod, ntrial, tolx);
 
   if (status.codflag == false)
     fprintf(stdout, "Error No COD found\n");
-  
+
   CopyVec(6, vcod, globval.CODvect); // save closed orbit at the ring entrance
 
   if (trace)
@@ -2743,7 +2743,7 @@ void findcod(double dP)
 
    Purpose:
        Simple precision algo
-       Tracks x over one turn. And computes the Jacobian matrix of the 
+       Tracks x over one turn. And computes the Jacobian matrix of the
        transformation by numerical differentiation.
        using forward difference formula : faster but less accurate
        using symmetric difference formula
@@ -2754,7 +2754,7 @@ void findcod(double dP)
 
    Output:
       fvect transport of x over one turn
-      fjac  Associated jacobian matrix      
+      fjac  Associated jacobian matrix
 
    Return:
        none
@@ -2780,7 +2780,7 @@ void computeFandJS(double *x, int n, double **fjac, double *fvect)
 
   for (i = 1; i <= 6; i++)
     x0[i - 1] = x[i];
-  
+
   Cell_Pass(0, globval.Cell_nLoc, x0, lastpos);
 
   for (i = 1; i <= n; i++)
@@ -2812,15 +2812,15 @@ void computeFandJS(double *x, int n, double **fjac, double *fvect)
     for (i = 1; i <= n; i++)  // symmetric difference formula
       fjac[i][k + 1] = 0.5 * (fx1[i - 1] - fx2[i - 1]) / deps;
     //~ for (i = 1; i <= n; i++) // forward difference formula
-    //~ fjac[i][k + 1] = (float) ((x0[i - 1] - fx[i - 1]) / deps);  
+    //~ fjac[i][k + 1] = (float) ((x0[i - 1] - fx[i - 1]) / deps);
   }
 }
 
 /****************************************************************************/
 /* void computeFand(int n, float *x, float **fjac, float *fvect)
 
-   Purpose:       
-       Tracks x over one turn. And computes the Jacobian matrix of the 
+   Purpose:
+       Tracks x over one turn. And computes the Jacobian matrix of the
        transformation by numerical differentiation.
        using symmetric difference formula
        double precision algorithm
@@ -2830,7 +2830,7 @@ void computeFandJS(double *x, int n, double **fjac, double *fvect)
 
    Output:
       fvect transport of x over one turn
-      fjac  Associated jacobian matrix      
+      fjac  Associated jacobian matrix
 
    Return:
        none
@@ -2854,10 +2854,10 @@ void computeFandJ(int n, Vector &x, Matrix &fjac, Vector &fvect)
   const double deps = 1e-8;  //stepsize for numerical differentiation
 
   CopyVec(6, x, x0);
-  
+
   Cell_Pass(0, globval.Cell_nLoc, x0, lastpos);
   CopyVec(n, x0, fvect);
-  
+
   // compute Jacobian matrix by numerical differentiation
   for (k = 0; k < n; k++) {
     CopyVec(6L, x, x0);
@@ -2879,13 +2879,13 @@ void computeFandJ(int n, Vector &x, Matrix &fjac, Vector &fvect)
 
 /****************************************************************************/
 /* void Newton_RaphsonS(int ntrial,double x[],int n,double tolx, double tolf)
- 
+
    Purpose:
        Newton_Rapson algorithm from Numerical Recipes
        single precision algorithm
        Robustess: quadratic convergence
        Hint: for n-dimensional problem, the algo can be stuck on local minimum
-             In this case, it should be enough to provide a resonable starting 
+             In this case, it should be enough to provide a resonable starting
              point.
 
        Method:
@@ -2896,8 +2896,8 @@ void computeFandJ(int n, Vector &x, Matrix &fjac, Vector &fvect)
              h = - inverse(Jacobian(f) -Id) * (f(x)-x)
             the new guess is then xnew = x + h
          By iteration, this converges quadratically.
-     
-     The algo is stopped whenever  |x -xnew| < tolx     
+
+     The algo is stopped whenever  |x -xnew| < tolx
 
          f(x) is computes by tracking over one turn
      Jacobian(f) is computed numerically by numerical differentiation
@@ -2908,10 +2908,10 @@ void computeFandJ(int n, Vector &x, Matrix &fjac, Vector &fvect)
        n number of dimension 4 or 6
      x intial guess for the closed orbit
        tolx tolerance over the solution x
-       tolf tolerance over the evalution f(x)  
+       tolf tolerance over the evalution f(x)
 
    Output:
-       x closed orbit  
+       x closed orbit
 
    Return:
        none
@@ -2921,7 +2921,7 @@ void computeFandJ(int n, Vector &x, Matrix &fjac, Vector &fvect)
 
    specific functions:
        computeFandJS
-     ludcmp,lubksb 
+     ludcmp,lubksb
 
    Comments:
        none
@@ -2942,14 +2942,14 @@ void Newton_RaphsonS(int ntrial, double x[], int n, double tolx)
 
   vbet = gsl_vector_alloc(n);
   GSL2NRDV2(vbet,bet);
-  
+
   vfvect = gsl_vector_alloc(n);
   GSL2NRDV2(vfvect,fvect);
-  
+
   vx = gsl_vector_alloc(n);
-  
+
   malpha = gsl_matrix_alloc(n,n);
-  GSL2NRDM2(dmalpha,malpha,alpha,0); 
+  GSL2NRDM2(dmalpha,malpha,alpha,0);
 
   for (k = 1; k <= ntrial; k++) {      // loop over number of iterations
     // supply function values at x in fvect and Jacobian matrix in fjac
@@ -2966,9 +2966,9 @@ void Newton_RaphsonS(int ntrial, double x[], int n, double tolx)
     gsl_permutation * p = gsl_permutation_alloc (n);
     gsl_linalg_LU_decomp (malpha, p, &is);
     gsl_linalg_LU_solve (malpha, p, vbet, vx);
-	 
+
     gsl_vector_memcpy(vbet, vx);
-  
+
     gsl_permutation_free(p);
 
     errx = 0.0;  // check root convergence
@@ -2998,13 +2998,13 @@ void Newton_RaphsonS(int ntrial, double x[], int n, double tolx)
 
 /****************************************************************************/
 /* int Newton_Raphson(int n, double x[], int ntrial, double tolx)
- 
+
    Purpose:
        Newton_Rapson algorithm from Numerical Recipes
        double precision algorithm
        Robustess: quadratic convergence
        Hint: for n-dimensional problem, the algo can be stuck on local minimum
-             In this case, it should be enough to provide a resonable starting 
+             In this case, it should be enough to provide a resonable starting
              point.
 
        Method:
@@ -3015,8 +3015,8 @@ void Newton_RaphsonS(int ntrial, double x[], int n, double tolx)
              h = - inverse(Jacobian(f) -Id) * (f(x)-x)
             the new guess is then xnew = x + h
          By iteration, this converges quadratically.
-     
-     The algo is stopped whenever  |x -xnew| < tolx     
+
+     The algo is stopped whenever  |x -xnew| < tolx
 
          f(x) is computes by tracking over one turn
      Jacobian(f) is computed numerically by numerical differentiation
@@ -3026,10 +3026,10 @@ void Newton_RaphsonS(int ntrial, double x[], int n, double tolx)
        ntrial number of iterations for closed zero search
      x intial guess for the closed orbit
        tolx tolerance over the solution x
-       tolf tolerance over the evalution f(x)  
+       tolf tolerance over the evalution f(x)
 
    Output:
-       x closed orbit  
+       x closed orbit
 
    Return:
        none
@@ -3039,7 +3039,7 @@ void Newton_RaphsonS(int ntrial, double x[], int n, double tolx)
 
    specific functions:
        computeFandJ
-     InvMat, LinTrans 
+     InvMat, LinTrans
 
    Comments:
        none
@@ -3065,15 +3065,15 @@ int Newton_Raphson (int n, Vector &x, int ntrial, double tolx)
       bet[i] = x[i] - fvect[i];  // right side of linear equation
     // inverse matrix using gauss jordan method from Tracy (from NR)
     if (!InvMat((long) n,alpha))
-      fprintf(stdout,"Matrix non inversible ...\n");    
+      fprintf(stdout,"Matrix non inversible ...\n");
     LinTrans((long) n, alpha, bet); // bet = alpha*bet
         errx = 0.0;  // check root convergence
     for (i = 0; i < n; i++)
     {    // update solution
       errx += fabs(bet[i]);
-      x[i] += bet[i]; 
+      x[i] += bet[i];
     }
-    
+
     if (trace)
       fprintf(stdout,
          "%02d: cod2 % .5e % .5e % .5e % .5e % .5e % .5e  errx =% .5e\n",

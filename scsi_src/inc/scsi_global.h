@@ -1,40 +1,40 @@
 #define PLANES 2
 
 typedef struct globvalrec {
-  double        dPcommon,       // dp for numerical differentiation 
-                dPparticle;     // energy deviation 
-  double        delta_RF;       // RF acceptance 
-  Vector2       TotalTune;      // transverse tunes 
+  double        dPcommon,       // dp for numerical differentiation
+                dPparticle;     // energy deviation
+  double        delta_RF;       // RF acceptance
+  Vector2       TotalTune;      // transverse tunes
   double        Omega,
-                U0,             // energy lost per turn in keV 
-                Alphac;         // alphap 
-  Vector2       Chrom;          // chromaticities 
-  double        Energy;         // ring energy 
-  long          Cell_nLoc,      // number of elements 
-                Elem_nFam,      // number of families 
+                U0,             // energy lost per turn in keV
+                Alphac;         // alphap
+  Vector2       Chrom;          // chromaticities
+  double        Energy;         // ring energy
+  long          Cell_nLoc,      // number of elements
+                Elem_nFam,      // number of families
                 CODimax;        /* maximum number of cod search before
 				   failing */
   double        CODeps;         // precision for closed orbit finder
   Vector        CODvect;        // closed orbit
-  int           bpm;            // bpm number 
-  int           hcorr;          // horizontal corrector number 
-  int           vcorr;          // vertical corrector number 
-  int           qt;             // vertical corrector number 
-  int           gs;             // girder start marker 
-  int           ge;             // girder end marker 
-  Matrix        OneTurnMat,     // oneturn matrix 
+  int           bpm;            // bpm number
+  int           hcorr;          // horizontal corrector number
+  int           vcorr;          // vertical corrector number
+  int           qt;             // vertical corrector number
+  int           gs;             // girder start marker
+  int           ge;             // girder end marker
+  Matrix        OneTurnMat,     // oneturn matrix
                 Ascr,
                 Ascrinv,
-                Vr,             // real part of the eigenvectors 
-                Vi;             // imaginal par of the eigenvectors 
+                Vr,             // real part of the eigenvectors
+                Vi;             // imaginal par of the eigenvectors
 
-  bool          MatMeth,        // matrix method 
-                Cavity_on,      // if true, cavity turned on 
-                radiation,      // if true, radiation turned on 
+  bool          MatMeth,        // matrix method
+                Cavity_on,      // if true, cavity turned on
+                radiation,      // if true, radiation turned on
                 emittance,
                 quad_fringe,    /* dipole- and quadrupole hard-edge
 				   fringe fields. */
-                H_exact,        // "small ring" Hamiltonian. 
+                H_exact,        // "small ring" Hamiltonian.
                 pathlength,     // absolute path length
                 stable,
                 Aperture_on,
@@ -67,7 +67,7 @@ struct MpoleType {
   int         Pmethod;   // Integration Method
   int         PN;        // Number of integration steps
   // Displacement Errors
-  Vector2     PdSsys;    // systematic [m] 
+  Vector2     PdSsys;    // systematic [m]
   Vector2     PdSrms;    // rms [m]
   Vector2     PdSrnd;    // random number
   // Roll angle
@@ -87,38 +87,38 @@ struct MpoleType {
   // Bending Angles
   double PTx1;           // horizontal entrance angle [deg]
   double PTx2;           // horizontal exit angle [deg]
-  double Pgap;           // total magnet gap [m] 
-  double Pirho;          // 1/rho [1/m] 
-  double Pc0, Pc1, Ps1;  // corrections for roll error of bend 
-  Matrix AU55,           // Upstream 5x5 matrix 
-    AD55;           // Downstream 5x5 matrix 
+  double Pgap;           // total magnet gap [m]
+  double Pirho;          // 1/rho [1/m]
+  double Pc0, Pc1, Ps1;  // corrections for roll error of bend
+  Matrix AU55,           // Upstream 5x5 matrix
+    AD55;           // Downstream 5x5 matrix
 };
 
 const int  n_harm_max = 10;
 
 struct WigglerType {
-  int Pmethod;                // Integration Method 
-  int PN;                     // number of integration steps 
-  // Displacement Error 
-  Vector2 PdSsys;             // systematic [m]  
-  Vector2 PdSrms;             // rms [m] 
-  Vector2 PdSrnd;             // random number 
-  // Roll angle 
-  double PdTpar;              // design [deg] 
-  double PdTsys;              // systematic [deg] 
-  double PdTrms;              // rms [deg] 
-  double PdTrnd;              // random number 
-  double lambda;              // lambda 
+  int Pmethod;                // Integration Method
+  int PN;                     // number of integration steps
+  // Displacement Error
+  Vector2 PdSsys;             // systematic [m]
+  Vector2 PdSrms;             // rms [m]
+  Vector2 PdSrnd;             // random number
+  // Roll angle
+  double PdTpar;              // design [deg]
+  double PdTsys;              // systematic [deg]
+  double PdTrms;              // rms [deg]
+  double PdTrnd;              // random number
+  double lambda;              // lambda
   int    n_harm;              // no of harmonics
   int    harm[n_harm_max];    // harmonic number
   double BoBrhoV[n_harm_max]; // B/Brho vertical
-  double BoBrhoH[n_harm_max]; // B/Brho horizontal 
-  double kxV[n_harm_max];     // kx 
-  double kxH[n_harm_max];     // kx 
-  double phi[n_harm_max];     // phi 
+  double BoBrhoH[n_harm_max]; // B/Brho horizontal
+  double kxV[n_harm_max];     // kx
+  double kxH[n_harm_max];     // kx
+  double phi[n_harm_max];     // phi
   mpolArray PBW;
-  Matrix W55;                 // Transport matrix 
-  int Porder;                 // The highest order in PB 
+  Matrix W55;                 // Transport matrix
+  int Porder;                 // The highest order in PB
 };
 
 
@@ -131,8 +131,8 @@ struct FieldMapType {
   double  ***BoBrho[3], ***BoBrho2[3];  // [B_x, B_y, B_z]
   double  ***AoBrho[2], ***AoBrho2[2];  /* [Ax(x, y, z), Ay(x, y, z)],
 					   spline info */
-		
-  //GSL add		
+
+  //GSL add
   gsl_vector	*vx[3]; //coresponds to *x[3]
   //end GSL add
 };
@@ -170,9 +170,9 @@ struct InsertionType {
   double **tx, **tz, **f2x, **f2z;
   double **tx1, **tz1, **f2x1, **f2z1; // a voir
   double *tab1, *tab2; // tab of x and z meshes from Radia code
-  
+
   // Displacement Error
-  Vector2 PdSsys;   // systematic [m] 
+  Vector2 PdSsys;   // systematic [m]
   Vector2 PdSrms;   // rms [m]
   Vector2 PdSrnd;   // random number
   // Roll angle
@@ -216,7 +216,7 @@ struct RecombinerType {
 struct SolenoidType {
   int         N;         // Number of integration steps
   // Displacement Errors
-  Vector2     PdSsys;    // systematic [m] 
+  Vector2     PdSsys;    // systematic [m]
   Vector2     PdSrms;    // rms [m]
   Vector2     PdSrnd;    // random number
   // Roll angle
@@ -229,7 +229,7 @@ struct SolenoidType {
 
 struct elemtype {
   partsName PName;   // Element name
-  double PL;         // Length[m]   
+  double PL;         // Length[m]
   PartsKind Pkind;   // Enumeration  for magnet types
   union
   {
@@ -262,7 +262,7 @@ struct CellType {
   Vector2          dS,          // Transverse displacement
                    dT;          // dT = (cos(dT), sin(dT))
   elemtype         Elem;        // Structure (name, type)
-  Vector2          Nu,          // Phase advances 
+  Vector2          Nu,          // Phase advances
                    Alpha,       // Alpha functions (redundant)
                    Beta,        // beta fonctions (redundant)
                    Eta, Etap;   // dispersion and its derivative (redundant)

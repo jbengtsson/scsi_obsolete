@@ -123,15 +123,15 @@ void misalign_sys_girders(const int gs, const int ge,
 void LoadAlignTol(const char *AlignFile, const bool Scale_it,
 		  const double Scale, const bool new_rnd, const int k);
 
-void set_aper_elem(const int Fnum, const int Knum, 
-		   const double Dxmin, const double Dxmax, 
+void set_aper_elem(const int Fnum, const int Knum,
+		   const double Dxmin, const double Dxmax,
 		   const double Dymin, const double Dymax);
 
 void set_aper_fam(const int Fnum,
-		  const double Dxmin, const double Dxmax, 
+		  const double Dxmin, const double Dxmax,
 		  const double Dymin, const double Dymax);
 
-void set_aper_type(const int type, const double Dxmin, const double Dxmax, 
+void set_aper_type(const int type, const double Dxmin, const double Dxmax,
 		   const double Dymin, const double Dymax);
 
 void LoadApers(const char *AperFile, const double scl_x, const double scl_y);

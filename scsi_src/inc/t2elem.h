@@ -75,7 +75,7 @@ template<typename T>
 void Wiggler_pass_EF(const elemtype &elem, ss_vect<T> &x);
 
 template<typename T>
-void Wiggler_pass_EF2(int nstep, double L, double kxV, double kxH, double kz, 
+void Wiggler_pass_EF2(int nstep, double L, double kxV, double kxH, double kz,
 		      double BoBrhoV, double BoBrhoH, double phi,
 		      ss_vect<T> &x);
 

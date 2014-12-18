@@ -4,7 +4,7 @@ J. Bengtsson, CBP, LBL      1990 - 1994   Pascal version
               SLS, PSI      1995 - 1997
 M. Boege      SLS, PSI      1998          C translation
 L. Nadolski   SOLEIL        2002          Link to NAFF, Radia field maps
-J. Bengtsson  NSLS-II, BNL  2004 -        
+J. Bengtsson  NSLS-II, BNL  2004 -
 
 */
 
@@ -180,7 +180,7 @@ long *P_setunion(register long *d, register long *s1, register long *s2)
 {
   long          *dbase = d++;
   register int  sz1 = *s1++, sz2 = *s2++;
- 
+
  while (sz1 > 0 && sz2 > 0) {
     *d++ = *s1++ | *s2++;
     sz1--, sz2--;
@@ -2027,7 +2027,7 @@ static bool Lat_DealElement(FILE **fi_, FILE **fo_, long *cc_, long *ll_,
   Result = false;
 
   switch (*V.sym) {
-    
+
     /**************************************************************************
        Drift
     **************************************************************************
@@ -2207,7 +2207,7 @@ static bool Lat_DealElement(FILE **fi_, FILE **fo_, long *cc_, long *ll_,
       exit_(1);
     }
     break;
-    
+
     /**************************************************************************
       Quadrupole
     **************************************************************************
@@ -2718,7 +2718,7 @@ static bool Lat_DealElement(FILE **fi_, FILE **fo_, long *cc_, long *ll_,
     }
     break;
 
-    
+
     /**************************************************************************
       Ghost
     ***************************************************************************
@@ -2928,7 +2928,7 @@ static bool Lat_DealElement(FILE **fi_, FILE **fo_, long *cc_, long *ll_,
             harm=(3, kxV_3, BoBrhoV_3, kxH_3, BoBrhoH_3, phi_3,
                   ...
                   5, kxV_5, BoBrhoV_5, kxH_5, BoBrhoH_5, phi_5);
- 
+
     **************************************************************************/
 
   case wglsym:
@@ -2954,7 +2954,7 @@ static bool Lat_DealElement(FILE **fi_, FILE **fo_, long *cc_, long *ll_,
       sym1 = *V.sym;
       getest__(P_expset(SET, 1 << ((long)eql)), "<=> expected", &V);
       switch (sym1) {   /*6*/
-	    
+
       case lsym:
 	QL = EVAL_(&V);
 	break;
@@ -3053,7 +3053,7 @@ static bool Lat_DealElement(FILE **fi_, FILE **fo_, long *cc_, long *ll_,
              T       = <bending angle>, ( [degree] )
              N       = <no of periods>,
              file1   = <file name (lower case)>
- 
+
     Example
 
       FM: Fieldmap, L = 1.0, T=5.0, N = 20, file1 = "U19_Bxyz.dat";
@@ -3076,7 +3076,7 @@ static bool Lat_DealElement(FILE **fi_, FILE **fo_, long *cc_, long *ll_,
       sym1 = *V.sym;
       getest__(P_expset(SET, 1 << ((long)eql)), "<=> expected", &V);
       switch (sym1) {   /*6*/
-	    
+
       case lsym:
 	QL = EVAL_(&V);
 	break;
@@ -3120,7 +3120,7 @@ static bool Lat_DealElement(FILE **fi_, FILE **fo_, long *cc_, long *ll_,
       FieldMap_Alloc(WITH1);
       WITH6 = WITH1->FM;
       WITH6->phi = t*M_PI/180.0; WITH6->n_step = k1; WITH6->scl = scaling;
-      if (CheckUDItable("energy         ", LINK) != 0) { 
+      if (CheckUDItable("energy         ", LINK) != 0) {
 	RefUDItable("energy         ", &globval.Energy, LINK);
 	if (strcmp(str1, "") != 0) get_B(str1, WITH6);
       } else {
@@ -3137,21 +3137,21 @@ static bool Lat_DealElement(FILE **fi_, FILE **fo_, long *cc_, long *ll_,
     /**********************************************************************
       Insertion introduced for SOLEIL using Radia Maps
     ***********************************************************************
-         
-    <name> : insertion,              
+
+    <name> : insertion,
              N = <number of thin lenses>,
              scaling = scaling factor: should be 1. Default value
              file1 = <filename>, in lowercases (first order defaults)
              file2 = <filename>, in lowercases (second order defauts)
              method = <method>, ( 2 or 4. The method to divide Q into slices.)
              ( The detail of <method> will be discussed later.)
-    
+
     Example
-         
+
       ID1 : insertion, scaling = 1, N=10, file2=hu80_lh;
       ID2 : insertion, scaling = 1, N=10, file1=hu80_lh_bdl;
       ID3 : insertion, scaling = 1, N=10, file1=hu80_lh_dbl; file2=hu80_lh;
-         
+
     Notes
       file1 and file2 must have the same structures and meshing
       optional parameter scaling must be at first (weird bug otherwise)
@@ -3174,11 +3174,11 @@ static bool Lat_DealElement(FILE **fi_, FILE **fo_, long *cc_, long *ll_,
       test__(mysys, "illegal parameter", &V);
       sym1 = *V.sym;
       getest__(P_expset(SET, 1L << ((long)eql)), "<=> expected", &V);
-      switch (sym1) {   
+      switch (sym1) {
 
       case nsym: /* Read number of sclices */
 	k1 = abs((long)floor(EVAL_(&V)));
-	GetSym__(&V); 
+	GetSym__(&V);
 	break;
 
       case scalingsym: /* read scaling factor for debugging purpose*/
@@ -3233,7 +3233,7 @@ static bool Lat_DealElement(FILE **fi_, FILE **fo_, long *cc_, long *ll_,
       WITH5->PN = k1;
       WITH5->scaling = scaling;
 
-     if (CheckUDItable("energy         ", LINK) != 0) { 
+     if (CheckUDItable("energy         ", LINK) != 0) {
 	RefUDItable("energy         ", &globval.Energy, LINK);
 // 	if (strcmp(str1, "") != 0) get_B(str1, WITH6);
       } else {
@@ -3291,8 +3291,8 @@ static bool Lat_DealElement(FILE **fi_, FILE **fo_, long *cc_, long *ll_,
 
       // stuff for spline interpolation
       if (!WITH5->linear) {
-	WITH5->mtx = gsl_matrix_alloc(WITH5->nz,WITH5->nx); 
-	GSL2NRDM2(pmtx,WITH5->mtx,WITH5->tx,0);	
+	WITH5->mtx = gsl_matrix_alloc(WITH5->nz,WITH5->nx);
+	GSL2NRDM2(pmtx,WITH5->mtx,WITH5->tx,0);
 	WITH5->mtz = gsl_matrix_alloc(WITH5->nz,WITH5->nx);
 	GSL2NRDM2(pmtz,WITH5->mtz,WITH5->tz,0);
 	WITH5->tab1 = (double *)malloc((WITH5->nx)*sizeof(double));
@@ -3772,7 +3772,7 @@ static void DealWithDefns(struct LOC_Lattice_Read *LINK)
 				 LINK->sps, LINK))
 	      longjmp(LINK->_JL9999, 1);
 	  }
-		  
+
 	} else {
 	  /**************************************************************
 	   *                                                           *

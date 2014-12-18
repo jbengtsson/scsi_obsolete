@@ -4,7 +4,7 @@
                  SLS, PSI      1995 - 1997
    M. Boege      SLS, PSI      1998          C translation
    L. Nadolski   SOLEIL        2002          Link to NAFF, Radia field maps
-   J. Bengtsson  NSLS-II, BNL  2004 -        
+   J. Bengtsson  NSLS-II, BNL  2004 -
 
    t2ring.c -- Routines for closed beam lines
 
@@ -25,7 +25,7 @@ void GetNu(Vector2 &nu, Matrix &M)
   CopyMat((long)n, M, M1);
 
   for (i = 0; i < n; i++)
-    M1[i][i] -= 1.0;   
+    M1[i][i] -= 1.0;
   detp = DetMat((long)n, M1); /* det(M-I) */
 
   for (i = 0; i < n; i++)
@@ -193,9 +193,9 @@ void Cell_Geteta(long i0, long i1, bool ring, double dP)
 
    Purpose:
      Computes Twiss parameters alpha and beta from the matrix Ascr
-       
+
        M oneturn matrix    (A and M are symplectic)
-                  
+
            ( A11  A12)         -1                 ( cos(mu) sin(mu))
        A = (         )   M = (A   R  A)  with R = (                )
            ( A21  A22)      2    2                (-sin(mu) cos(mu))
@@ -205,8 +205,8 @@ void Cell_Geteta(long i0, long i1, bool ring, double dP)
                  2     2   2                                  2     2    2
        eps = (A22 + A21 ) x  + 2(-A22*A12-A21*A11) x*px + (A11 + A12 ) px
                 gamma               alpha                     beta
-                                        
-   Input:                               
+
+   Input:
        A matrix
 
    Output:
@@ -245,14 +245,14 @@ void getprm(Matrix &Ascr, Vector2 &alpha, Vector2 &beta)
    Purpose: called by Ring_Twiss_M
        Calculate Twiss parameters from element i0 to element i1
        Method: extended matrix formalism
-       
+
    Input:
        i0     first element
        i1     last element
        ring   true if a ring
        chroma true if compute chromaticities
        dP     energy offset
-       
+
    Output:
        none
 
@@ -266,7 +266,7 @@ void getprm(Matrix &Ascr, Vector2 &alpha, Vector2 &beta)
        getprm,
        CopyMat, CopyVec
        Elem_Pass_M, GetAngle
-       
+
    Comments:
        17/07/03 use of M_PI instead of pi
 
@@ -283,11 +283,11 @@ void Cell_Twiss_M(long i0, long i1, Matrix &Ascr, bool chroma,
 
   if (dP != globval.dPparticle) Cell_SetdP(dP);
 
-  /* Init */  
+  /* Init */
   for (j = 0; j <= 1; j++)
     nu1[j] = 0.0;
 
-  /* get alpha beta for i0 */  
+  /* get alpha beta for i0 */
   cellp = &Cell[i0];
   getprm(Ascr, cellp->Alpha, cellp->Beta);
   memcpy(cellp->Nu, nu1, sizeof(Vector2));
@@ -297,7 +297,7 @@ void Cell_Twiss_M(long i0, long i1, Matrix &Ascr, bool chroma,
     CopyMat(n+1, Ascr0, Ascr1);
     /* Ascr1=Elem_M*Ascr0 */
     /* xref =Elem(xref)   */
-    Elem_Pass_M(i, xref, Ascr1); 
+    Elem_Pass_M(i, xref, Ascr1);
 
     cellp = &Cell[i];
     /* get alpha and beta for element i */
@@ -343,10 +343,10 @@ void Cell_Twiss_M(long i0, long i1, Matrix &Ascr, bool chroma,
               gamma               alpha                     beta
 
      A = Asrc
-       
+
      alpha(i-1) = -(A(2i-1,2i-1)*A(2i,2i-1) + A(2i-1,2i)*A(2i,2i))
      beta(i-1)  =   A(2i-1,2i-1)*A(2i-1,2i-1) + A(2i-1,2i)*A(2i-1,2i)
-       
+
    Input:
        Ascr
 
@@ -392,7 +392,7 @@ void Cell_Twiss(long i0, long i1, ss_vect<tps> &Ascr, bool chroma, bool ring,
 
   /* initialization */
   for (j = 0; j <= 1; j++) {
-    nu1[j] = 0.0; dnu[j] = 0.0; 
+    nu1[j] = 0.0; dnu[j] = 0.0;
   }
 
   if (globval.radiation) globval.dE = 0.0;
@@ -448,8 +448,8 @@ void Cell_Twiss(long i0, long i1, ss_vect<tps> &Ascr, bool chroma, bool ring,
 
                nu(dP+dPlocal)-nu(dP-dPlocal)
            xi =-----------------------------
-                       2 dPlocal     
-                       
+                       2 dPlocal
+
    Input:
        dP particle energy offset (should be zero cf comments)
 
@@ -462,14 +462,14 @@ void Cell_Twiss(long i0, long i1, ss_vect<tps> &Ascr, bool chroma, bool ring,
    Global variables:
        status
        globval
-       
+
    Specific functions:
        Cell_GetABGN, Cell_GetCOD
 
    Comments:
        03/01/03 Stability test from GETcod routines slightly modified
        WARNING : this routine does not give the chromaticities for dP != 0
-                   but the local slope of the curve xi=f(dP)                   
+                   but the local slope of the curve xi=f(dP)
        16/10/03 Modified convergence test: now done for both planes
 ****************************************************************************/
 #define n               4
@@ -483,23 +483,23 @@ void Ring_Getchrom(double dP)
   if (dP != 0.0)
     fprintf(stdout,"Ring_Getchrom: Warning this is NOT the CHROMA, dP=%e\n",
 	    dP);
-  
+
   /* Get cod for energy dP - globval.dPcommon*/
   GetCOD(globval.CODimax, globval.CODeps, dP-globval.dPcommon*0.5, lastpos);
-  
+
   if (!status.codflag) {
     /* if no cod */
     fprintf(stdout,"Ring_Getchrom:  Lattice is unstable for"
 	    " dP-globval.dPcommon=% .5e\n", dP-globval.dPcommon*0.5);
     return;
   }
-  
+
   /* get tunes for energy dP - globval.dPcommon/2 from oneturn matrix */
   Cell_GetABGN(globval.OneTurnMat, alpha, beta, gamma, nu0);
-  
+
   /* Get cod for energy dP+globval.dPcommon*/
   GetCOD(globval.CODimax, globval.CODeps, dP+globval.dPcommon*0.5, lastpos);
-  
+
   if (!status.codflag) { /* if no cod */
     fprintf(stdout,"Ring_Getchrom  Lattice is unstable for"
 	    " dP+globval.dPcommon=% .5e \n", dP+globval.dPcommon*0.5);
@@ -508,7 +508,7 @@ void Ring_Getchrom(double dP)
 
   /* get tunes for energy dP+globval.dPcommon/2 from oneturn matrix */
   Cell_GetABGN(globval.OneTurnMat, alpha, beta, gamma, nu);
-  
+
   if (!globval.stable) {
     printf("Ring_Getchrom:  Lattice is unstable\n");
   }
@@ -516,7 +516,7 @@ void Ring_Getchrom(double dP)
   /* Get chromaticities by numerical differentiation*/
   for (j = 0; j <= 1; j++)
     globval.Chrom[j] = (nu[j]-nu0[j])/globval.dPcommon;
-  
+
   status.chromflag = true;
 }
 
@@ -545,7 +545,7 @@ void Ring_Getchrom(double dP)
    Input:
        bool true if chromaticities and dispersion to compute
                else false
-       dP      particle energy offset  
+       dP      particle energy offset
 
    Output:
        none

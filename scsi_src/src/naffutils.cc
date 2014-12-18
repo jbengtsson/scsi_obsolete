@@ -4,7 +4,7 @@
                  SLS, PSI      1995 - 1997
    M. Boege      SLS, PSI      1998          C translation
    L. Nadolski   SOLEIL        2002          Link to NAFF, Radia field maps
-   J. Bengtsson  NSLS-II, BNL  2004 -        
+   J. Bengtsson  NSLS-II, BNL  2004 -
 
 */
 
@@ -47,7 +47,7 @@ double  pi = M_PI;
        19/01/03 tracking around the closed orbit
        20/03/04 closed orbit searched w/ findcod (Newton-Raphson numerical method)
 ****************************************************************************/
-void Trac_Simple(double x, double px, double y, double py, double dp, 
+void Trac_Simple(double x, double px, double y, double py, double dp,
                  double ctau, long nmax, double Tx[][NTURN], bool *status2)
 {
   bool             lostF = false; /* Lost particle Flag */
@@ -67,8 +67,8 @@ void Trac_Simple(double x, double px, double y, double py, double dp,
     /* Get closed orbit */
     //~ getcod(dp, lastpos);
     findcod(dp);
-  
-    if (trace && status.codflag) 
+
+    if (trace && status.codflag)
       printf("dp= % .5e %% xcod= % .5e mm zcod= % .5e mm \n",
              dp*1e2, globval.CODvect[0]*1e3, globval.CODvect[2]*1e3);
 
@@ -103,7 +103,7 @@ void Trac_Simple(double x, double px, double y, double py, double dp,
     else
     {
       printf("Trac_Simple: Particle lost \n");
-      fprintf(stdout, "%6ld plane: %1d %+10.5g %+10.5g %+10.5g %+10.5g %+10.5g %+10.5g \n", 
+      fprintf(stdout, "%6ld plane: %1d %+10.5g %+10.5g %+10.5g %+10.5g %+10.5g %+10.5g \n",
          lastn, status.lossplane, x1[0], x1[1], x1[2], x1[3], x1[4], x1[5]);
       lostF = true;
       *status2 = false;
@@ -300,7 +300,7 @@ void Get_NAFF(int nterm, long ndata, double Tab[DIM][NTURN],
        none
 
    Comments:
-       
+
 
 ****************************************************************************/
 void Get_Tabshift(double Tab[DIM][NTURN], double Tab0[DIM][NTURN], long nbturn, long nshift)
@@ -348,7 +348,7 @@ void Get_freq(double *fx, double *fz, double *nux, double *nuz)
 {
   const double eps0 = 1e-4;
   const double eps1 = 1e-6;
-  
+
   // case of nux
   if (fabs(fx[0]) < eps0){
     *nux = fx[1];

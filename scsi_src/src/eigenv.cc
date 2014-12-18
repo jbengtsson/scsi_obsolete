@@ -4,7 +4,7 @@
                  SLS, PSI      1995 - 1997
    M. Boege      SLS, PSI      1998          C translation
    L. Nadolski   SOLEIL        2002          Link to NAFF, Radia field maps
-   J. Bengtsson  NSLS-II, BNL  2004 -        
+   J. Bengtsson  NSLS-II, BNL  2004 -
 
   eigenv.c -- Eigenvalue routines
 
@@ -58,7 +58,7 @@ static int closest(double x, double x1, double x2, double x3)
 
    Purpose: called by geigen
        A[*, i] <==> A[*, j]
-       A[i, *] <==> A[j, *]  
+       A[i, *] <==> A[j, *]
 
 
    Input:
@@ -135,7 +135,7 @@ static void Swap(double *x, double *y)
                    Vector &wr, Vector &wi)
 
    Purpose:  called by GDiag
-      This routine finds the eigenvalues and eigenvectors of the full matrix fm 
+      This routine finds the eigenvalues and eigenvectors of the full matrix fm
 
       Compute eigenvalues and eigenvectors using double
       precision Eispack routines:
@@ -147,7 +147,7 @@ static void Swap(double *x, double *y)
       tridiagonal, generalized real, and generalized real symmetric matices.
       In addition, two routines are included that use singular value
       decomposition to solve certain least-squares problems.
-      
+
    Input:
        n  matrix dimension
        fm input "full" matrix
@@ -501,7 +501,7 @@ void GenB(int k, Matrix &B, Matrix &BInv, Vector &Eta, struct LOC_GDiag &LINK)
            Matrix &M, double *Omega, double *alphac)
 
    Purpose: called by Ring_MatTwiss, Ring_DATwiss
-   
+
       Input M:     Oneturn transfer matrix
 
       Output A
@@ -536,7 +536,7 @@ void GenB(int k, Matrix &B, Matrix &BInv, Vector &Eta, struct LOC_GDiag &LINK)
        InitJJ, CopyMat, TpMat, UnitMat, GetAinv, MulLMat
        geigen,
        GetEta, GenB
-       
+
    Comments:
        none
 
@@ -681,7 +681,7 @@ static void eswap(Matrix &t6a, Vector &lamr, Vector &lami, Matrix &r,
 
    Output:
        t6a matrix of sorted and normalized eigenvectors
-       
+
    Return:
        none
 
@@ -738,9 +738,9 @@ void NormEigenVec(Matrix &Vr,Matrix &Vi, Vector &wr, Vector &wi, Matrix &t6a)
         t6a[i-1][j2-1] = -t6a[i-1][j2-1];
       }
     }
- 
+
     sqrn = sqrt(fabs(rn)); /* take the norm of rn */
- 
+
     for (i = 1; i <= ss_dim; i++)
     {
       t6a[i-1][j1-1]=t6a[i-1][j1-1]/sqrn;

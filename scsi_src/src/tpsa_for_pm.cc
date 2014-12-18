@@ -16,7 +16,7 @@ unsigned short int  seq_tps = 0;       // sequence no for TPSA vector
 const int           n_max   = 200;     // max iterations for LieExp
 
 int  bufsize; // Note, max no of monomials is (no+nv)!/(nv!*no!)
- 
+
 
 long int fact(long int n)
 {
@@ -894,7 +894,7 @@ tps LieFact_DF(const ss_vect<tps> &xy, ss_vect<tps> &x)
 {
   /* Dragt-Finn factorization:
 
-       M = M_lin exp(:h_3:) exp(:h_4:) ... 
+       M = M_lin exp(:h_3:) exp(:h_4:) ...
 
   */
   int  i, xyintptrs[nv_tps], xintptrs[nv_tps];
@@ -912,10 +912,10 @@ tps LieFact(const ss_vect<tps> &xy)
 {
   /* Single exponent Dragt-Finn factorization:
 
-       M = exp(:h_2:) exp(:h_3:) exp(:h_4:) ... 
+       M = exp(:h_2:) exp(:h_3:) exp(:h_4:) ...
 
   */
-  return Intd(FlowFact(xy), -1.0); 
+  return Intd(FlowFact(xy), -1.0);
 }
 
 
@@ -1025,7 +1025,7 @@ istream& operator>>(istream &is, tps &a)
 	     << no1 << setw(11) << rbuf[n];
 	for (i = 0; i < ss_dim; i++)
 	  cout << setw(3) << jj[i];
-	cout << endl; 
+	cout << endl;
       }
 
       hash_(no_tps, ss_dim, jj, ibuf1[n-1], ibuf2[n-1]);
@@ -1060,7 +1060,7 @@ ostream& operator<<(ostream &os, const tps &a)
 
   daexp_(a.intptr, rbuf, ibuf1, ibuf2, name);
   s << endl;
-  
+
   name[10] = '\0'; i = 0;
   while ((i <= 9) && (name[i] != ' ')) {
     s << name[i]; i++;
@@ -1070,7 +1070,7 @@ ostream& operator<<(ostream &os, const tps &a)
     << ", NV = " << nv_tps << ", INA = " << a.intptr << endl;
 
   for (i = 1; i <= 66; i++)
-    s << "-"; 
+    s << "-";
   s << endl;
 
   if (header) {
@@ -1107,7 +1107,7 @@ ostream& operator<<(ostream &os, const tps &a)
 	<< endl;
     }
   }
-  
+
   if (n != 0) {
     s << endl;
     s << "   |I|         a              ";
@@ -1125,7 +1125,7 @@ ostream& operator<<(ostream &os, const tps &a)
     for (i = 1; i <= n; i++) {
       dehash_(no_tps, nv_tps, ibuf1[i-1], ibuf2[i-1], jj);
       ord = 0;
-      for (j = 0; j < nv_tps; j++) 
+      for (j = 0; j < nv_tps; j++)
 	ord += jj[j];
       if (ord == no)
 	if (fabs(rbuf[i]) >= eps_tps) {

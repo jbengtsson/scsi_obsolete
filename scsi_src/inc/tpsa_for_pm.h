@@ -8,7 +8,7 @@
 */
 
 extern int  bufsize;  // Note, max no of monomials is (no+nv)!/(nv!*no!)
- 
+
 
 long int fact(long int n);
 

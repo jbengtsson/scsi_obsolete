@@ -4,13 +4,13 @@
                  SLS, PSI      1995 - 1997
    M. Boege      SLS, PSI      1998          C translation
    L. Nadolski   SOLEIL        2002          Link to NAFF, Radia field maps
-   J. Bengtsson  NSLS-II, BNL  2004 -        
+   J. Bengtsson  NSLS-II, BNL  2004 -
 
 */
 
 
 #define DOF    (ss_dim/2)
- 
+
 #define M_PI   3.14159265358979323846  // pi
 
 #ifndef LONG_MAX
