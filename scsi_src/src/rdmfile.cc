@@ -313,18 +313,27 @@ void rdmfile(const char *mfile_dat)
 	Cell[i].Elem.ID->linear = false;
 
       if (!Cell[i].Elem.ID->linear) {
-	Cell[i].Elem.ID->tx = dmatrix(1, Cell[i].Elem.ID->nz,
-				      1, Cell[i].Elem.ID->nx);
-	Cell[i].Elem.ID->tz = dmatrix(1, Cell[i].Elem.ID->nz,
-				      1, Cell[i].Elem.ID->nx);
+	Cell[i].Elem.ID->mtx = gsl_matrix_alloc(Cell[i].Elem.ID->nz,
+						Cell[i].Elem.ID->nx);
+	GSL2NRDM2(pmtx, Cell[i].Elem.ID->mtx, Cell[i].Elem.ID->tx, 0);	
+	
+	Cell[i].Elem.ID->mtz = gsl_matrix_alloc(Cell[i].Elem.ID->nz,
+						Cell[i].Elem.ID->nx);
+	GSL2NRDM2(pmtz, Cell[i].Elem.ID->mtz, Cell[i].Elem.ID->tz, 0);
+
 	Cell[i].Elem.ID->tab1 = (double *)malloc((Cell[i].Elem.ID->nx)
 						 *sizeof(double));
 	Cell[i].Elem.ID->tab2 = (double *)malloc((Cell[i].Elem.ID->nz)
 						 *sizeof(double));
-	Cell[i].Elem.ID->f2x = dmatrix(1, Cell[i].Elem.ID->nz,
-				       1, Cell[i].Elem.ID->nx);
-	Cell[i].Elem.ID->f2z = dmatrix(1, Cell[i].Elem.ID->nz,
-				       1, Cell[i].Elem.ID->nx);
+
+	Cell[i].Elem.ID->mf2x = gsl_matrix_alloc(Cell[i].Elem.ID->nz,
+						 Cell[i].Elem.ID->nx);
+	GSL2NRDM2(pmf2x, Cell[i].Elem.ID->mf2x, Cell[i].Elem.ID->f2x, 0);
+	
+	Cell[i].Elem.ID->mf2z = gsl_matrix_alloc(Cell[i].Elem.ID->nz,
+						 Cell[i].Elem.ID->nx);
+	GSL2NRDM2(pmf2z, Cell[i].Elem.ID->mf2z, Cell[i].Elem.ID->f2z, 0);
+
 	Matrices4Spline(Cell[i].Elem.ID);
       }
 

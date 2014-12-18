@@ -15,6 +15,11 @@ static bool               first_h[] = {true, true}, first_v[] = {true, true};
 static double             *w_lsoc[2], **A_lsoc[2], **U_lsoc[2], **V_lsoc[2];
 static double             *w_lstc[2], **A_lstc[2], **U_lstc[2], **V_lstc[2];
 
+gsl_vector *vw_lsoc[2], *S;
+gsl_matrix *mA_lsoc[2], *mU_lsoc[2], *mV_lsoc[2];
+gsl_vector *vw_lstc[2];
+gsl_matrix *mA_lstc[2], *mU_lstc[2], *mV_lstc[2];
+
 
 void zero_trims(void)
 {
@@ -121,7 +126,7 @@ void gcmat(const int plane)
     for (j = 1; j <= n_corr_[k]; j++)
       U_lsoc[k][i][j] = A_lsoc[k][i][j];
 
-  dsvdcmp(U_lsoc[k], n_bpm_[k], n_corr_[k], w_lsoc[k], V_lsoc[k]);
+  gsl_linalg_SV_decomp (mU_lsoc[k], mV_lsoc[k], S, vw_lsoc[k]);
 
   printf("\n");
   printf("gcmat singular values:\n");
@@ -155,12 +160,19 @@ void gcmat(const int n_bpm, const long int bpms[],
     else
       first_v[0] = false;
 
-    bpms_[k] = lvector(1, n_bpm); corrs_[k] = lvector(1, n_corr);
+    bpms_[k] = gslport_lvector(1, n_bpm);
+    corrs_[k] = gslport_lvector(1, n_corr);
 
-    A_lsoc[k] = dmatrix(1, n_bpm, 1, n_corr);
-    U_lsoc[k] = dmatrix(1, n_bpm, 1, n_corr);
-    w_lsoc[k] = dvector(1, n_corr);
-    V_lsoc[k] = dmatrix(1, n_corr, 1, n_corr);
+    mA_lsoc[k] = gsl_matrix_alloc(n_bpm, n_corr);
+    GSL2NRDM2(dmA_lsoc, mA_lsoc[k], A_lsoc[k],0);
+    mU_lsoc[k] = gsl_matrix_alloc(n_bpm, n_corr);	
+    GSL2NRDM2(dmU_lsoc, mU_lsoc[k], U_lsoc[k],0);
+    vw_lsoc[k] = gsl_vector_alloc(n_corr);
+    GSL2NRDV2(vw_lsoc[k],w_lsoc[k]);
+    mV_lsoc[k] = gsl_matrix_alloc(n_corr, n_corr);	
+    GSL2NRDM2(dmAV_lsoc, mV_lsoc[k], V_lsoc[k],0);
+	
+    S = gsl_vector_alloc(n_corr);
   }
 
   for (i = 1; i <= n_bpm; i++)
@@ -199,16 +211,27 @@ void lsoc(const int plane)
   long int  loc;
   double    *b, *x;
 
+  gsl_vector *vb;
+  gsl_vector *vx;
+
   k = plane - 1;
 
-  b = dvector(1, n_bpm_[k]); x = dvector(1, n_corr_[k]);
+  vb = gsl_vector_alloc(n_bpm_[k]);
+  vx = gsl_vector_alloc(n_corr_[k]);
+  GSL2NRDV2(vb, b);
+  GSL2NRDV2(vx, x);
 
   for (j = 1; j <= n_bpm_[k]; j++) {
     loc = bpms_[k][j];
     b[j] = -Cell[loc].BeamPos[2*k] + Cell[loc].dS[k];
   }
       
-  dsvbksb(U_lsoc[k], w_lsoc[k], V_lsoc[k], n_bpm_[k], n_corr_[k], b, x);
+  gsl_vector *vs = gsl_vector_alloc(n_corr_[k]);
+  gsl_vector *work = gsl_vector_alloc(n_corr_[k]);
+  gsl_linalg_SV_decomp (mU_lsoc[k], mV_lsoc[k], vs, work);
+  gsl_linalg_SV_solve(mU_lsoc[k], mV_lsoc[k],vs,vb,vx);
+  gsl_vector_free(vs);
+  gsl_vector_free(work);
 
   for (j = 1; j <= n_corr_[k]; j++) {
     loc = corrs_[k][j];
@@ -218,7 +241,8 @@ void lsoc(const int plane)
       set_dbnL_design_elem(Cell[loc].Fnum, Cell[loc].Knum, Dip, 0.0, x[j]);
   }
 
-  free_dvector(b, 1, n_bpm_[k]); free_dvector(x, 1, n_corr_[k]);
+  gsl_vector_free(vb);
+  gsl_vector_free(vx);
 }
 
 
@@ -257,7 +281,7 @@ void gtcmat(const int plane)
     for (j = 1; j <= n_corr_[k]; j++)
       U_lstc[k][i][j] = A_lstc[k][i][j];
 
-  dsvdcmp(U_lstc[k], n_bpm_[k], n_corr_[k], w_lstc[k], V_lstc[k]);
+  gsl_linalg_SV_decomp (mU_lstc[k], mV_lstc[k], S, vw_lstc[k]);
 
   printf("\n");
   printf("gcmat singular values:\n");
@@ -291,12 +315,19 @@ void gtcmat(const int n_bpm, const long int bpms[],
     else
       first_v[1] = false;
 
-    bpms_[k] = lvector(1, n_bpm); corrs_[k] = lvector(1, n_corr);
+    bpms_[k] = gslport_lvector(1, n_bpm);
+    corrs_[k] = gslport_lvector(1, n_corr);
 
-    A_lstc[k] = dmatrix(1, n_bpm, 1, n_corr);
-    U_lstc[k] = dmatrix(1, n_bpm, 1, n_corr);
-    w_lstc[k] = dvector(1, n_corr);
-    V_lstc[k] = dmatrix(1, n_corr, 1, n_corr);
+    mA_lstc[k] = gsl_matrix_alloc(n_bpm, n_corr);
+    GSL2NRDM2(dmA_lstc, mA_lstc[k], A_lstc[k],0);
+    mU_lstc[k] = gsl_matrix_alloc(n_bpm, n_corr);	
+    GSL2NRDM2(dmU_lstc, mU_lstc[k], U_lstc[k],0);
+    vw_lstc[k] = gsl_vector_alloc(n_corr);
+    GSL2NRDV2(vw_lstc[k],w_lstc[k]);
+    mV_lstc[k] = gsl_matrix_alloc(n_corr, n_corr);	
+    GSL2NRDM2(dmAV_lstc, mV_lstc[k], V_lstc[k],0);
+	
+    S = gsl_vector_alloc(n_corr);
   }
 
   for (i = 1; i <= n_bpm; i++)
@@ -317,9 +348,15 @@ void lstc(const int plane, const long int lastpos)
   long int  loc;
   double    *b, *x;
 
+  gsl_vector *vb;
+  gsl_vector *vx;
+
   k = plane - 1;
 
-  b = dvector(1, n_bpm_[k]); x = dvector(1, n_corr_[k]);
+  vb = gsl_vector_alloc(n_bpm_[k]);
+  vx = gsl_vector_alloc(n_corr_[k]);
+  GSL2NRDV2(vb, b);
+  GSL2NRDV2(vx, x);
 
   for (j = 1; j <= n_bpm_[k]; j++) {
     loc = bpms_[k][j];
@@ -332,8 +369,13 @@ void lstc(const int plane, const long int lastpos)
 		    << "b[" << setw(3) << j << "] = "
 		    << setw(12) << b[j] << endl;
   }
-      
-  dsvbksb(U_lstc[k], w_lstc[k], V_lstc[k], n_bpm_[k], n_corr_[k], b, x);
+
+  gsl_vector *vs = gsl_vector_alloc(n_corr_[k]);
+  gsl_vector *work = gsl_vector_alloc(n_corr_[k]);
+  gsl_linalg_SV_decomp (mU_lstc[k], mV_lstc[k], vs, work);
+  gsl_linalg_SV_solve(mU_lstc[k], mV_lstc[k],vs,vb,vx);
+  gsl_vector_free(vs);
+  gsl_vector_free(work);
 
   for (j = 1; j <= n_corr_[k]; j++) {
     loc = corrs_[k][j];
@@ -354,5 +396,6 @@ void lstc(const int plane, const long int lastpos)
     }
   }
 
-  free_dvector(b, 1, n_bpm_[k]); free_dvector(x, 1, n_corr_[k]);
+  gsl_vector_free(vb);
+  gsl_vector_free(vx);
 }

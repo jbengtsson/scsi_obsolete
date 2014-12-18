@@ -56,7 +56,10 @@ void splint(const double xa[], const U ya[], const U y2a[],
       klo = k;
   }
   h = xa[khi]-xa[klo];
-  if (h == 0.0) nrerror("Bad xa input to routine splint");
+  if (h == 0.0) {
+    printf("Bad xa input to routine splint");
+    exit(-1);
+  }
   a = (xa[khi]-x)/h; b = (x-xa[klo])/h;
   y = a*ya[klo]+b*ya[khi]+((a*a*a-a)*y2a[klo]+(b*b*b-b)*y2a[khi])*(h*h)/6.0;
 }

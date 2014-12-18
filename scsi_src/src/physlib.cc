@@ -2930,8 +2930,8 @@ void computeFandJ(int n, Vector &x, Matrix &fjac, Vector &fvect)
 
 void Newton_RaphsonS(int ntrial, double x[], int n, double tolx)
 {
-  int    k, i, *indx;
-  double  errx, d, *bet, *fvect, **alpha;
+  int    k, i;
+  double errx, *bet, *fvect, **alpha;
 
   gsl_vector *vbet;
   gsl_vector *vfvect;

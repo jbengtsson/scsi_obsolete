@@ -4047,10 +4047,6 @@ double Touschek(const double Qb, const double delta_RF,const bool consistent,
 
     u_Touschek = sqr(delta_p/(gamma*sigma_xp));
 
-    tau_inv +=
-      dqromb(f_int_Touschek, 0e0, 1e0)
-      /(sigma_x*sigma_xp*sigma_y*sqr(delta_p))*L;
-
     double result, error;
     double alpha = 1.0;
     gsl_function F;
@@ -5087,7 +5083,7 @@ double f_bend(const gsl_vector *vb0L, void *params)
   for(i = 0; i < (int)vb0L->size; i++)
     b0L[i] = gsl_vector_get(vb0L, i);
   
-  double *p = (double *)params;
+//  double *p = (double *)params;
 
   const int   n_prt = 10;
 
