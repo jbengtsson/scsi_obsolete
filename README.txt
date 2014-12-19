@@ -1,8 +1,8 @@
 scsi
 
-Self-Consistent Symplectic Integrator for charged particle beam dynamics;
+Self-Consistent Symplectic Integrator for charged particle beam dynamics,
 based on TPSA (Truncated Power Series Algebra),
-aka PTC (Polymorphic Tracking Code).
+aka PTC (Polymorphic Tracking Code); originated 1994.
 
 
 Author: Johan Bengtsson
