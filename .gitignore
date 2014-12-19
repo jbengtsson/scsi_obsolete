@@ -8,4 +8,7 @@ config
 #
 scsi_src/lib
 #
+scsi_src/python/python_api.py
+scsi_src/python/python_api_wrap.c
+#
 *~
