@@ -11,6 +11,7 @@ Requirements:
 
    GNU autoconf and automake environments.
    GNU C++ and FORTRAN-95 compilers: gcc and gfortran.
+   GNU GSL.
 
 To install:
 
