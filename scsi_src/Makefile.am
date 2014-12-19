@@ -1,1 +1,1 @@
-SUBDIRS = src TPSA
+SUBDIRS = src TPSA python

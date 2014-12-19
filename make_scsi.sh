@@ -5,7 +5,7 @@ dir=`pwd`
 rm -rf autom4te.cache
 rm -rf aclocal.m4
 
-mkdir config
+mkdir -p config
 
 ./bootstrap
 ./configure --prefix=$dir/scsi_src
