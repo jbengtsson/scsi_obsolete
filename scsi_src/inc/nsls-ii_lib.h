@@ -52,7 +52,9 @@ void no_sxt(void);
 
 void get_map(void);
 
+#if NO > 1
 tps get_h(void);
+#endif
 
 void get_m2(const ss_vect<tps> &ps, tps m2[]);
 
@@ -277,8 +279,6 @@ void ini_COD_corr(const int n_bpm_Fam, const string bpm_names[],
 
 void get_param(const char *param_file);
 
-void error_and_correction(const char *param_file, bool rd_lat);
-
 void prt_codcor_lat(void);
 
 void prt_beamsizes();
@@ -295,7 +295,7 @@ double Touschek(const double Qb, const double delta_RF,const bool consistent,
 
 double f_IBS(const double chi_m);
 
-double get_int_IBS(void);
+double get_int_IBS_BM(void);
 
 void IBS(const double Qb, const double eps_SR[], double eps[]);
 
@@ -317,9 +317,10 @@ void get_ksi2(const double d_delta);
 bool find_nu(const int n, const double nus[], const double eps, double &nu);
 
 bool get_nu(const double Ax, const double Ay, const double delta,
-	    double &nu_x, double &nu_y);
+	    const double eps, double &nu_x, double &nu_y);
 
-void dnu_dA(const double Ax_max, const double Ay_max, const double delta, const int n_ampl);
+void dnu_dA(const double Ax_max, const double Ay_max, const double delta,
+	    const int n_ampl);
 
 bool orb_corr(const int n_orbit);
 

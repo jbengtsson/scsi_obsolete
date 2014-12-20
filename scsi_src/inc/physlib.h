@@ -46,17 +46,13 @@
 typedef long ipeakbuf[npeakmax];
 typedef double peakbuf[npeakmax];
 
-double int_curly_H(long int n);
+double int_curly_H1(long int n);
 
 void rm_mean(long int n, double x[]);
 
 void printglob(void);
 
-void printlatt(void);
-
 void recalc_S();
-
-double Circumference(void);
 
 void GetMean(long n, double *x);
 
@@ -82,8 +78,6 @@ void FitTune(long qf, long qd, double nux, double nuy);
 void FitChrom(long sf, long sd, double ksix, double ksiy);
 
 void FitDisp(long q, long  pos, double eta);
-
-void inibump(long coh, long cov);
 
 void getfloqs(Vector &x);
 
@@ -216,8 +210,6 @@ double GetL(int Fnum, int Knum);
 
 double GetKLpar(int Fnum, int Knum, int Order);
 
-void SetdKLsys(int Fnum, int Order, double dkLsys);
-
 void SetdKLrms(int Fnum, int Order, double dkLrms);
 
 void Setdkrrms(int Fnum, int Order, double dkrrms);
@@ -251,7 +243,7 @@ void Read_Lattice(char *fic);
 void GetChromTrac(long Nb, long Nbtour, double emax, double *xix, double *xiz);
 void GetTuneTrac(long Nbtour, double emax, double *nux, double *nuz);
 void Trac(double x, double px, double y, double py, double dp, double ctau,
-                 long nmax, long pos, long &lastn, long &lastpos, FILE *outf1);
+	  long nmax, long pos, long &lastn, long &lastpos, FILE *outf1);
 
 /* close orbit */
 // simple precision
@@ -260,7 +252,7 @@ void computeFandJS(double *x, int n, double **fjac, double *fvect);
 void Newton_RaphsonS(int ntrial, double x[], int n, double tolx);
 // double precision
 void findcod(double dP);
-void computeFandJ(int n, double *x, Vector *fjac, double *fvect);
+void computeFandJ(int n, Vector &x, Matrix &fjac, Vector &fvect);
 int Newton_Raphson(int n, Vector &x, int ntrial, double tolx);
 
 

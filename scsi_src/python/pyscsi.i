@@ -1,4 +1,4 @@
-%module python_api
+%module pyscsi
 %{
 
 #define NO 1

@@ -38,7 +38,9 @@ class tps {
   tps(void);
   tps(const double);
   tps(const double, const int);
+#if NO > 1
   tps(const double, const int []);
+#endif
   tps(const tps &);
   ~tps(void);
 

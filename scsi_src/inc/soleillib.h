@@ -14,9 +14,7 @@ void InducedAmplitude(long spos);
 void Hfonction(long pos, double dP,Vector2 H);
 void Hcofonction(long pos, double dP,Vector2 H);
 void Get_Disp_dp(void);
-void read_corrh(void);
 void set_vectorcod(Vector codvector[], double dP);
-void SetDecapole(void);
 
 /* Tracking */
 void Phase(double x,double xp,double y, double yp,double energy, double ctau, long Nbtour);
@@ -25,10 +23,8 @@ void Phase2(long pos, double x,double xp,double y, double yp,double energy, doub
 void PhasePoly(long pos, double x0,double px0, double z0, double pz0, double delta0,
                double ctau0, long Nbtour);
 void Check_Trac(double x, double px, double y, double py, double dp);
-void PhasePortrait(double x0,double px0,double z0, double pz0, double delta0, double ctau,
-                          double end, long Nb, long Nbtour, int num);
-void PhasePortrait2(long pos,double x0,double px0,double z0, double pz0, double delta0, double ctau,
-                          double end, long Nb, long Nbtour, int num);
+void PhasePortrait(double x0,double px0,double z0, double pz0, double delta0,
+		   double ctau, double end, long Nb, long Nbtour, int num);
 void Multipole(void);
 void MomentumAcceptance(long deb, long fin, double ep_min, double ep_max, long nstepp,
                         double em_min, double em_max, long nstepm);
@@ -37,7 +33,7 @@ void Trac_Tab(double x, double px, double y, double py, double dp,
 	      double Tx[][NTURN]);
 void SetSkewQuad(void);
 void TracCO(double x, double px, double y, double py, double dp, double ctau,
-                 long nmax, long pos, long *lastn, long *lastpos, FILE *outf1);
+	    long nmax, long pos, long &lastn, long &lastpos, FILE *outf1);
 void Dyna(long Nbx, long Nbz, long Nbtour, double xmax, double zmax,
                double energy, bool diffusion);
 
@@ -47,7 +43,6 @@ void fmap(long Nbx, long Nbz, long Nbtour, double xmax, double zmax,
                  double energy, bool diffusion, bool matlab);
 void fmapdp(long Nbx, long Nbe, long Nbtour, double xmax, double emax,
               double z, bool diffusion, bool matlab);
-void Nu_Naff(void);
 void NuDx(long Nbx, long Nbz, long Nbtour, double xmax, double ymax,
                  double energy);
 

@@ -1773,7 +1773,7 @@ void SetdbnL(int Fnum, int order, double dbnL)
 }
 
 
-void Setbnr(int Fnum, long order, double bnr)
+void Setbnr(int Fnum, int order, double bnr)
 {
   int  i;
 
