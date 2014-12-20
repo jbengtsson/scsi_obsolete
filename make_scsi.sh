@@ -3,7 +3,7 @@
 dir=`pwd`
 
 cd scsi_src/python
-swig -c++ -python python_api.i
+swig -c++ -python pyscsi.i
 cd $dir
 
 # Remove autoconf cashe.

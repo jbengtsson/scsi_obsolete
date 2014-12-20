@@ -4,8 +4,6 @@
 
 */
 
-extern tps  sigma_;
-
 bool GetCOD(long imax, double eps, double dP, long &lastpos);
 
 template<typename T>

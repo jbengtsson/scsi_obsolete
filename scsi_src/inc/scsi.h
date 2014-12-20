@@ -106,8 +106,6 @@ extern bool  stable;
 extern bool  ErrFlag;
 extern bool  trace, cellconcat, traceID;
 
-extern double  Fdrift1, Fkick1, Fdrift2, Fkick2, crad, cfluc;
-
 extern str80  finame,   /* input  data file  */
               foname,   /* output data file */
               fname;    /* temp file name */

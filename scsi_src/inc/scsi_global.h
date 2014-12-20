@@ -231,8 +231,8 @@ struct elemtype {
   partsName PName;   // Element name
   double PL;         // Length[m]
   PartsKind Pkind;   // Enumeration  for magnet types
-  union
-  {
+//  union
+//  {
     DriftType      *D;   // Drift
     MpoleType      *M;   // Multipole
     WigglerType    *W;   // Wiggler
@@ -242,7 +242,7 @@ struct elemtype {
     SpreaderType   *Spr; // Spreader
     RecombinerType *Rec; // Recombiner
     SolenoidType   *Sol; // Solenoid
-  };
+//  };
 };
 
 struct ElemFamType {
