@@ -6,6 +6,7 @@ cd scsi_src/python
 swig -c++ -python python_api.i
 cd $dir
 
+# Remove autoconf cashe.
 rm -rf autom4te.cache
 rm -rf aclocal.m4
 
