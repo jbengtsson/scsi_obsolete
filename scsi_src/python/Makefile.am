@@ -1,6 +1,6 @@
 lib_LIBRARIES       = libpyscsi.a
 
-libpyscsi_a_SOURCES = ../src/scsi_lib.cc python_api_wrap.c
+libpyscsi_a_SOURCES = ../src/scsi_lib.cc python_api_wrap.cxx
 
 INCLUDES = -I../inc -I/usr -I/usr/include/python2.6
 
