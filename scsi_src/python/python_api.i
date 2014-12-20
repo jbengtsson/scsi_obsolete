@@ -1,6 +1,48 @@
 %module python_api
 %{
 
+// C standard library
+#include <stdio.h>
+#include <stddef.h>
+#include <setjmp.h>
+#include <time.h>
+#include <memory.h>
+#include <malloc.h>
+//#include <execinfo.h>
+
+
+// C++ standard library
+#include <cstdlib>
+#include <cfloat>
+#include <cctype>
+#include <cmath>
+#include <complex>
+#include <iostream>
+#include <sstream>
+#include <iomanip>
+#include <fstream>
+#include <string>
+using namespace std;
+
+// GSL
+#include <gsl/gsl_matrix.h>
+#include <gsl/gsl_permutation.h>
+#include <gsl/gsl_linalg.h>
+#include <gsl/gsl_vector.h>
+#include <gsl/gsl_integration.h>
+#include <gsl/gsl_errno.h>
+#include <gsl/gsl_fft_complex.h>
+#include <gsl/gsl_multimin.h>
+#include "gslport.h"
+
+#include "../inc/gslport.h"
+
+#define NO 1
+
+// Friend declarations are ignored by SWIG.
+void TPSAEps(const double);
+
+#include "../inc/field.h"
 #include "../inc/mathlib.h"
 
 #include "../inc/tpsa_lin.h"
@@ -49,6 +91,10 @@ extern globvalrec globval;
 
 %}
 
+
+%include "../inc/gslport.h"
+
+%include "../inc/field.h"
 %include "../inc/mathlib.h"
 
 %include "../inc/tpsa_lin.h"
@@ -93,4 +139,4 @@ export ElemFamType ElemFam[];
 
 export CellType Cell[];
 
-export globvalrec globval;*/
+export globvalrec globval;
