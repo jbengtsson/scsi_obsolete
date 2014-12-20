@@ -113,8 +113,8 @@ extern str80  finame,   /* input  data file  */
 extern FILE  *fi,       /* lattice input  file  */
              *fo,       /* lattice output file */
              *psin[],   /* program input file */
-             *psout,              /* program output file*/
-             *prr[];   /* prr[1] : input, prr[2] : output */
+             *psout,    /* program output file*/
+             *prr[];    /* prr[1] : input, prr[2] : output */
 
 extern statusrec status;
 
@@ -129,12 +129,6 @@ extern void NormEigenVec(Matrix &Vr, Matrix &Vi, double *wr, double *wi,
 			 Matrix &t6a);
 
 extern void t2init(void);
-
-extern void prt_gcmat(int bpm, int corr, int plane);
-
-extern void gcmat(int bpm, int corr, int plane);
-
-extern void lsoc(int niter, int bpm, int corr, int plane);
 
 /**** same as asctime in C without the \n at the end****/
 char *asctime2(const struct tm *timeptr);
