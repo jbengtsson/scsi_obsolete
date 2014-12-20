@@ -18,15 +18,14 @@ int ndpt_tps = 2;
 
 // Declared in "scsi_lib.h".
 
-extern const int nv_tps, nd_tps, iref_tps;
-extern int       no_tps, ndpt_tps;
-extern double    eps_tps;
+extern const int   nv_tps, nd_tps, iref_tps;
 
-// Defined in "t2elem.cc".
-extern ElemFamType ElemFam[Elem_nFamMax];
-extern CellType    Cell[Cell_nLocMax+1];
+// Not defined in C code...
+extern int         no_tps, ndpt_tps;
+extern double      eps_tps;
 
-// Defined in "scsi.cc".
+extern ElemFamType ElemFam[];
+extern CellType    Cell[];
 extern globvalrec  globval;
 
 
