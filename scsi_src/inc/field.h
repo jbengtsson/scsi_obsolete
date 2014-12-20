@@ -175,8 +175,8 @@ template<typename T> class ss_vect {
   ss_vect<T>& operator+=(const ss_vect<T> &);
   ss_vect<T>& operator-=(const ss_vect<T> &);
 
-  friend ss_vect<T> operator+<>(const ss_vect<T> &);
-  friend ss_vect<T> operator-<>(const ss_vect<T> &);
+//  friend ss_vect<T> operator+<>(const ss_vect<T> &);
+//  friend ss_vect<T> operator-<>(const ss_vect<T> &);
 
   friend ss_vect<double> operator+(const ss_vect<double> &,
 				   const ss_vect<double> &);
