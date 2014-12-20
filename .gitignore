@@ -5,10 +5,11 @@ aclocal.m4
 autom4te.cache
 config.h.in
 config
+configure
 #
 scsi_src/lib
 #
 scsi_src/python/python_api.py
-scsi_src/python/python_api_wrap.c
+scsi_src/python/python_api_wrap.cxx
 #
 *~
