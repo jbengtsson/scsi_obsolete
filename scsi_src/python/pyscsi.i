@@ -16,14 +16,19 @@ int ndpt_tps = 2;
 
 %}
 
-// From "scsi_lib.h".
+// Declared in "scsi_lib.h".
 
-extern const int  nv_tps, nd_tps, iref_tps;
-extern int        no_tps, ndpt_tps;
-extern double     eps_tps;
+extern const int nv_tps, nd_tps, iref_tps;
+extern int       no_tps, ndpt_tps;
+extern double    eps_tps;
+
+// Defined in "t2elem.cc".
+extern ElemFamType ElemFam[Elem_nFamMax];
+extern CellType    Cell[Cell_nLocMax+1];
 
 // Defined in "scsi.cc".
-extern globvalrec globval;
+extern globvalrec  globval;
+
 
 // Parse the header files to generate the wrapper code.
 
@@ -64,14 +69,3 @@ extern globvalrec globval;
 
 %include "../inc/rdmfile.h"
 %include "../inc/prtmfile.h"
-
-
-export const int  nv_tps, nd_tps, iref_tps;
-export int        no_tps, ndpt_tps;
-export double     eps_tps;
-
-export ElemFamType ElemFam[];
-
-export CellType Cell[];
-
-export globvalrec globval;
