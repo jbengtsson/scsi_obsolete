@@ -934,6 +934,7 @@ ss_vect<tps> FlowFact(const ss_vect<tps> &xy)
 
 tps Intd(const ss_vect<tps> &V, double scl)
 {
+  // Second argument not declared as constant owing to F77 call.
   int  i, Vintptrs[nv_tps];
   tps  H;
 

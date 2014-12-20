@@ -54,10 +54,6 @@ void printglob(void);
 
 void printlatt(void);
 
-void PrintMat(long n, Vector *A);
-
-void PrintVec(long n, double *X);
-
 void recalc_S();
 
 double Circumference(void);
@@ -70,7 +66,7 @@ void get_twiss3(long int loc,
                        Vector2 alpha[], Vector2 beta[], Vector2 nu[],
                        Vector2 eta[], Vector2 etap[]);
 
-void getabn(double *alpha, double *beta, double *nu);
+void getabn(Vector2 &alpha, Vector2 &beta, Vector2 &nu);
 
 void TraceABN(long i0, long i1, const Vector2 &alpha, const Vector2 &beta,
 	      const Vector2 &eta, const Vector2 &etap, const double dP);
@@ -247,16 +243,8 @@ double digitize(double x, double maxkick, double maxsamp);
 double digitize2(long plane, long inum, double x, double maxkick,
 			double maxsamp);
 
-void Dis_In(long *bpmdis, long *vcorrdis, long *hcorrdis,
-                   long *wvdis, long *whdis);
-
-
 /* high level functions for reading lattice file*/
 void Read_Lattice(char *fic);
-long get_bpm_number(void);
-long get_hcorr_number(void);
-long get_vcorr_number(void);
-long get_qt_number(void);
 
 
 /* tracking */

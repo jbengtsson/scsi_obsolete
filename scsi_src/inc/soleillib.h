@@ -33,7 +33,8 @@ void Multipole(void);
 void MomentumAcceptance(long deb, long fin, double ep_min, double ep_max, long nstepp,
                         double em_min, double em_max, long nstepm);
 void Trac_Tab(double x, double px, double y, double py, double dp,
-            long nmax, long pos, long *lastn, long *lastpos, FILE *outf1, double Tx[][NTURN]);
+	      long nmax, long pos, long &lastn, long &lastpos, FILE *outf1,
+	      double Tx[][NTURN]);
 void SetSkewQuad(void);
 void TracCO(double x, double px, double y, double py, double dp, double ctau,
                  long nmax, long pos, long *lastn, long *lastpos, FILE *outf1);

@@ -5,5 +5,3 @@
 long int fact(long int n);
 
 long int nok(long int n, long int k);
-
-void idprset(const int level);

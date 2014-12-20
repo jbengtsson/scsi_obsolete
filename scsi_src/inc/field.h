@@ -44,16 +44,19 @@ class tps {
 
   // initialize TPSA library
    friend void TPSAEps(const double);
-  // trace level for TPSALib and LieLib
-  friend void idprset(const int);
 
   const double cst(void) const;
   double operator[](const int) const;
   double operator[](const int []) const;
   void pook(const int [], const double);
 
+#if NO > 1
+  // trace level for TPSALib and LieLib
+  friend void idprset(const int);
+
   void exprt(double [], int [], int [], char []) const;
   void imprt(const int, double [], const int [], const int []);
+#endif
 
   tps& operator=(const double);
   tps& operator+=(const double);
@@ -90,11 +93,14 @@ class tps {
   friend tps cos(const tps &);
   friend tps tan(const tps &);
   friend tps asin(const tps &);
+#if NO > 1
   friend tps acos(const tps &);
+#endif
   friend tps atan(const tps &);
   friend tps sinh(const tps &);
   friend tps cosh(const tps &);
 
+#if NO > 1
   friend tps Der(const tps &, const int);
   friend tps LieExp(const tps &, const tps &);
   friend tps LieFlo(const ss_vect<tps> &, const tps &);
@@ -130,9 +136,10 @@ class tps {
   friend tps RtoC(const tps &, const tps &);
   friend tps LieFact_DF(const ss_vect<tps> &, ss_vect<tps> &);
   friend ss_vect<tps> FlowFact(const ss_vect<tps> &);
-  friend tps Intd(const ss_vect<tps> &, const double);
+  friend tps Intd(const ss_vect<tps> &, double);
   friend ss_vect<tps> Difd(const tps &, const double);
   friend ss_vect<tps> Taked(const ss_vect<tps> &, const int);
+#endif
  private:
 #if NO == 1
   tps_buf  ltps;  // linear TPSA
@@ -198,11 +205,6 @@ template<typename T> class ss_vect {
   friend ss_vect<tps> operator*(const ss_vect<tps> &, const ss_vect<tps> &);
   friend ss_vect<tps> operator*(const double, const ss_vect<tps> &);
   friend ss_vect<tps> operator*(const ss_vect<tps> &, const double);
-  // R(nv, nv) = P(nv, nv)*Q(nv, nv)
-  friend ss_vect<tps> CCT(const ss_vect<tps> &, const ss_vect<tps> &);
-  friend ss_vect<tps> MTREE(const ss_vect<tps> &);
-  friend ss_vect<double> PPUSH(const ss_vect<tps> &, ss_vect<double> &);
-  friend tps operator*(const tps &, const ss_vect<tps> &);
 
   template<typename CharT, class Traits>
     friend basic_istream<CharT, Traits>&
@@ -214,6 +216,13 @@ template<typename T> class ss_vect {
 
   ss_vect<T> zero(void);
   ss_vect<tps> identity(void);
+
+#if NO > 1
+  // R(nv, nv) = P(nv, nv)*Q(nv, nv)
+  friend ss_vect<tps> CCT(const ss_vect<tps> &, const ss_vect<tps> &);
+  friend ss_vect<tps> MTREE(const ss_vect<tps> &);
+  friend ss_vect<double> PPUSH(const ss_vect<tps> &, ss_vect<double> &);
+  friend tps operator*(const tps &, const ss_vect<tps> &);
 
   friend ss_vect<tps> FExpo(const tps &, const ss_vect<tps> &,
 			    const int, const int, const int);
@@ -236,9 +245,10 @@ template<typename T> class ss_vect {
   friend tps LieFact_DF(const ss_vect<tps> &, ss_vect<tps> &);
   friend tps LieFact(const ss_vect<tps> &);
   friend ss_vect<tps> FlowFact(const ss_vect<tps> &);
-  friend tps Intd(const ss_vect<tps> &, const double);
+  friend tps Intd(const ss_vect<tps> &, double);
   friend ss_vect<tps> Difd(const tps &, const double);
   friend ss_vect<tps> Taked(const ss_vect<tps> &, const int);
+#endif
  private:
   // (Note, e.g. spin components should be added here)
   T  ss[ss_dim];

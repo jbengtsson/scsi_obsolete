@@ -125,7 +125,8 @@ extern int P_eoln(FILE *f);
 
 extern void GDiag(int n, double C, Matrix &A, Matrix &Ainv, Matrix &R,
 		  Matrix &M, double &Omega, double &Yalphac);
-extern void NormEigenVec(Matrix &Vr, Matrix &Vi, double *wr, double *wi,
+
+extern void NormEigenVec(Matrix &Vr,Matrix &Vi, Vector &wr, Vector &wi,
 			 Matrix &t6a);
 
 extern void t2init(void);

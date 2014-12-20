@@ -345,6 +345,3 @@ void get_ab(const ss_vect<tps> &A,
 	    double eta[], double etap[]);
 
 void set_tune(const char file_name1[], const char file_name2[], const int n);
-
-void prt_H_long(const int n, const double phi_max, const double delta_max,
-		const double U0);
