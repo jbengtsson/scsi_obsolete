@@ -15,7 +15,7 @@ AC_PROG_CXX(gcc)
 AC_PROG_F77(gfortran)
 
 # Enable shared libraries.
-LT_INIT()
+#LT_INIT
 
 # Checks for libraries.
 
