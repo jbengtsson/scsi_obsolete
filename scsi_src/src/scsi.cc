@@ -10,6 +10,8 @@
 
 #include "scsi_lib.h"
 
+#include "gslport.cc"
+
 #include "field.cc"
 
 #if NO == 1

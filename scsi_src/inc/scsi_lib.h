@@ -1,9 +1,9 @@
-/* Tracy-3
+/* SCSI
 
-   J. Bengtsson, BNL 2007
+   J. Bengtsson, 2007
 
    NO   1   link to the linear TPSA (nv_tps = 1)
-          >1   link to Berz' TPSA
+       >1   link to arbitrary order TPSA
 
 */
 
@@ -30,7 +30,7 @@
 #include <string>
 using namespace std;
 
-//GSL add
+// GSL
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_permutation.h>
 #include <gsl/gsl_linalg.h>
@@ -40,9 +40,8 @@ using namespace std;
 #include <gsl/gsl_fft_complex.h>
 #include <gsl/gsl_multimin.h>
 #include "gslport.h"
-//end GSL add
 
-// Tracy-3
+// PTC 
 #include "field.h"
 #include "mathlib.h"
 
