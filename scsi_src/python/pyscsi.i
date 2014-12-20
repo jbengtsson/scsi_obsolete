@@ -3,6 +3,7 @@
 
 #define NO 1
 
+// Include the header files in the wrapper code.
 #include "scsi_lib.h"
 
 int no_tps   = NO;
@@ -15,6 +16,16 @@ int ndpt_tps = 2;
 
 %}
 
+// From "scsi_lib.h".
+
+extern const int  nv_tps, nd_tps, iref_tps;
+extern int        no_tps, ndpt_tps;
+extern double     eps_tps;
+
+// Defined in "scsi.cc".
+extern globvalrec globval;
+
+// Parse the header files to generate the wrapper code.
 
 %include "../inc/gslport.h"
 
