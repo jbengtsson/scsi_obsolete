@@ -1,6 +1,6 @@
 #!/bin/sh
 set -x
-libtoolize 
+#libtoolize 
 aclocal -I config
 autoheader
 autoconf

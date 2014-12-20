@@ -1,9 +1,11 @@
 lib_LIBRARIES       = libpyscsi.a
 #lib_LTLIBRARIES     = libpyscsi.la
 
-libpyscsi_a_SOURCES = ../src/scsi_lib.cc python_api_wrap.cxx
+libpyscsi_a_SOURCES = python_api_wrap.cxx
 
 INCLUDES = -I../inc -I/usr -I/usr/include/python2.6
+
+#g++ -shared -fPIC -I../inc -I/usr -I/usr/include/python2.6 ../lib/libscsi.so python_api_wrap.cxx -o pyscsi.so
 
 CXXFLAGS = -g -O0 -Wall -Wno-error=all -fno-implicit-templates -fPIC -shared
 #LDFLAGS = -shared -fPIC
