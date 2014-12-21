@@ -3,8 +3,8 @@
 dir=`pwd`
 
 cd scsi_src/python
-# Chang name of cvar object to var.
-swig -c++ -python -globals var pyscsi.i
+# Chang name of cvar object for global variables to gv.
+swig -c++ -python -globals gv pyscsi.i
 cd $dir
 
 # Remove autoconf cashe.

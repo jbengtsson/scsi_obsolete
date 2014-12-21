@@ -1,12 +1,13 @@
 import pyscsi
 
 
-pyscsi.var.globval.H_exact    = False; pyscsi.var.globval.quad_fringe = False;
-pyscsi.var.globval.Cavity_on  = False; pyscsi.var.globval.radiation   = False;
-pyscsi.var.globval.emittance  = False; pyscsi.var.globval.IBS         = False;
-pyscsi.var.globval.pathlength = False; pyscsi.var.globval.bpm         = 0;
+pyscsi.gv.globval.H_exact    = False; pyscsi.gv.globval.quad_fringe = False;
+pyscsi.gv.globval.Cavity_on  = False; pyscsi.gv.globval.radiation   = False;
+pyscsi.gv.globval.emittance  = False; pyscsi.gv.globval.IBS         = False;
+pyscsi.gv.globval.pathlength = False; pyscsi.gv.globval.bpm         = 0;
 
-print pyscsi.var.globval.H_exact
+# Print list of global variables.
+print pyscsi.gv
 
 pyscsi.Read_Lattice('/home/bengtsson/projects/in/lattice/commissioning')
 
