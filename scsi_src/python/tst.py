@@ -32,8 +32,13 @@ print dir(pyscsi.gv.globval)
 print pyscsi.gv.globval.__getattr__('H_exact')
 print pyscsi.gv.globval.__getattr__('TotalTune')
 print pyscsi.gv.globval.__getattr__('CODvect')
+
 print pyscsi.gv.globval.__getattr__('TotalTune')[0], \
     pyscsi.gv.globval.__getattr__('TotalTune')[1]
+
+for k in range(0, 6):
+    print '%8.3f' % (pyscsi.gv.globval.__getattr__('CODvect')[k])
+print '\n'
 
 #print pyscsi.gv.globval.TotalTune
 #print pyscsi.gv.globval.TotalTune[0]

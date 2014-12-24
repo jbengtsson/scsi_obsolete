@@ -32,12 +32,13 @@ extern globvalrec  globval;
 %inline %{
   struct globval_field {
     globvalrec *gf;
-    /* string     attr; */
+    char       attr[80];
     // Python method for array access.
     double __getitem__(int k) {
-      /* if (attr.compare("TotalTune") == 0) { */
+      if (strcmp(attr, "TotalTune") == 0)
 	return gf->TotalTune[k];
-      /* }; */
+      else if (strcmp(attr, "CODvect") == 0)
+	return gf->CODvect[k];
     };
   };
 %}
@@ -45,10 +46,11 @@ extern globvalrec  globval;
 %extend globvalrec {
   // Python method for attribute access.
   globval_field __getattr__(const char *attr) {
-    if (strcmp(attr, "TotalTune") == 0) {
+    if ((strcmp(attr, "TotalTune") == 0) ||
+	(strcmp(attr, "CODvect") == 0)) {
       printf(" %s ", attr);
       globval_field g;
-      /* g.attr = string(attr); */
+      strcpy(g.attr, attr);
       g.gf = self;
       return g;
     }
