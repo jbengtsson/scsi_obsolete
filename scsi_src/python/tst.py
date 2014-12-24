@@ -20,9 +20,11 @@ if False:
 # Print list of global variables.
 print
 print pyscsi.gv
+
 # Print list of attributs for globval.
 print dir(pyscsi.gv.globval)
 
+print
 #print pyscsi.gv.globval
 
 #print pyscsi.gv.globval.H_exact
@@ -33,12 +35,12 @@ print pyscsi.gv.globval.__getattr__('H_exact')
 print pyscsi.gv.globval.__getattr__('TotalTune')
 print pyscsi.gv.globval.__getattr__('CODvect')
 
+print
 print pyscsi.gv.globval.__getattr__('TotalTune')[0], \
     pyscsi.gv.globval.__getattr__('TotalTune')[1]
 
-for k in range(0, 6):
-    print '%8.3f' % (pyscsi.gv.globval.__getattr__('CODvect')[k])
-print '\n'
+print
+print [pyscsi.gv.globval.__getattr__('CODvect')[k] for k in range(0, 6)]
 
 #print pyscsi.gv.globval.TotalTune
 #print pyscsi.gv.globval.TotalTune[0]
@@ -48,6 +50,7 @@ print '\n'
 #print pyscsi.gv.globval.TotalTune[0], pyscsi.gv.globval.TotalTune[1]
 #print pyscsi.gv.globval.CODvect[0]
 
+print '\n'
 print pyscsi.gv.Cell
 print pyscsi.gv.Cell[0]
 print pyscsi.gv.Cell[1]
