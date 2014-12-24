@@ -32,7 +32,7 @@ extern globvalrec  globval;
 %inline %{
   struct globval_field {
     globvalrec *gf;
-    char       attr[80];
+    char       *attr;
     // Python method for array access.
     double __getitem__(int k) {
       if (strcmp(attr, "TotalTune") == 0)
@@ -45,17 +45,16 @@ extern globvalrec  globval;
 
 %extend globvalrec {
   // Python method for attribute access.
-  globval_field __getattr__(const char *attr) {
+  globval_field __getattr__(char *attr) {
     if ((strcmp(attr, "TotalTune") == 0) ||
-	(strcmp(attr, "CODvect") == 0)) {
+      (strcmp(attr, "CODvect") == 0)) {
       printf(" %s ", attr);
       globval_field g;
-      strcpy(g.attr, attr);
-      g.gf = self;
+      g.attr = attr; g.gf = self;
       return g;
+    } else if (strcmp(attr, "H_exact") == 0) {
+      /* return self->H_exact; */
     }
-    /* } else */
-    /*   return self; */
   }
 };
 
