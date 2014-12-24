@@ -59,13 +59,6 @@ extern globvalrec  globval;
   }
 };
 
-/* %extend globvalrec { */
-/*   // Python method for array access. */
-/*   double __getitem__(int k) { */
-/*     return self->TotalTune[k]; */
-/*   } */
-/* }; */
-
 %extend CellType {
   // Python method for array access.
   CellType* __getitem__(int k) { return self+k; }
