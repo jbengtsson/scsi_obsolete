@@ -1,8 +1,6 @@
 %module pyscsi
 %{
 
-#define SWIG_FILE_WITH_INIT
-
 #define NO 1
 
 // Include the header files in the wrapper code.
@@ -17,15 +15,6 @@ void TPSAEps(const double);
 int ndpt_tps = 2;
 
 %}
-
-// Available at: https://github.com/numpy/numpy/tree/master/tools/swig.
-%include "numpy.i"
-
-%init %{
-import_array();
-%}
-
-%apply (double* IN_ARRAY1, int DIM1) {(double* seq, int n)};
 
 // Declared in "scsi_lib.h".
 
@@ -81,12 +70,26 @@ extern globvalrec  globval;
 %include "../inc/prtmfile.h"
 
 
-%extend CellType {
-  CellType *__getitem__(int k) { return self+k; }
-#  CellType *__setitem__(int k) { return self+k; }
-}
+/* %inline %{ */
+/*   struct globval_field { */
+/*     globvalrec *gf; */
+/*     string     attr; */
+/*     // Python method for attribute access. */
+/*     double __getattribute__(string attr) { */
+/*       return __getattribute__(attr); */
+/*     }; */
+/*   }; */
+/* %} */
 
-%extend globvaltype {
+%extend globvalrec {
+  // Python method for array access.
+  double __getitem__(int k) {
+    return self->TotalTune[k];
+  }
+};
+
+%extend CellType {
+  // Python method for array access.
   CellType *__getitem__(int k) { return self+k; }
 #  CellType *__setitem__(int k) { return self+k; }
 }
