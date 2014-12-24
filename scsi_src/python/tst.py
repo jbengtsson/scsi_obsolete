@@ -25,11 +25,15 @@ print dir(pyscsi.gv.globval)
 
 #print pyscsi.gv.globval
 
-print pyscsi.gv.globval.H_exact
-print type(pyscsi.gv.globval.TotalTune)
-print pyscsi.gv.globval.__getattribute__('TotalTune')
+#print pyscsi.gv.globval.H_exact
+#print type(pyscsi.gv.globval.TotalTune)
+#print pyscsi.gv.globval.__getattribute__('TotalTune')
+
+print pyscsi.gv.globval.__getattr__('H_exact')
 print pyscsi.gv.globval.__getattr__('TotalTune')
 print pyscsi.gv.globval.__getattr__('CODvect')
+print pyscsi.gv.globval.__getattr__('TotalTune')[0], \
+    pyscsi.gv.globval.__getattr__('TotalTune')[1]
 
 #print pyscsi.gv.globval.TotalTune
 #print pyscsi.gv.globval.TotalTune[0]

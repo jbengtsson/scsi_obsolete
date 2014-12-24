@@ -29,25 +29,29 @@ extern CellType    Cell[];
 extern globvalrec  globval;
 
 
-/* %inline %{ */
-/*   struct globval_field { */
-/*     globvalrec *gf; */
-/*     // Python method for array access. */
-/*     double __getitem__(int k) { return gf->TotalTune[k]; }; */
-/*   }; */
-/* %} */
+%inline %{
+  struct globval_field {
+    globvalrec *gf;
+    /* string     attr; */
+    // Python method for array access.
+    double __getitem__(int k) {
+      /* if (attr.compare("TotalTune") == 0) { */
+	return gf->TotalTune[k];
+      /* }; */
+    };
+  };
+%}
 
 %extend globvalrec {
   // Python method for attribute access.
-  void* __getattr__(const char *attr) {
-    printf("%s\n", attr);
+  globval_field __getattr__(const char *attr) {
     if (strcmp(attr, "TotalTune") == 0) {
-      printf("%s\n", "I do, I do, I do");
+      printf(" %s ", attr);
+      globval_field g;
+      /* g.attr = string(attr); */
+      g.gf = self;
+      return g;
     }
-      /* globval_field g; */
-      /* g.gf = self; g.attr = *attr; */
-      /* return g; */
-    /*   return self->TotalTune; */
     /* } else */
     /*   return self; */
   }
