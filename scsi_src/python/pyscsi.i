@@ -29,6 +29,49 @@ extern CellType    Cell[];
 extern globvalrec  globval;
 
 
+/* %inline %{ */
+/*   struct globval_field { */
+/*     globvalrec *gf; */
+/*     string     attr; */
+/*     // Python method for array access. */
+/*     double __getitem__(int k) { */
+/*       return gf->TotalTune[k]; */
+/*       /\* if (strcmp(attr, 'TotalTune') == 0) *\/ */
+/*       /\* 	return gf->TotalTune[ind]; *\/ */
+/*       /\* else *\/ */
+/*       /\* 	printf("globvalrec: undefined attribute.\n"); *\/ */
+/*     }; */
+/*   }; */
+/* %} */
+
+%extend globvalrec {
+  // Python method for attribute access.
+  void* __getattr__(char *attr) {
+    /* globval_field g; */
+    /* g.gf = self; g.attr = attr; */
+    printf("%s\n", attr);
+    /* return g; */
+    /* if (attr.compare('TotalTune') == 0) */
+    /*   return self; */
+    /* else */
+      /* printf("globvalrec: undefined attribute.\n"); */
+  }
+};
+
+/* %extend globvalrec { */
+/*   // Python method for array access. */
+/*   double __getitem__(int k) { */
+/*     return self->TotalTune[k]; */
+/*   } */
+/* }; */
+
+%extend CellType {
+  // Python method for array access.
+  CellType* __getitem__(int k) { return self+k; }
+#  CellType* __setitem__(int k) { return self+k; }
+}
+
+
 // Parse the header files to generate the wrapper code.
 
 %include "../inc/gslport.h"
@@ -69,27 +112,3 @@ extern globvalrec  globval;
 %include "../inc/rdmfile.h"
 %include "../inc/prtmfile.h"
 
-
-/* %inline %{ */
-/*   struct globval_field { */
-/*     globvalrec *gf; */
-/*     string     attr; */
-/*     // Python method for attribute access. */
-/*     double __getattribute__(string attr) { */
-/*       return __getattribute__(attr); */
-/*     }; */
-/*   }; */
-/* %} */
-
-%extend globvalrec {
-  // Python method for array access.
-  double __getitem__(int k) {
-    return self->TotalTune[k];
-  }
-};
-
-%extend CellType {
-  // Python method for array access.
-  CellType *__getitem__(int k) { return self+k; }
-#  CellType *__setitem__(int k) { return self+k; }
-}
