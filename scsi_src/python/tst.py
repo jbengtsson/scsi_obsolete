@@ -25,21 +25,31 @@ print pyscsi.gv
 # Print list of attributs for globval.
 print dir(pyscsi.gv.globval)
 
+print
 print pyscsi.gv.globval.H_exact
 
 sys.stdout.write('\n')
-sys.stdout.write('%6.3f %6.3f' %
+sys.stdout.write('%6.3f %6.3f\n' %
                  (pyscsi.gv.globval.gvec('TotalTune')[0],
                   pyscsi.gv.globval.gvec('TotalTune')[1]))
-sys.stdout.write('%6.3f %6.3f' %
+sys.stdout.write('%6.3f %6.3f\n' %
                  (pyscsi.gv.globval.gvec('Chrom')[0],
-                  pyscsi.gv.globval.gvec('Chrom')[1]))
+                  pyscsi.gv.globval.gvec('Chrom')[1],
+                  ))
 
 sys.stdout.write('\n')
 for k in range(0, 6):
     sys.stdout.write('%6.3f' % pyscsi.gv.globval.gvec('CODvect')[k])
+sys.stdout.write('\n')
 
-print '\n'
+sys.stdout.write('\n')
+for j in range(0, 6):
+    for k in range(0, 6):
+        sys.stdout.write('%10.3e' % 
+                         pyscsi.gv.globval.gvec('OneTurnMat')[6*j+k])
+    sys.stdout.write('\n')
+
+print
 print pyscsi.gv.Cell
 print pyscsi.gv.Cell[0]
 print pyscsi.gv.Cell[1]

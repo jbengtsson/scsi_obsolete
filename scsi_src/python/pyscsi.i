@@ -41,6 +41,7 @@ extern globvalrec  globval;
   //  __getattr__(char *attr)
   //  __getattribute__(char *attr)
 
+  // Because gvec does not return a value, __getitim__ is invoked.
   globvalrec* gvec(char *attr) {
     if (strcmp(attr, "TotalTune") == 0)
       SWIG_vec = self->TotalTune;
@@ -48,6 +49,8 @@ extern globvalrec  globval;
       SWIG_vec = self->Chrom;
     else if (strcmp(attr, "CODvect") == 0)
       SWIG_vec = &self->CODvect[0];
+    else if (strcmp(attr, "OneTurnMat") == 0)
+      SWIG_vec = &self->OneTurnMat[0][0];
   }
 }
 
