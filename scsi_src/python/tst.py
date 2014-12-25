@@ -40,19 +40,18 @@ sys.stdout.write('%6.3f %6.3f\n' %
                   ))
 
 sys.stdout.write('\n')
-for k in range(0, 6):
-    sys.stdout.write('%6.3f' % pyscsi.gv.globval.gvec('CODvect')[k])
-sys.stdout.write('\n')
+for j in range(0, 6):
+    for k in range(0, 6):
+        sys.stdout.write('%14.6e' % 
+                         pyscsi.gv.globval.gmat('OneTurnMat')[j][k])
+    sys.stdout.write('\n')
 
 sys.stdout.write('\n')
 for j in range(0, 6):
     for k in range(0, 6):
-        sys.stdout.write('%10.3e' % 
-                         pyscsi.gv.globval.gvec('OneTurnMat')[6*j+k])
+        sys.stdout.write('%14.6e' % 
+                         pyscsi.gv.globval.gmat('Ascr')[j][k])
     sys.stdout.write('\n')
-
-sys.stdout.write('\n')
-sys.stdout.write('%10.3e' % pyscsi.gv.globval.gmat('OneTurnMat', 0)[0])
 
 print
 print pyscsi.gv.Cell

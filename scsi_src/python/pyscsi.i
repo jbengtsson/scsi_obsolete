@@ -39,10 +39,10 @@ extern globvalrec  globval;
 %inline %{
   struct mat {
     Matrix *a;
-    int    row;
     // Python method for array access.
-    double __getitem__(int k) {
-      return (*a)[row][k];
+    vec __getitem__(int k) { 
+      vec v; v.a = &(*a)[k][0];
+      return v;
     };
   };
 %}
@@ -59,17 +59,16 @@ extern globvalrec  globval;
       v.a = &self->Chrom[0];
     else if (strcmp(attr, "CODvect") == 0)
       v.a = &self->CODvect[0];
-    else if (strcmp(attr, "OneTurnMat") == 0)
-      v.a = &self->OneTurnMat[0][0];
     return v;
   }
 
-  mat gmat(const char *attr, const int j) {
+  mat gmat(const char *attr) {
     mat m;
-    if (strcmp(attr, "OneTurnMat") == 0) {
-      m.a = &self->OneTurnMat; m.row = j;
-      return m;
-    }
+    if (strcmp(attr, "OneTurnMat") == 0)
+      m.a = &self->OneTurnMat;
+    else if (strcmp(attr, "Ascr") == 0)
+      m.a = &self->Ascr;
+    return m;
   }
 }
 
