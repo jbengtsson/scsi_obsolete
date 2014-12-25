@@ -29,10 +29,19 @@ extern CellType    Cell[];
 extern globvalrec  globval;
 
 %inline %{
-  struct vect2 {
-    double *vec;
+  struct vec {
+    double *a;
     // Python method for array access.
-    double __getitem__(int k) {	return *(vec+k); };
+    double __getitem__(int k) {	return *(a+k); };
+  };
+%}
+
+%inline %{
+  struct mat {
+    Matrix *a;
+    int    row;
+    // Python method for array access.
+    double __getitem__(int k) {	return *(a+k); };
   };
 %}
 
@@ -40,17 +49,25 @@ extern globvalrec  globval;
   // Python method for attribute access are:
   //  __getattr__(char *attr)
   //  __getattribute__(char *attr)
-    vect2 gvec(const char *attr) {
-    vect2 v;
+  vec gvec(const char *attr) {
+    vec v;
     if (strcmp(attr, "TotalTune") == 0)
-      v.vec = &self->TotalTune[0];
+      v.a = &self->TotalTune[0];
     else if (strcmp(attr, "Chrom") == 0)
-      v.vec = &self->Chrom[0];
+      v.a = &self->Chrom[0];
     else if (strcmp(attr, "CODvect") == 0)
-      v.vec = &self->CODvect[0];
+      v.a = &self->CODvect[0];
     else if (strcmp(attr, "OneTurnMat") == 0)
-      v.vec = &self->OneTurnMat[0][0];
+      v.a = &self->OneTurnMat[0][0];
     return v;
+  }
+
+  mat gmat(const char *attr) {
+    mat m;
+    if (strcmp(attr, "OneTurnMat") == 0) {
+      m.a = self->OneTurnMat; m.row = m.__getitem__();
+      return m;
+    }
   }
 }
 
