@@ -1,3 +1,4 @@
+import sys
 import pyscsi
 
 
@@ -24,31 +25,19 @@ print pyscsi.gv
 # Print list of attributs for globval.
 print dir(pyscsi.gv.globval)
 
-print
-#print pyscsi.gv.globval
+print pyscsi.gv.globval.H_exact
 
-#print pyscsi.gv.globval.H_exact
-#print type(pyscsi.gv.globval.TotalTune)
-#print pyscsi.gv.globval.__getattribute__('TotalTune')
+sys.stdout.write('\n')
+sys.stdout.write('%6.3f %6.3f' %
+                 (pyscsi.gv.globval.gvec('TotalTune')[0],
+                  pyscsi.gv.globval.gvec('TotalTune')[1]))
+sys.stdout.write('%6.3f %6.3f' %
+                 (pyscsi.gv.globval.gvec('Chrom')[0],
+                  pyscsi.gv.globval.gvec('Chrom')[1]))
 
-print pyscsi.gv.globval.__getattr__('H_exact')
-print pyscsi.gv.globval.__getattr__('TotalTune')
-print pyscsi.gv.globval.__getattr__('CODvect')
-
-print
-print pyscsi.gv.globval.__getattr__('TotalTune')[0], \
-    pyscsi.gv.globval.__getattr__('TotalTune')[1]
-
-print
-print [pyscsi.gv.globval.__getattr__('CODvect')[k] for k in range(0, 6)]
-
-#print pyscsi.gv.globval.TotalTune
-#print pyscsi.gv.globval.TotalTune[0]
-#print pyscsi.gv.globval[0]
-#print pyscsi.gv.globval[1]
-
-#print pyscsi.gv.globval.TotalTune[0], pyscsi.gv.globval.TotalTune[1]
-#print pyscsi.gv.globval.CODvect[0]
+sys.stdout.write('\n')
+for k in range(0, 6):
+    sys.stdout.write('%6.3f' % pyscsi.gv.globval.gvec('CODvect')[k])
 
 print '\n'
 print pyscsi.gv.Cell

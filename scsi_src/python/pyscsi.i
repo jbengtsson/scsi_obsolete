@@ -14,6 +14,8 @@ void TPSAEps(const double);
 // Not defined for linear TPSA.
 int ndpt_tps = 2;
 
+double *SWIG_vec;
+
 %}
 
 // Declared in "scsi_lib.h".
@@ -30,38 +32,37 @@ extern globvalrec  globval;
 
 
 %inline %{
-  struct globval_field {
-    globvalrec *gf;
-    char       *attr;
+  struct globv_vect {
+    double *vec;
     // Python method for array access.
-    double __getitem__(int k) {
-      if (strcmp(attr, "TotalTune") == 0)
-	return gf->TotalTune[k];
-      else if (strcmp(attr, "CODvect") == 0)
-	return gf->CODvect[k];
-    };
+    double __getitem__(int k) { return vec[k]; };
   };
 %}
 
 %extend globvalrec {
-  // Python method for attribute access.
-  globval_field __getattr__(char *attr) {
-    if ((strcmp(attr, "TotalTune") == 0) ||
-      (strcmp(attr, "CODvect") == 0)) {
-      printf(" %s ", attr);
-      globval_field g;
-      g.attr = attr; g.gf = self;
-      return g;
-    } else if (strcmp(attr, "H_exact") == 0) {
-      /* return self->H_exact; */
-    }
+  // Python method for array access.
+  double __getitem__(int k) {
+    return SWIG_vec[k];
+  };
+
+  // Python method for attribute access are:
+  //  __getattr__(char *attr)
+  //  __getattribute__(char *attr)
+
+  globvalrec* gvec(char *attr) {
+    if (strcmp(attr, "TotalTune") == 0)
+      SWIG_vec = self->TotalTune;
+    else if (strcmp(attr, "Chrom") == 0)
+      SWIG_vec = self->Chrom;
+    else if (strcmp(attr, "CODvect") == 0)
+      SWIG_vec = &self->CODvect[0];
   }
-};
+}
 
 %extend CellType {
   // Python method for array access.
-  CellType* __getitem__(int k) { return self+k; }
-#  CellType* __setitem__(int k) { return self+k; }
+  CellType* __getitem__(int k) { return self+k; };
+#  CellType* __setitem__(int k) { return self+k; };
 }
 
 
