@@ -31,14 +31,6 @@ extern CellType    Cell[];
 extern globvalrec  globval;
 
 
-%inline %{
-  struct globv_vect {
-    double *vec;
-    // Python method for array access.
-    double __getitem__(int k) { return vec[k]; };
-  };
-%}
-
 %extend globvalrec {
   // Python method for array access.
   double __getitem__(int k) {
