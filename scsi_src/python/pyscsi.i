@@ -20,7 +20,7 @@ int ndpt_tps = 2;
 
 extern const int   nv_tps, nd_tps, iref_tps;
 
-// Not defined in C code...
+// Not defined in the C code...
 extern int         no_tps, ndpt_tps;
 extern double      eps_tps;
 

@@ -28,6 +28,7 @@ print dir(pyscsi.gv.globval)
 print
 print pyscsi.gv.globval.H_exact
 
+# Test of gvec.
 sys.stdout.write('\n')
 sys.stdout.write('%6.3f %6.3f\n' %
                  (pyscsi.gv.globval.gvec('TotalTune')[0],
@@ -37,6 +38,7 @@ sys.stdout.write('%6.3f %6.3f\n' %
                   pyscsi.gv.globval.gvec('Chrom')[1],
                   ))
 
+# Test of gmat.
 sys.stdout.write('\n')
 for j in range(0, 6):
     for k in range(0, 6):
