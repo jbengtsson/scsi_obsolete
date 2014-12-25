@@ -59,6 +59,24 @@ extern globvalrec  globval;
       v.a = &self->Chrom[0];
     else if (strcmp(attr, "CODvect") == 0)
       v.a = &self->CODvect[0];
+    else if (strcmp(attr, "wr") == 0)
+      v.a = &self->wr[0];
+    else if (strcmp(attr, "wi") == 0)
+      v.a = &self->wi[0];
+    else if (strcmp(attr, "alpha_rad") == 0)
+      v.a = &self->alpha_rad[0];
+    else if (strcmp(attr, "D_rad") == 0)
+      v.a = &self->D_rad[0];
+    else if (strcmp(attr, "J") == 0)
+      v.a = &self->J[0];
+    else if (strcmp(attr, "tau") == 0)
+      v.a = &self->tau[0];
+    else if (strcmp(attr, "D_IBS") == 0)
+      v.a = &self->D_IBS[0];
+    else if (strcmp(attr, "eps") == 0)
+      v.a = &self->eps[0];
+    else if (strcmp(attr, "epsp") == 0)
+      v.a = &self->epsp[0];
     return v;
   }
 
@@ -68,6 +86,12 @@ extern globvalrec  globval;
       m.a = &self->OneTurnMat;
     else if (strcmp(attr, "Ascr") == 0)
       m.a = &self->Ascr;
+    else if (strcmp(attr, "Ascrinv") == 0)
+      m.a = &self->Ascrinv;
+    else if (strcmp(attr, "Vr") == 0)
+      m.a = &self->Vr;
+    else if (strcmp(attr, "Vi") == 0)
+      m.a = &self->Vi;
     return m;
   }
 }
@@ -76,6 +100,39 @@ extern globvalrec  globval;
   // Python method for array access.
   CellType* __getitem__(int k) { return self+k; };
 #  CellType* __setitem__(int k) { return self+k; };
+
+  // Python method for attribute access are:
+  //  __getattr__(char *attr)
+  //  __getattribute__(char *attr)
+  vec gvec(const char *attr) {
+    vec v;
+    if (strcmp(attr, "dS") == 0)
+      v.a = &self->dS[0];
+    else if (strcmp(attr, "dT") == 0)
+      v.a = &self->dT[0];
+    else if (strcmp(attr, "Nu") == 0)
+      v.a = &self->Nu[0];
+    else if (strcmp(attr, "Alpha") == 0)
+      v.a = &self->Alpha[0];
+    else if (strcmp(attr, "Beta") == 0)
+      v.a = &self->Beta[0];
+    else if (strcmp(attr, "Eta") == 0)
+      v.a = &self->Eta[0];
+    else if (strcmp(attr, "Etap") == 0)
+      v.a = &self->Etap[0];
+    else if (strcmp(attr, "BeamPos") == 0)
+      v.a = &self->BeamPos[0];
+    return v;
+  }
+
+  mat gmat(const char *attr) {
+    mat m;
+    if (strcmp(attr, "A") == 0)
+      m.a = &self->A;
+    else if (strcmp(attr, "sigma") == 0)
+      m.a = &self->sigma;
+    return m;
+  }
 }
 
 

@@ -27,8 +27,6 @@ print dir(pyscsi.gv.globval)
 
 print
 print pyscsi.gv.globval.H_exact
-print pyscsi.gv.globval.TotalTune
-print pyscsi.gv.globval.TotalTune
 
 sys.stdout.write('\n')
 sys.stdout.write('%6.3f %6.3f\n' %
@@ -53,8 +51,8 @@ for j in range(0, 6):
                          pyscsi.gv.globval.gmat('Ascr')[j][k])
     sys.stdout.write('\n')
 
-print
-print pyscsi.gv.Cell
-print pyscsi.gv.Cell[0]
-print pyscsi.gv.Cell[1]
-#print pyscsi.gv.Cell[0].A[0]
+sys.stdout.write('\n')
+for k in range(0, 5):
+    sys.stdout.write('%6.3f %6.3f\n' %
+                     (pyscsi.gv.Cell[k].gvec('Beta')[0],
+                      pyscsi.gv.Cell[k].gvec('Beta')[1]))
