@@ -32,7 +32,7 @@ extern globvalrec  globval;
   struct vect2 {
     double *vec;
     // Python method for array access.
-    double __getitem__(int k) { return *(vec+k); };
+    double __getitem__(int k) {	return *(vec+k); };
   };
 %}
 
@@ -40,9 +40,7 @@ extern globvalrec  globval;
   // Python method for attribute access are:
   //  __getattr__(char *attr)
   //  __getattribute__(char *attr)
-
-  // Because gvec does not return a value, __getitim__ is invoked.
-  vect2 __getattr__(const char *attr) {
+    vect2 gvec(const char *attr) {
     vect2 v;
     if (strcmp(attr, "TotalTune") == 0)
       v.vec = &self->TotalTune[0];

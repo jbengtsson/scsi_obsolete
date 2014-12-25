@@ -28,27 +28,27 @@ print dir(pyscsi.gv.globval)
 print
 print pyscsi.gv.globval.H_exact
 print pyscsi.gv.globval.TotalTune
-print pyscsi.gv.globval.__getattr__('TotalTune')
+print pyscsi.gv.globval.TotalTune
 
 sys.stdout.write('\n')
 sys.stdout.write('%6.3f %6.3f\n' %
-                 (pyscsi.gv.globval.__getattr__('TotalTune')[0],
-                  pyscsi.gv.globval.__getattr__('TotalTune')[1]))
+                 (pyscsi.gv.globval.gvec('TotalTune')[0],
+                  pyscsi.gv.globval.gvec('TotalTune')[1]))
 sys.stdout.write('%6.3f %6.3f\n' %
-                 (pyscsi.gv.globval.__getattr__('Chrom')[0],
-                  pyscsi.gv.globval.__getattr__('Chrom')[1],
+                 (pyscsi.gv.globval.gvec('Chrom')[0],
+                  pyscsi.gv.globval.gvec('Chrom')[1],
                   ))
 
 sys.stdout.write('\n')
 for k in range(0, 6):
-    sys.stdout.write('%6.3f' % pyscsi.gv.globval.__getattr__('CODvect')[k])
+    sys.stdout.write('%6.3f' % pyscsi.gv.globval.gvec('CODvect')[k])
 sys.stdout.write('\n')
 
 sys.stdout.write('\n')
 for j in range(0, 6):
     for k in range(0, 6):
         sys.stdout.write('%10.3e' % 
-                         pyscsi.gv.globval.__getattr__('OneTurnMat')[6*j+k])
+                         pyscsi.gv.globval.gvec('OneTurnMat')[6*j+k])
     sys.stdout.write('\n')
 
 #sys.stdout.write('\n')
