@@ -51,8 +51,8 @@ for j in range(0, 6):
                          pyscsi.gv.globval.gvec('OneTurnMat')[6*j+k])
     sys.stdout.write('\n')
 
-#sys.stdout.write('\n')
-#sys.stdout.write('%10.3e' % pyscsi.gv.globval.gvec('OneTurnMat')[0][0])
+sys.stdout.write('\n')
+sys.stdout.write('%10.3e' % pyscsi.gv.globval.gmat('OneTurnMat', 0)[0])
 
 print
 print pyscsi.gv.Cell

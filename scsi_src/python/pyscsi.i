@@ -32,7 +32,7 @@ extern globvalrec  globval;
   struct vec {
     double *a;
     // Python method for array access.
-    double __getitem__(int k) {	return *(a+k); };
+    double __getitem__(int k) { return *(a+k); };
   };
 %}
 
@@ -41,7 +41,9 @@ extern globvalrec  globval;
     Matrix *a;
     int    row;
     // Python method for array access.
-    double __getitem__(int k) {	return *(a+k); };
+    double __getitem__(int k) {
+      return (*a)[row][k];
+    };
   };
 %}
 
@@ -62,10 +64,10 @@ extern globvalrec  globval;
     return v;
   }
 
-  mat gmat(const char *attr) {
+  mat gmat(const char *attr, const int j) {
     mat m;
     if (strcmp(attr, "OneTurnMat") == 0) {
-      m.a = self->OneTurnMat; m.row = m.__getitem__();
+      m.a = &self->OneTurnMat; m.row = j;
       return m;
     }
   }
