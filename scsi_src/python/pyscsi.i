@@ -14,8 +14,6 @@ void TPSAEps(const double);
 // Not defined for linear TPSA.
 int ndpt_tps = 2;
 
-double *SWIG_vec;
-
 %}
 
 // Declared in "scsi_lib.h".
@@ -30,27 +28,31 @@ extern ElemFamType ElemFam[];
 extern CellType    Cell[];
 extern globvalrec  globval;
 
+%inline %{
+  struct vect2 {
+    double *vec;
+    // Python method for array access.
+    double __getitem__(int k) { return *(vec+k); };
+  };
+%}
 
 %extend globvalrec {
-  // Python method for array access.
-  double __getitem__(int k) {
-    return SWIG_vec[k];
-  };
-
   // Python method for attribute access are:
   //  __getattr__(char *attr)
   //  __getattribute__(char *attr)
 
   // Because gvec does not return a value, __getitim__ is invoked.
-  globvalrec* gvec(char *attr) {
+  vect2 __getattr__(const char *attr) {
+    vect2 v;
     if (strcmp(attr, "TotalTune") == 0)
-      SWIG_vec = self->TotalTune;
+      v.vec = &self->TotalTune[0];
     else if (strcmp(attr, "Chrom") == 0)
-      SWIG_vec = self->Chrom;
+      v.vec = &self->Chrom[0];
     else if (strcmp(attr, "CODvect") == 0)
-      SWIG_vec = &self->CODvect[0];
+      v.vec = &self->CODvect[0];
     else if (strcmp(attr, "OneTurnMat") == 0)
-      SWIG_vec = &self->OneTurnMat[0][0];
+      v.vec = &self->OneTurnMat[0][0];
+    return v;
   }
 }
 
