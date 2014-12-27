@@ -1,0 +1,51 @@
+Introduction
+============
+
+glps is a general lattice parser for accelerator description files.
+
+The general means it does not fix the reserved keywords, and its user can define his own set of keywords.
+
+glps parse the following structures:
+
+1. assignment
+
+    A = 3;
+    B = (1,2,3);
+    QF.L = 4;
+    QD.L = QF.L * 2;
+
+2. element definition
+
+    Element: Type, property = value [, property = value] ;
+    
+3. beam line definition
+
+    L1: LINE = (element, -element, (element1, element2));
+    L2: LINE = (L1, -L1);
+
+4. action
+
+    action, property = value [, property = value] ;
+
+
+Notes
+======
+
+glps tries its best to preserve the structure information in its final
+expaned beam line. An element (EL1) placed in a beam line (BL1) which is part of
+another beam line (BL2) is represented as BL2.BL1.EL1.
+
+The reverse sign before an element or beamline is preserved, in case the
+user wants to treat entrance of an element different from the exit.
+
+several lattice file can use "include" action to be glued together. (did
+not detect the infinite loop, but has a maximum depth limit on "include").
+
+Examples
+==========
+
+check lat_ex*.lat for examples. Run teslaparse on them.
+
+
+
+
