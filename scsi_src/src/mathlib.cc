@@ -9,7 +9,7 @@
 */
 
 // missing in lstdc++
-template double std::__cmath_power<double>(double, unsigned);
+// template double std::__cmath_power<double>(double, unsigned);
 
 double log(const int k) { return log((double)k); }
 
