@@ -1,11 +1,9 @@
-lib_LIBRARIES         = libscsi.a libscsi_ptc.a libglps.a
+lib_LIBRARIES     = libglps.a
 
-libscsi_a_SOURCES     = scsi_lib.cc
+libglps_a_SOURCES = glpsutil.cc elemtree.c glps.c glpserror.c scanner.c parser.c
 
-libscsi_ptc_a_SOURCES = scsi_ptc_lib.cc
+#INCLUDES = -I/usr
 
-INCLUDES = -I../inc -I/usr
-
-CXXFLAGS = -g -O0 -Wall -Wno-error=all -fno-implicit-templates -fPIC
+CXXFLAGS = -g -O0 -ggdb3 -Wall -Wno-error=all -fno-implicit-templates -fPIC
 #CXXFLAGS = -pg -O2 -Wall -fno-implicit-templates -fPIC
 #CXXFLAGS = -g -O2 -Wall -frepo

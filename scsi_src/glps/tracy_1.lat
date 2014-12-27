@@ -1,7 +1,3 @@
-# New DBA30HLC16Es2rng7x7s.opa H(8m) L(5m)Rho = 25m }
-
-# define lattice; 
-
 ringtype = 1;
 
 Energy = 3.0;
@@ -16,12 +12,9 @@ c0 = 2.99792458e8; h_rf = 1320; C = 791.95799999999997;
   
 CAV: Cavity, Frequency = c0/C*h_rf, Voltage = 5.00e6, Harnum = h_rf;  
 
- 
-
 CHV: Multipole, N=1, Method= Meth; 
 
-# BPM: Beam Position Monitor ; 
-BPM: BPM ; 
+BPM: BPM; 
 
 GEG1C01A: Multipole, N = 1, Method = Meth;
 GEG1C30A: Multipole, N = 1, Method = Meth;
@@ -193,7 +186,7 @@ SH3G6C01B:  Sextupole, L = 0.2,     K =  -2.362839, N = Nsext, Method = Meth;
 SH4G2C30A:  Sextupole, L = 0.2,     K =  -8.016445, N = Nsext, Method = Meth; 
 SH4G6C01B:  Sextupole, L = 0.2,     K =  -8.016445, N = Nsext, Method = Meth; 
 SM1G4C01A:  Sextupole, L = 0.2,     K = -14.538125, N = Nsext, Method = Meth; 
-SM1G4C30A:  Sextupole, L = 0.2,     K = -14.53812, N = Nsext, Method = Meth; 
+SM1G4C30A:  Sextupole, L = 0.2,     K = -14.53812,  N = Nsext, Method = Meth; 
 SM1G4C01B:  Sextupole, L = 0.2,     K = -10.075821, N = Nsext, Method = Meth; 
 SM1G4C30B:  Sextupole, L = 0.2,     K = -10.075821, N = Nsext, Method = Meth; 
 SM2HG4C01B: Sextupole, L = 2*0.125, K =  14.000000, N = Nsext, Method = Meth; 
@@ -247,7 +240,7 @@ Girder1C02: LINE=(GSG1C02A,DH2G1A,DFT,DFT,DH01G1A);
 SPC30C01: LINE=(Girder1C30,Girder2C30,Girder3C30,Girder4C30,Girder5C30,Girder6C30,Girder1C01,
 Girder2C01,Girder3C01,Girder4C01,Girder5C01,Girder6C01,Girder1C02);
 
-# CELL: SPC30C01, SYMMETRY = 1;  
+# RING: LINE=(SPC30C01);  
 
 RING: LINE=(1*SPC30C01);
 

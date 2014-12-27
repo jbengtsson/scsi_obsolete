@@ -229,7 +229,7 @@ IVU22: insertion, scaling = 1.0, N = 50, Method = 1,
   file2 = "/home/bengtsson/projects/in/lattice/u22_pole60mm_finemesh_4m.txt";
 
 D_IVU_LS: Drift, L = -L_IVU_LS/2.0;
-IVU_LS: Line = (D_IVU_LS, IVU22, D_IVU_LS);
+IVU_LS:   Line = (D_IVU_LS, IVU22, D_IVU_LS);
 
 
 L_SCW_ESRF = 0.6;
@@ -237,7 +237,7 @@ SCW_ESRF: insertion, scaling = 1.0, N = 50, Method = 1,
   file2 = "/home/bengtsson/projects/in/lattice/esrf_3tw_kickmap.txt";
 
 D_SCW_ESRF: Drift, L = -L_SCW_ESRF/2.0;
-SCW3:   Line = (D_SCW_ESRF, SCW_ESRF, D_SCW_ESRF);
+SCW3:       Line = (D_SCW_ESRF, SCW_ESRF, D_SCW_ESRF);
 
 
 #G1C30: Line = (DH02G1A, DFT, DFT, DH1G1A, GE);
@@ -273,9 +273,9 @@ G1C01_IVU: Line = (
   GS, DL0BG1A, DFT, DFT, DFT2, DLDK, DL01G1A, IVU, DL02G1A, 
   DLDK, DFT2, DFT, DFT, DL0AG1A, GE);
 
-G1C01_EPU:
+G1C01_EPU: Line = (
   GS, DL0BG1A, DFT, DFT, DFT2, DLDK, DL01G1A, EPU, DL02G1A, 
-  DLDK, DFT2, DFT, DFT, DL0AG1A, GE;
+  DLDK, DFT2, DFT, DFT, DL0AG1A, GE);
 
 G1C01_EPU105: Line = (
   GS, DL0BG1A, DFT, DFT, DFT2, DLDK, DL01G1A, EPU105, DL02G1A, 
@@ -322,23 +322,23 @@ Cell_EPU105: Line = (
   G5C01, G6C01, G1C02);
 
 
-RING: 1*Cell, CAV;
+RING: Line = (1*Cell, CAV);
 
-#RING: 3*(Cell, DW, 4*Cell), CAV;
+#RING: Line = (3*(Cell, DW, 4*Cell), CAV);
 
 # 5 DWs
-#RING:
+#RING: Line = (
 #  Cell, DW, Cell, Cell, DW  Cell, Cell,
 #  Cell, DW, Cell, Cell,     Cell, Cell,
 #  Cell, DW, Cell, Cell, DW, Cell, Cell,
-#  CAV;
+#  CAV);
 
 # 8 DWs
-#RING:
+#RING: Line = (
 #  Cell, DW, Cell, Cell, DW  Cell, DW, Cell,
 #  Cell, DW, Cell, Cell, DW, Cell, DW, Cell,
 #  Cell, DW, Cell, Cell, DW, Cell,     Cell,
-#  CAV;
+#  CAV);
 
 Use: RING;  
 

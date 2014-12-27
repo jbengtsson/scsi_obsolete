@@ -28,7 +28,11 @@
 #include "ety.cc"
 #include "eigenv.cc"
 
-#include "t2lat.cc"
+#if false
+  #include "t2lat.cc"
+#else
+  #include "t3lat.cc"
+#endif
 #include "t2elem.cc"
 #include "t2cell.cc"
 #include "t2ring.cc"

@@ -187,6 +187,8 @@ GLPS_SYMB* symb_new(char* name)
     p->funcptr  = NULL;
     p->next     = NULL;
     p->property = NULL;
+
+    return p;
 }
 
 /**

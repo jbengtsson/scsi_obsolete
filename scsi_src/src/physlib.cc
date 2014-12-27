@@ -2312,16 +2312,17 @@ void Read_Lattice(char *fic)
   }
 
   /* opens the lattice Output file */
-  if ((fo = fopen(fic_erreur, "w")) == NULL) {
-    fprintf(stdout, "ReadLattice: Error while opening file %s \n", fic_erreur);
-    exit_(1);
-  }
+  // if ((fo = fopen(fic_erreur, "w")) == NULL) {
+  //   fprintf(stdout, "ReadLattice: Error while opening file %s \n", fic_erreur);
+  //   exit_(1);
+  // }
 
   /* Reads lattice and set principle parameters
    * Energy CODeps and energy offset
    * print statistics
    */
-  status = Lattice_Read(&fi, &fo);
+  // status = Lattice_Read(&fi, &fo);
+  status = Lattice_Read(fic_maille);
 
   if (status == false) {
     cout << "Lattice_Read function has returned false" << endl;

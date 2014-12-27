@@ -110,7 +110,7 @@
 %type <symp> expression_list
 %type <symp> stmt_property
 %type <symp> stmt_property_list
- /* %type <str> beamline */
+/* %type <str> beamline */
 %type <bl> beamline
 
 %%
