@@ -132,10 +132,10 @@ bool Lattice_Read(const char *fi_)
   elemsdefined.push_back("recombiner");
   elemsdefined.push_back("solenoid");
 
-  list<string> elems = glps_elements();
+  std::list<string> elems = glps_elements();
   string str;
   int pos;
-  for (list<string>::iterator i = elems.begin(); i != elems.end(); ++i) {
+  for (std::list<string>::iterator i = elems.begin(); i != elems.end(); ++i) {
 
     glps_read(*i, str);
     for (int j=0; j<(int)str.length();++j)
@@ -213,7 +213,8 @@ bool Lattice_Read(const char *fi_)
 	  WITH1->Pkind = PartsKind(drift);
 	  Drift_Alloc(&WITH->ElemF);
 	} else {
-	  cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam << "(" << (long)Elem_nFamMax << ")" << endl;
+	  cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam
+	       << "(" << (long)Elem_nFamMax << ")" << endl;
 	  longjmp(env0, 1);
 	}
     
@@ -223,11 +224,11 @@ bool Lattice_Read(const char *fi_)
     
 	QL = 0.0;   /* L */
 	QK = 0.0;   /* K */
-	k1 = 0;   /* N */
+	k1 = 0;     /* N */
 	t  = 0.0;   /* T */
 	t1 = 0.0;   /* T1 */
 	t2 = 0.0;   /* T2 */
-	gap = 0.0;   /* gap */
+	gap = 0.0;  /* gap */
 	k2 = Meth_Linear;   /* method */
 	dt = 0.0;
 	ClearHOM(B, BA);
@@ -240,9 +241,13 @@ bool Lattice_Read(const char *fi_)
 	if (GLPS_SUCCESS==glps_read(*i,"t1",val)) t1 = val;
 	if (GLPS_SUCCESS==glps_read(*i,"t2",val)) t2 = val;
 	if (GLPS_SUCCESS==glps_read(*i,"gap",val)) gap = val;
-	if (GLPS_SUCCESS==glps_read(*i,"method",val)) k2 = (long) floor(val+0.5);
+	if (GLPS_SUCCESS==glps_read(*i,"method",val))
+	  k2 = (long) floor(val+0.5);
 	if (k2 != Meth_Linear) globval.MatMeth = false;
-	if ((unsigned int)k2 >= 32 || ((1 << k2) & ((1 << Meth_Linear) | (1 << Meth_Second) | (1 << Meth_Fourth))) == 0)
+	if ((unsigned int)k2 >= 32 ||
+	    ((1 << k2) &
+	     ((1 << Meth_Linear) | (1 << Meth_Second) |
+	      (1 << Meth_Fourth))) == 0)
 	  longjmp(env0,1);
 	//              +   +
 	if (GLPS_SUCCESS==glps_read(*i,"hom",vec)) 
@@ -284,7 +289,8 @@ bool Lattice_Read(const char *fi_)
 	  //          +   +   +   +
 	  WITH2->PBpar[HOMmax+2] = QK; WITH2->PdTpar = dt;
 	} else {
-	  cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam << "(" << (long)Elem_nFamMax << ")" << endl;
+	  cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam
+	       << "(" << (long)Elem_nFamMax << ")" << endl;
 	  longjmp(env0, 1);
 	}
 	break;
@@ -303,9 +309,13 @@ bool Lattice_Read(const char *fi_)
 	if (GLPS_SUCCESS==glps_read(*i,"n",val)) k1 = (long) floor(val+0.5);
 	if (GLPS_SUCCESS==glps_read(*i,"t",val)) t = val;
 	if (GLPS_SUCCESS==glps_read(*i,"roll",val)) dt = val;
-	if (GLPS_SUCCESS==glps_read(*i,"method",val)) k2 = (long) floor(val+0.5);
+	if (GLPS_SUCCESS==glps_read(*i,"method",val))
+	  k2 = (long) floor(val+0.5);
 	if (k2 != Meth_Linear) globval.MatMeth = false;
-	if ((unsigned int)k2 >= 32 || ((1 << k2) & ((1 << Meth_Linear) | (1 << Meth_First) | (1 << Meth_Second) | (1 << Meth_Fourth))) == 0)
+	if ((unsigned int)k2 >= 32 ||
+	    ((1 << k2) &
+	     ((1 << Meth_Linear) | (1 << Meth_First) |
+	      (1 << Meth_Second) | (1 << Meth_Fourth))) == 0)
 	  longjmp(env0, 1);
 
 	if (GLPS_SUCCESS==glps_read(*i,"hom",vec))
@@ -339,7 +349,8 @@ bool Lattice_Read(const char *fi_)
 	  //    SetDBN(&V);
 	  WITH2->n_design = Quad; WITH2->PBpar[HOMmax+2] = QK;
 	} else {
-	  cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam << "(" << (long)Elem_nFamMax << ")" << endl;
+	  cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam
+	       << "(" << (long)Elem_nFamMax << ")" << endl;
 	  longjmp(env0, 1);
 	}
 	break;
@@ -358,7 +369,10 @@ bool Lattice_Read(const char *fi_)
 	if (GLPS_SUCCESS==glps_read(*i,"roll",val)) dt = val;
 	if (GLPS_SUCCESS==glps_read(*i,"method",val)) k2 = (long) floor(val+0.5);
 	if (k2 != Meth_Linear) globval.MatMeth = false;
-	if ((unsigned int)k2 >= 32 || ((1 << k2) & ((1 << Meth_Linear) | (1 << Meth_Second) | (1 << Meth_Fourth))) == 0)
+	if ((unsigned int)k2 >= 32 ||
+	    ((1 << k2) &
+	     ((1 << Meth_Linear) | (1 << Meth_Second) |
+	      (1 << Meth_Fourth))) == 0)
 	  longjmp(env0, 1);
 
 	if (GLPS_SUCCESS==glps_read(*i,"hom",vec))
@@ -399,7 +413,8 @@ bool Lattice_Read(const char *fi_)
 	  //    SetDBN(&V);
 	  WITH2->PBpar[HOMmax + 3] = QK;
 	} else {
-	  cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam << "(" << (long)Elem_nFamMax << ")" << endl;
+	  cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam
+	       << "(" << (long)Elem_nFamMax << ")" << endl;
 	  longjmp(env0, 1);
 	}
 	break;
@@ -414,7 +429,8 @@ bool Lattice_Read(const char *fi_)
 	if (GLPS_SUCCESS==glps_read(*i,"frequency",val)) Frf = val;
 	if (GLPS_SUCCESS==glps_read(*i,"voltage",val)) Vrf = val;
 	if (GLPS_SUCCESS==glps_read(*i,"phi",val)) QPhi = val;
-	if (GLPS_SUCCESS==glps_read(*i,"harnum",val)) harnum = (long) floor(val+0.5);
+	if (GLPS_SUCCESS==glps_read(*i,"harnum",val))
+	  harnum = (long) floor(val+0.5);
 
 	//    case dbnsym:
 	//      GetDBN_(&V);
@@ -436,7 +452,8 @@ bool Lattice_Read(const char *fi_)
 	  WITH3->Ph = harnum;
 	  //    SetDBN(&V);
 	} else {
-	  cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam << "(" << (long)Elem_nFamMax << ")" << endl;
+	  cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam
+	       << "(" << (long)Elem_nFamMax << ")" << endl;
 	  longjmp(env0, 1);
 	}
 	break;
@@ -452,11 +469,15 @@ bool Lattice_Read(const char *fi_)
 	//              ClearHOMandDBN(&V);
 	if (GLPS_SUCCESS==glps_read(*i,"l",val)) QL = val;
 	if (GLPS_SUCCESS==glps_read(*i,"n",val)) k1 = (long) floor(val+0.5);
-	if (GLPS_SUCCESS==glps_read(*i,"method",val)) k2 = (long) floor(val+0.5);
+	if (GLPS_SUCCESS==glps_read(*i,"method",val))
+	  k2 = (long) floor(val+0.5);
 	if (GLPS_SUCCESS==glps_read(*i,"plane",val)) QK = val;
 	if (GLPS_SUCCESS==glps_read(*i,"roll",val)) dt = val;
 	if (k2 != Meth_Linear) globval.MatMeth = false; 
-	if ((unsigned int)k2 >= 32 || ((1 << k2) & ((1 << Meth_Linear) | (1 << Meth_Second) | (1 << Meth_Fourth))) == 0)
+	if ((unsigned int)k2 >= 32 ||
+	    ((1 << k2) &
+	     ((1 << Meth_Linear) | (1 << Meth_Second) |
+	      (1 << Meth_Fourth))) == 0)
 	  longjmp(env0, 1);
 
 
@@ -484,7 +505,8 @@ bool Lattice_Read(const char *fi_)
 	  WITH2->PN = k1;
 	  WITH2->PdTpar = dt;
 	} else {
-	  cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam << "(" << (long)Elem_nFamMax << ")" << endl;
+	  cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam
+	       << "(" << (long)Elem_nFamMax << ")" << endl;
 	  longjmp(env0, 1);
 	}
 	break;
@@ -509,7 +531,8 @@ bool Lattice_Read(const char *fi_)
 	  WITH2->Pthick = pthicktype(thin);
 	  //    SetDBN(&V);
 	} else {
-	  cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam << "(" << (long)Elem_nFamMax << ")" << endl;
+	  cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam
+	       << "(" << (long)Elem_nFamMax << ")" << endl;
 	  longjmp(env0, 1);
 	}
 	break;
@@ -530,7 +553,8 @@ bool Lattice_Read(const char *fi_)
 	  WITH1->Pkind = PartsKind(marker);
 	  //    SetDBN(&V);
 	} else {
-	  cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam << "(" << (long)Elem_nFamMax << ")" << endl;
+	  cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam
+	       << "(" << (long)Elem_nFamMax << ")" << endl;
 	  longjmp(env0, 1);
 	}
 	break;
@@ -555,9 +579,13 @@ bool Lattice_Read(const char *fi_)
 	if (GLPS_SUCCESS==glps_read(*i,"t2",val)) t2 = val;
 	if (GLPS_SUCCESS==glps_read(*i,"gap",val)) gap = val;
 	if (GLPS_SUCCESS==glps_read(*i,"roll",val)) dt = val;
-	if (GLPS_SUCCESS==glps_read(*i,"method",val)) k2 = (long) floor(val+0.5);
+	if (GLPS_SUCCESS==glps_read(*i,"method",val))
+	  k2 = (long) floor(val+0.5);
 	if (k2 != Meth_Linear) globval.MatMeth = false;
-	if ((unsigned int)k2 >= 32 || ((1 << k2) & ((1 << Meth_Linear) | (1 << Meth_Second) | (1 << Meth_Fourth))) == 0)
+	if ((unsigned int)k2 >= 32 ||
+	    ((1 << k2) &
+	     ((1 << Meth_Linear) | (1 << Meth_Second) |
+	      (1 << Meth_Fourth))) == 0)
 	  longjmp(env0, 1);
 
 	if (GLPS_SUCCESS==glps_read(*i,"hom",vec))
@@ -602,7 +630,8 @@ bool Lattice_Read(const char *fi_)
 	  WITH2->n_design = WITH2->Porder;
 	  //    SetDBN(&V);
 	} else {
-	  cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam << "(" << (long)Elem_nFamMax << ")" << endl;
+	  cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam
+	       << "(" << (long)Elem_nFamMax << ")" << endl;
 	  longjmp(env0, 1);
 	}
 	break;
@@ -624,8 +653,10 @@ bool Lattice_Read(const char *fi_)
 	if (GLPS_SUCCESS==glps_read(*i,"roll",val)) dt = val;
 	if (GLPS_SUCCESS==glps_read(*i,"method",val)) k2 = (long) floor(val+0.5);
 	if (k2 != Meth_Linear) globval.MatMeth = false;
-	if ((unsigned int)k2 >= 32 || ((1 << k2) & ((1 << Meth_Linear) | (1 << Meth_First) | (1 << Meth_Second) |
-						    (1 << Meth_Fourth) | (1 << Meth_genfun))) == 0)
+	if ((unsigned int)k2 >= 32 ||
+	    ((1 << k2) &
+	     ((1 << Meth_Linear) | (1 << Meth_First) | (1 << Meth_Second) |
+	      (1 << Meth_Fourth) | (1 << Meth_genfun))) == 0)
 	  longjmp(env0, 1);
 	if (GLPS_SUCCESS==glps_read(*i,"harm",vec))
 	  for(int n=0; n<(int)(vec.size())/6;++n)
@@ -677,9 +708,11 @@ bool Lattice_Read(const char *fi_)
 
 	  /* Equivalent vertically focusing gradient */
 	  WITH4->PBW[HOMmax+2] = -QK*QK/2e0;
-	  if (!CheckWiggler(globval.Elem_nFam)) longjmp(env0, 1); //Always returns true????
+	  if (!CheckWiggler(globval.Elem_nFam))
+	    longjmp(env0, 1); //Always returns true????
 	} else {
-	  cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam << "(" << (long)Elem_nFamMax << ")" << endl;
+	  cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam
+	       << "(" << (long)Elem_nFamMax << ")" << endl;
 	  longjmp(env0, 1);
 	}
 	break;
@@ -711,7 +744,8 @@ bool Lattice_Read(const char *fi_)
 	    longjmp(env0, 1);
 	  }
 	} else {
-	  cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam << "(" << (long)Elem_nFamMax << ")" << endl;
+	  cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam
+	       << "(" << (long)Elem_nFamMax << ")" << endl;
 	  longjmp(env0, 1);
 	}
 	break;
@@ -725,10 +759,15 @@ bool Lattice_Read(const char *fi_)
 	//                 string str1,str2;
 	//     bool firstflag=true, secondflag=true;
 	if (GLPS_SUCCESS==glps_read(*i,"n",val)) k1 = (long) floor(val+0.5);
-	if (GLPS_SUCCESS!=glps_read(*i,"file1",str1)) {str1=""; firstflag=false; }
-	if (GLPS_SUCCESS!=glps_read(*i,"file2",str2)) {str2=""; secondflag=false; }
-	if (GLPS_SUCCESS==glps_read(*i,"scaling",val))  scaling = abs((long)floor(val));      
-	if (GLPS_SUCCESS==glps_read(*i,"method",val)) k2 = (long) floor(val+0.5);// method for interpolation: 1 means linear 2 spline
+	if (GLPS_SUCCESS!=glps_read(*i,"file1",str1))
+	  {str1=""; firstflag=false; }
+	if (GLPS_SUCCESS!=glps_read(*i,"file2",str2))
+	  {str2=""; secondflag=false; }
+	if (GLPS_SUCCESS==glps_read(*i,"scaling",val))
+	  scaling = abs((long)floor(val));      
+	if (GLPS_SUCCESS==glps_read(*i,"method",val))
+	  // method for interpolation: 1 means linear 2 spline
+	  k2 = (long) floor(val+0.5);
 	if (k2 != Meth_Linear) globval.MatMeth = false;
 
 	globval.Elem_nFam++;
@@ -746,14 +785,13 @@ bool Lattice_Read(const char *fi_)
 	  WITH5->PN = k1;
 	  WITH5->scaling = scaling;
 
-	  //                  if (glps_read("energy",val)==GLPS_SUCCESS) {
-	  //                      globval.Energy=val;
-	  //                      if (str1.length() > 0) get_B(str1.c_str(), WITH6);
-	  //                  } else {
-	  //                      cerr << "Insertion_Alloc: energy not defined" << endl;
-	  //                      longjmp(env0, 1);
-	  //                  }
-
+	  // if (glps_read("energy",val)==GLPS_SUCCESS) {
+	  //   globval.Energy=val;
+	  //   if (str1.length() > 0) get_B(str1.c_str(), WITH6);
+	  // } else {
+	  //   cerr << "Insertion_Alloc: energy not defined" << endl;
+	  //   longjmp(env0, 1);
+	  // }
 
 	  // Check if filename given for first order kicks
 	  //    if (firstflag) 
@@ -761,8 +799,8 @@ bool Lattice_Read(const char *fi_)
 	    strcpy(WITH5->fname1,str1.c_str());
 	    WITH5->firstorder = true;
 	    Read_IDfile(WITH5->fname1, WITH1->PL, WITH5->nx, WITH5->nz,
-			WITH5->tabx, WITH5->tabz, WITH5->thetax1, WITH5->thetaz1,
-			WITH5->long_comp, WITH5->B2);
+			WITH5->tabx, WITH5->tabz, WITH5->thetax1,
+			WITH5->thetaz1, WITH5->long_comp, WITH5->B2);
 	    // scale factor from Radia: Tmm to get Tm.
 	    for (kx = 0; kx < WITH5->nx; kx++) {
 	      for (kz = 0; kz < WITH5->nz; kz++) {
@@ -791,7 +829,8 @@ bool Lattice_Read(const char *fi_)
 	  // check whether no Radia filename read: something is wrong
 	  //    if (!firstflag && !secondflag) 
 	  if (str1.length()<1 && str2.length()<1) {
-	    cerr << "Error: no Insertion filename found as" << " an input in lattice file" << endl;
+	    cerr << "Error: no Insertion filename found as"
+		 << " an input in lattice file" << endl;
 	    longjmp(env0, 1);
 	  }
 
@@ -825,7 +864,8 @@ bool Lattice_Read(const char *fi_)
 	  //      free_matrix(f2x,1,nz,1,nx);
 	  //      free_matrix(f2z,1,nz,1,nx);
 	} else {
-	  cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam << "(" << (long)Elem_nFamMax << ")" << endl;
+	  cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam
+	       << "(" << (long)Elem_nFamMax << ")" << endl;
 	  longjmp(env0, 1);
 	}
 	break;
@@ -845,7 +885,8 @@ bool Lattice_Read(const char *fi_)
 	  WITH1->Pkind = PartsKind(Spreader);
 	  Spreader_Alloc(&WITH->ElemF);
 	} else {
-	  cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam << "(" << (long)Elem_nFamMax << ")" << endl;
+	  cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam
+	       << "(" << (long)Elem_nFamMax << ")" << endl;
 	  longjmp(env0, 1);
 	}
 	break;
@@ -864,7 +905,8 @@ bool Lattice_Read(const char *fi_)
 	  WITH1->Pkind = PartsKind(Recombiner);
 	  Recombiner_Alloc(&WITH->ElemF);
 	} else {
-	  cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam << "(" << (long)Elem_nFamMax << ")" << endl;
+	  cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam
+	       << "(" << (long)Elem_nFamMax << ")" << endl;
 	  longjmp(env0, 1);
 	}
 	break;
@@ -887,7 +929,8 @@ bool Lattice_Read(const char *fi_)
 	  WITH1->Pkind = Solenoid;
 	  WITH1->PL = QL; WITH7->N = k1; WITH7->BoBrho = QK;
 	} else {
-	  cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam << "(" << (long)Elem_nFamMax << ")" << endl;
+	  cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam
+	       << "(" << (long)Elem_nFamMax << ")" << endl;
 	  longjmp(env0, 1);
 	}
 	break;
@@ -904,20 +947,20 @@ bool Lattice_Read(const char *fi_)
   cout << "Beamline <" << use << "> will be used" << endl;
   //    return 0;
     
-  list<string> lines = glps_lines();
+  std::list<string> lines = glps_lines();
   //  cout << "Number of lines: " << lines.size() << endl;
   string beamline;
-  for (list<string>::iterator i = lines.begin(); i != lines.end(); ++i) {
+  for (std::list<string>::iterator i = lines.begin(); i != lines.end(); ++i) {
     beamline=*i;
     for (int k=0; k<(int)beamline.length();k++)
       beamline[k]=tolower(beamline[k]);
     if (!use.compare(beamline)) break;
   }
   //  cout << *i << ": " << endl;
-  list<string> blelems = glps_elements(beamline, true);
+  std::list<string> blelems = glps_elements(beamline, true);
   int cnum = 0;
   static int fnum = 0;
-  for (list<string>::iterator j = blelems.begin(); j != blelems.end(); ++j) {
+  for (std::list<string>::iterator j = blelems.begin(); j != blelems.end(); ++j) {
     size_t pt = (*j).rfind('.');
     string tmp = (*j).substr(pt+1);
     cnum++;
@@ -925,7 +968,8 @@ bool Lattice_Read(const char *fi_)
     if (cnum <= Cell_nLocMax)
       Cell[cnum].Fnum = fnum;
     else {
-      cerr << "** Cell_nLocMax exhausted: " << cnum << "(" << Cell_nLocMax << ")" << endl;
+      cerr << "** Cell_nLocMax exhausted: " << cnum
+	   << "(" << Cell_nLocMax << ")" << endl;
       longjmp(env0, 1);
     }
     //    cout << cnum << " elements in Cell" << endl;
@@ -934,7 +978,8 @@ bool Lattice_Read(const char *fi_)
   if (cnum <= Cell_nLocMax)
     globval.Cell_nLoc = cnum;   /*number of Elements in a cell*/
   else {
-    cerr << "** Cell_nLocMax exhausted: " << cnum << "(" << Cell_nLocMax << ")" << endl;
+    cerr << "** Cell_nLocMax exhausted: " << cnum
+	 << "(" << Cell_nLocMax << ")" << endl;
     longjmp(env0, 1);
   }
   GetRingType();/* define whether a ring or a transfer line */
@@ -1032,7 +1077,8 @@ long CheckElementtable(const string name)
 
   j = 0;
   if (globval.Elem_nFam > Elem_nFamMax) {
-    cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam << "(" << (long)Elem_nFamMax << ")" << endl;
+    cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam
+	 << "(" << (long)Elem_nFamMax << ")" << endl;
     longjmp(env0, 1);
   }
 
@@ -1064,13 +1110,17 @@ void GetRingType()
 {
   double val;
 
-  if (glps_read("ringtype", val)!=GLPS_SUCCESS || floor(val+0.5) < 0 || floor(val+0.5) > 1)
+  if (glps_read("ringtype", val)!=GLPS_SUCCESS || floor(val+0.5) < 0 ||
+      floor(val+0.5) > 1)
     {
-      cout << "> Ring type is not defined or not correctly, default is ring." << endl;
+      cout << "> Ring type is not defined or not correctly, default is ring."
+	   << endl;
       globval.RingType = 1;
     } else 
     globval.RingType = floor(val+0.5);
 }
+
+
 void GetDP()
 {
   double val;
@@ -1121,7 +1171,8 @@ void RegisterKids()
     for (i = 0; i < FORLIM; i++)
       ElemFam[i].nKid = 0;
   } else {
-    cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam << "(" << (long)Elem_nFamMax << ")" << endl;
+    cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam
+	 << "(" << (long)Elem_nFamMax << ")" << endl;
     longjmp(env0, 1);
   }
 
@@ -1134,7 +1185,8 @@ void RegisterKids()
       Cell[i].Knum = WITH->nKid;
     } else
       {
-	cerr << "Elem_nFamMax exceeded: " << WITH->nKid << "(" << nKidMax << ")" << endl;
+	cerr << "Elem_nFamMax exceeded: "
+	     << WITH->nKid << "(" << nKidMax << ")" << endl;
 	longjmp(env0, 1);
       }
   }

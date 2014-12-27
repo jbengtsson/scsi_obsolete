@@ -20,17 +20,17 @@ struct GlpsStatement {
     int type;
 };
 
-list<GlpsStatement> glps_statements();
+std::list<GlpsStatement> glps_statements();
 
-list<string> glps_lines();
+std::list<string> glps_lines();
 
-list<string> glps_elements();
-list<string> glps_elements(
+std::list<string> glps_elements();
+std::list<string> glps_elements(
     const string& line, bool fullname = false, bool revtag=true);
 
 string glps_corename(const string& fullname);
 
-list<string>
+std::list<string>
 glps_properties(const string& name);
 
 string glps_trimindex(const string& name);

@@ -17,9 +17,9 @@ extern GLPS_SYMB* symbtab;
 
 extern "C" GLPS_SYMB* symb_lookup_stmt(GLPS_SYMB* head, const char* name);
 
-list<GlpsStatement> glps_statements()
+std::list<GlpsStatement> glps_statements()
 {
-    list<GlpsStatement> stmtlst;
+    std::list<GlpsStatement> stmtlst;
     GlpsStatement node;
     GLPS_SYMB* p = symbtab;
     while (p) {
@@ -30,9 +30,9 @@ list<GlpsStatement> glps_statements()
     return stmtlst;
 }
 
-list<string> glps_lines()
+std::list<string> glps_lines()
 {
-    list<string> lines;
+    std::list<string> lines;
     GLPS_SYMB* p = symbtab;
     while (p) {
         if (p->nodetype == GLPS_LINE) {
@@ -43,9 +43,9 @@ list<string> glps_lines()
     return lines;
 }
 
-list<string> glps_elements()
+std::list<string> glps_elements()
 {
-    list<string> elem;
+    std::list<string> elem;
     GLPS_SYMB* p = symbtab;
     while (p) {
         if (p->nodetype == GLPS_ELEMENT) {
@@ -56,10 +56,10 @@ list<string> glps_elements()
     return elem;
 }
 
-list<string> glps_elements(const string& line, bool fullname, bool revtag)
+std::list<string> glps_elements(const string& line, bool fullname, bool revtag)
 {
     GLPS_SYMB* p = symb_lookup(symbtab, line.c_str());
-    list<string> ret;
+    std::list<string> ret;
     if (p) {
         int n = 1024;
         char *str = (char*)calloc(n, sizeof(char));
@@ -118,10 +118,10 @@ string glps_trimindex(const string& name)
     }
 }
 
-list<string> glps_properties(const std::string& name)
+std::list<string> glps_properties(const std::string& name)
 {
     GLPS_SYMB* p = symb_lookup(symbtab, name.c_str());
-    list<string> prpt;
+    std::list<string> prpt;
     
     if (p && p->property) {
         p = p->property;
