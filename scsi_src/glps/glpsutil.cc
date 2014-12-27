@@ -4,8 +4,6 @@
 //
 
 #include <cstring>
-#include <vector>
-#include <string>
 #include <iostream>
 #include "glpsutil.h"
 #include "elemtree.h"

@@ -21,6 +21,42 @@ int   FieldMap_filetype = 2;
 
 
 template<typename T>
+void splin2_(const double x1a[], const double x2a[], double **ya, double **y2a,
+	     const int m, const int n, const T &x1, const T &x2, T &y)
+{
+  int  j;
+  T    ytmp[m+1], yytmp[m+1];
+
+  if ((x1 < x1a[1]) || (x1 > x1a[m])) {
+    cout << fixed << setprecision(8)
+	 << "splin2_: x undefined ["
+	 << is_double<T>::cst(x1) << ", " << is_double<T>::cst(x2) << "] (["
+	 << x1a[1] << ", " << x1a[m] << "])" << endl;
+
+    y = NAN;
+
+    return;
+  }
+
+  if ((x2 < x2a[1]) || (x2 > x2a[n])) {
+    cout << fixed << setprecision(8)
+	 << "splin2_: y undefined ["
+	 << is_double<T>::cst(x1) << ", " << is_double<T>::cst(x2) << "] (["
+	 << x2a[1] << ", " << x2a[n] << "])" << endl;
+
+    y = NAN;
+
+    return;
+  }
+
+  for (j = 1; j<= m; j++)
+    splint_(x2a,ya[j],y2a[j],n,x2,yytmp[j]);
+  spline_(x1a,yytmp,m,1.0e30,1.0e30,ytmp);
+  splint_(x1a,yytmp,ytmp,m,x1,y);
+}
+
+
+template<typename T>
 void GtoL(ss_vect<T> &X, Vector2 &S, Vector2 &R,
 	  const double c0, const double c1, const double s1)
 {
@@ -3190,42 +3226,6 @@ void splint_(const double xa[], const U ya[], const U y2a[],
   a = (xa[khi]-x)/h;
   b = (x-xa[klo])/h;
   y = a*ya[klo]+b*ya[khi]+((a*a*a-a)*y2a[klo]+(b*b*b-b)*y2a[khi])*(h*h)/6.0;
-}
-
-
-template<typename T>
-void splin2_(const double x1a[], const double x2a[], double **ya, double **y2a,
-	     const int m, const int n, const T &x1, const T &x2, T &y)
-{
-  int  j;
-  T    ytmp[m+1], yytmp[m+1];
-
-  if ((x1 < x1a[1]) || (x1 > x1a[m])) {
-    cout << fixed << setprecision(8)
-	 << "splin2_: x undefined ["
-	 << is_double<T>::cst(x1) << ", " << is_double<T>::cst(x2) << "] (["
-	 << x1a[1] << ", " << x1a[m] << "])" << endl;
-
-    y = NAN;
-
-    return;
-  }
-
-  if ((x2 < x2a[1]) || (x2 > x2a[n])) {
-    cout << fixed << setprecision(8)
-	 << "splin2_: y undefined ["
-	 << is_double<T>::cst(x1) << ", " << is_double<T>::cst(x2) << "] (["
-	 << x2a[1] << ", " << x2a[n] << "])" << endl;
-
-    y = NAN;
-
-    return;
-  }
-
-  for (j = 1; j<= m; j++)
-    splint_(x2a,ya[j],y2a[j],n,x2,yytmp[j]);
-  spline_(x1a,yytmp,m,1.0e30,1.0e30,ytmp);
-  splint_(x1a,yytmp,ytmp,m,x1,y);
 }
 
 

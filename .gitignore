@@ -7,6 +7,15 @@ config.h.in
 config
 configure
 #
+scanner.c
+parser.h
+parser.c
+parser.output
+#
+pyscsi_wrap.cxx
+pyscsi.py
+pyscsi.pyc
+#
 scsi_src/lib
 #
 scsi_src/python/python_api.py
