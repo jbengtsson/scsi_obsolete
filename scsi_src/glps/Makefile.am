@@ -4,7 +4,6 @@ BUILT_SOURCES     = parser.h
 
 libglps_a_SOURCES = glpsutil.cc elemtree.c glps.c glpserror.c \
                     scanner.l parser.y
-#                    scanner.c parser.c
 
 LFLAGS   = -i
 YFLAGS   = -t -v -d -y
