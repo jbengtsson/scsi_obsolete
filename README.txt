@@ -4,13 +4,14 @@ Self-Consistent Symplectic Integrator for charged particle beam dynamics,
 based on TPSA (Truncated Power Series Algebra),
 aka PTC (Polymorphic Tracking Code); originated 1994.
 
-
 Author: Johan Bengtsson
+
+The Python API was prototyped by James Rowland, DIAMOND, 2004.
 
 Requirements:
 
    GNU autoconf and automake environments.
-   GNU C++ and FORTRAN-95 compilers: gcc and gfortran.
+   GNU C++ and FORTRAN-95 compilers: gcc/ and gfortran.
    GNU GSL.
 
 To install:
