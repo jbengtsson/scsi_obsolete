@@ -3,7 +3,8 @@ lib_LIBRARIES     = libglps.a
 BUILT_SOURCES     = parser.h
 
 libglps_a_SOURCES = glpsutil.cc elemtree.c glps.c glpserror.c \
-                    scanner.l parser.y
+                    scanner.c parser.c
+#                    scanner.l parser.y
 
 LFFLAGS  = -i -o
 YFLAGS   = -t -v -d -y
