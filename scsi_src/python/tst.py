@@ -1,13 +1,21 @@
 import sys
+
+sys.path.append('/home/bengtsson/git_repos/scsi/scsi_src/lib')
+
 import pyscsi
 
+print
+print sys.path
+
+print
+print dir()
 
 pyscsi.gv.globval.H_exact    = False; pyscsi.gv.globval.quad_fringe = False;
 pyscsi.gv.globval.Cavity_on  = False; pyscsi.gv.globval.radiation   = False;
 pyscsi.gv.globval.emittance  = False; pyscsi.gv.globval.IBS         = False;
 pyscsi.gv.globval.pathlength = False; pyscsi.gv.globval.bpm         = 0;
 
-pyscsi.Read_Lattice('/home/bengtsson/projects/in/lattice/commissioning')
+pyscsi.Read_Lattice('/home/bengtsson/git_repos/scsi/scsi_src/glps/tracy_1')
 
 pyscsi.Ring_GetTwiss(True, 0.0); pyscsi.printglob()
 

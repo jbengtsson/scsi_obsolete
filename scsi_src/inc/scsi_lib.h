@@ -66,7 +66,11 @@ using namespace std;
 
 #include "t2elem.h"
 #include "t2cell.h"
-#include "t2lat.h"
+#if false
+  #include "t2lat.h"
+#else
+  #include "t3lat.h"
+#endif
 #include "t2ring.h"
 
 #include "fft.h"

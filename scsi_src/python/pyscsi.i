@@ -156,7 +156,8 @@ extern globvalrec  globval;
 
 %include "../inc/t2elem.h"
 %include "../inc/t2cell.h"
-%include "../inc/t2lat.h"
+//%include "../inc/t2lat.h"
+%include "../inc/t3lat.h"
 %include "../inc/t2ring.h"
 
 %include "../inc/fft.h"
