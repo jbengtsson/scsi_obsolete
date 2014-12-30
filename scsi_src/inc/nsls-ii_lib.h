@@ -1,3 +1,5 @@
+#define PYAPI 1
+
 // global params
 
 const int  max_elem = Cell_nLocMax;
@@ -148,8 +150,10 @@ void set_dL(const int Fnum, const int Knum, const double dL);
 
 void set_dL(const int Fnum, const double dL);
 
+#if !PYAPI
 void get_bn_design_elem(const int Fnum, const int Knum,
 			const int n, double &bn, double &an);
+#endif
 
 void get_bnL_design_elem(const int Fnum, const int Knum,
 			 const int n, double &bnL, double &anL);

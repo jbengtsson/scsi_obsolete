@@ -18,6 +18,49 @@ def getS():
     s = zeros(pyscsi.gv.globval.Cell_nLoc+1)
     for k in range(0, pyscsi.gv.globval.Cell_nLoc+1):
         s[k] = pyscsi.gv.Cell[k].S
+    return s
+
+
+def getBetaX():
+    betax = zeros(pyscsi.gv.globval.Cell_nLoc+1)
+    for k in range(0, pyscsi.gv.globval.Cell_nLoc+1):
+        betax[k] = pyscsi.gv.Cell[k].gvec('Beta')[X_];
+    return betax
+
+
+def getBetaY():
+    betay = zeros(pyscsi.gv.globval.Cell_nLoc+1)
+    for k in range(0, pyscsi.gv.globval.Cell_nLoc+1):
+        betay[k] = pyscsi.gv.Cell[k].gvec('Beta')[Y_];
+    return betay
+
+
+def getPhiX():
+    phix = zeros(pyscsi.gv.globval.Cell_nLoc+1)
+    for k in range(0, pyscsi.gv.globval.Cell_nLoc+1):
+        phix[k] = pyscsi.gv.Cell[k].gvec('Phi')[X_];
+    return phix
+
+
+def getPhiY():
+    phiy = zeros(pyscsi.gv.globval.Cell_nLoc+1)
+    for k in range(0, pyscsi.gv.globval.Cell_nLoc+1):
+        phiy[k] = pyscsi.gv.Cell[k].gvec('Phi')[Y_];
+    return phiy
+
+
+def getEtaX():
+    etax = zeros(pyscsi.gv.globval.Cell_nLoc+1)
+    for k in range(0, pyscsi.gv.globval.Cell_nLoc+1):
+        etax[k] = pyscsi.gv.Cell[k].gvec('Eta')[X_];
+    return etax
+
+
+def getEtaY():
+    etay = zeros(pyscsi.gv.globval.Cell_nLoc+1)
+    for k in range(0, pyscsi.gv.globval.Cell_nLoc+1):
+        etay[k] = pyscsi.gv.Cell[k].gvec('Eta')[Y_];
+    return etay
 
 
 def get_code(k):
@@ -27,12 +70,12 @@ def get_code(k):
         if pyscsi.gv.Cell[k].Elem.M.Pirho != 0.0:
             code = 0.5
         elif pyscsi.gv.Cell[k].Elem.M.n_design == Quad:
-            pyscsi.get_bn_design_elem(
-                pyscsi.gv.Cell[k].Fnum, pyscsi.gv.Cell[k].Knum, Quad, b2, a2)
+            (b2, a2) = pyscsi.get_bn_design_elem(
+                pyscsi.gv.Cell[k].Fnum, pyscsi.gv.Cell[k].Knum, Quad)
             code = math.copysign(1, b2)
         elif pyscsi.gv.Cell[k].Elem.M.n_design == Sext:
-            pyscsi.get_bn_design_elem(
-                pyscsi.gv.Cell[k].Fnum, pyscsi.gv.Cell[k].Knum, Sext, b3, a3)
+            (b3, a3) = pyscsi.get_bn_design_elem(
+                pyscsi.gv.Cell[k].Fnum, pyscsi.gv.Cell[k].Knum, Sext)
             code = 1.5*math.copysign(1, b3)
         elif pyscsi.gv.Cell[k].Fnum == pyscsi.gv.globval.bpm:
             code = 2.0

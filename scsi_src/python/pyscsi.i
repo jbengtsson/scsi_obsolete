@@ -28,6 +28,7 @@ extern ElemFamType ElemFam[];
 extern CellType    Cell[];
 extern globvalrec  globval;
 
+
 %inline %{
   struct vec {
     double *a;
@@ -177,3 +178,10 @@ extern globvalrec  globval;
 %include "../inc/rdmfile.h"
 %include "../inc/prtmfile.h"
 
+%include "typemaps.i"
+
+%apply double *OUTPUT { double &bn, double &an };
+%inline %{
+  extern void get_bn_design_elem(const int Fnum, const int Knum,
+				 const int n, double &bn, double &an);
+%}
