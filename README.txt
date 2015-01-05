@@ -8,11 +8,14 @@ Code), originated 1994; by implementing a transparent polymorphic number object
 with reference counting for FP/TPSA in C++.
 
 The symplectic integrator for realistic modeling of magnetic lattices for
-circular particle accelerators was initially implemented in Pascal, by the
-author, with care taken for the software architecture and resulting
-records/modules ("objects") to reflect the structure of the mathematical
-objects of the underlying beam dynamics model.
+ring-based synchrotrons was initially implemented in Pascal, by the author,
+with care taken for the software architecture and resulting records/modules
+(-> "objects") to reflect the structure of the mathematical objects describing
+the underlying beam dynamics model.
 
+
+Numerical Recipes was replaced GSL by Piotr Goryl and Bartek Sulkowski,
+SOLARIS, 2014.
 
 The Lex/Yacc based lattice parser is an adaptation of glps implemented by
 Lingyan Yang, ALS, 2009.
