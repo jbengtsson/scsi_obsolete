@@ -18,7 +18,7 @@ Numerical Recipes was replaced GSL by Piotr Goryl and Bartek Sulkowski,
 SOLARIS, 2014.
 
 The Lex/Yacc based lattice parser is an adaptation of glps implemented by
-Lingyun Yang, ALS, 2009.
+Lingyun Yang, ALS, 2008.
 
 The Python API was prototyped by James Rowland, DIAMOND, 2004.
 
