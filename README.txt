@@ -6,13 +6,14 @@ aka PTC (Polymorphic Tracking Code); originated 1994.
 
 Author: Johan Bengtsson
 
+The Lex/Yacc based lattice parser is based on glps by Lingyan Yang.
 The Python API was prototyped by James Rowland, DIAMOND, 2004.
 
 Requirements:
 
    GNU autoconf and automake environments.
-   GNU C++ and FORTRAN-95 compilers: gcc/ and gfortran.
-   GNU GSL.
+   GNU C/C++ and FORTRAN-95 compilers: gcc and gfortran.
+   GNU Scientific Library GSL.
 
 To install:
 
