@@ -1,6 +1,13 @@
 from pylab import *
 from sys   import *
 
+import os
+
+home_dir = os.getcwd()
+len = len(home_dir)
+lib_dir = home_dir[0:len-7]+'/lib'
+sys.path.append(lib_dir)
+
 import pyscsi
 
 

@@ -34,7 +34,7 @@ Requirements:
    GNU autoconf and automake environments.
    GNU C/C++ and FORTRAN-95 compilers: gcc and gfortran.
    GNU Scientific Library GSL.
-
+   GNU libtool.
 
 To install:
 

@@ -1,10 +1,15 @@
-lib_LIBRARIES     = libglps.a
+#lib_LIBRARIES     = libglps.a
+# Shared library (required for pytracy).
+lib_LTLIBRARIES   = libglps.la
 
 BUILT_SOURCES     = parser.h
 
-libglps_a_SOURCES = glpsutil.cc elemtree.c glps.c glpserror.c \
-                    scanner.l parser.y
+#libglps_a_SOURCES = glpsutil.cc elemtree.c glps.c glpserror.c \
+#                    scanner.l parser.y
+libglps_la_SOURCES = glpsutil.cc elemtree.c glps.c glpserror.c \
+                     scanner.l parser.y
 
+libglps_la_LDFLAGS = -module -avoid-version -shared
 
 LFLAGS   = -i # Ignore case in patterns.
 YFLAGS   = -t -v -d -y

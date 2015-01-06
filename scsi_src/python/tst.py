@@ -1,6 +1,10 @@
 import sys
+import os
 
-sys.path.append('/home/bengtsson/git_repos/scsi/scsi_src/lib')
+home_dir = os.getcwd()
+len = len(home_dir)
+lib_dir = home_dir[0:len-7]+'/lib'
+sys.path.append(lib_dir)
 
 import pyscsi
 

@@ -1,14 +1,17 @@
-lib_LIBRARIES     = _pyscsi.a
-#lib_LTLIBRARIES   = _pyscsi.la
+# Shared library.
+lib_LTLIBRARIES   = _pyscsi.la
 
-_pyscsi_a_SOURCES = pyscsi_wrap.cxx
+_pyscsi_la_SOURCES = pyscsi_wrap.cxx
 
-LIBS     = -L$(HOME)/git_repos/scsi/scsi_src/lib -lscsi -lglps
+_pyscsi_la_LDFLAGS = -module -avoid-version -shared
+
+LIBS     = -L../src -lscsi \
+           -L../glps -lglps \
+	   -lgsl -lstdc++ -lgslcblas pyscsi_wrap.cxx
 
 INCLUDES = -I../inc -I/usr -I/usr/include/python2.6
 
 CXXFLAGS = -g -O0 -Wall -Wno-error=all -fPIC
-#CXXFLAGS = -g -O0 -Wall -Wno-error=all -fPIC -shared
 #LDFLAGS = -shared -fPIC
 #CXXFLAGS = -g -O0 -Wall -Wno-error=all -fno-implicit-templates -fPIC
 #CXXFLAGS = -pg -O2 -Wall -fno-implicit-templates -fPIC
