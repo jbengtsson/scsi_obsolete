@@ -1,11 +1,10 @@
-#lib_LIBRARIES     = libglps.a
-# Shared library (required for pytracy).
-lib_LTLIBRARIES   = libglps.la
+# Shared library required for pytracy.
+lib_LTLIBRARIES   = libglps.a libglps.la
 
 BUILT_SOURCES     = parser.h
 
-#libglps_a_SOURCES = glpsutil.cc elemtree.c glps.c glpserror.c \
-#                    scanner.l parser.y
+libglps_a_SOURCES  = glpsutil.cc elemtree.c glps.c glpserror.c \
+                     scanner.l parser.y
 libglps_la_SOURCES = glpsutil.cc elemtree.c glps.c glpserror.c \
                      scanner.l parser.y
 

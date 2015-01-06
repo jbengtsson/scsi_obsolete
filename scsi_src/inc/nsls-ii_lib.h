@@ -1,5 +1,3 @@
-#define PYAPI 1
-
 // global params
 
 const int  max_elem = Cell_nLocMax;

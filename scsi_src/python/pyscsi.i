@@ -1,7 +1,8 @@
 %module pyscsi
 %{
 
-#define NO 1
+#define PYAPI 1
+#define NO    1
 
 // Include the header files in the wrapper code.
 #include "scsi_lib.h"
@@ -15,6 +16,9 @@ void TPSAEps(const double);
 int ndpt_tps = 2;
 
 %}
+
+#define PYAPI 1
+#define NO    1
 
 // Declared in "scsi_lib.h".
 
