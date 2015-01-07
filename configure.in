@@ -35,4 +35,5 @@ AC_TYPE_SIZE_T
 # Checks for library functions.
 AC_OUTPUT(Makefile
 	  scsi_src/Makefile scsi_src/src/Makefile scsi_src/glps/Makefile
-	  scsi_src/TPSA/Makefile scsi_src/python/Makefile)
+	  scsi_src/TPSA/Makefile
+	  scsi_src/python/Makefile scsi_src/sip/Makefile)

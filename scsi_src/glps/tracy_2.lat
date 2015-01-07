@@ -8,18 +8,9 @@ CODeps = 1e-14;
   
 Meth = 4; Nbend = 4; Nquad = 4; Nsext = 2;
   
-#pi = 4.0*arctan(1.0);  
+pi = 4.0*arctan(1.0);  
 
 c0 = 2.99792458e8; h_rf = 1320; C = 791.958; Brho = 1e9*Energy/c0;
-
-# Commissioning, 1 cavity.
-#CAV: Cavity, Frequency = c0/C*h_rf, Voltage = 1.85e6, Harnum = h_rf;
-
-# 3DWs, 2 cavities, 500 mA.
-#CAV: Cavity, Frequency = c0/C*h_rf, Voltage = 3.30e6, Harnum = h_rf;}
-
-# 5 DWs, 4 cavities, 500 mA.
-#CAV: Cavity, Frequency = c0/C*h_rf, Voltage = 4.50e6, Harnum = h_rf;}
 
 CAV: Cavity, Frequency = c0/C*h_rf, Voltage = 5.00e6, Harnum = h_rf;
  
@@ -113,8 +104,6 @@ DSCH:     Drift, L = 0.1;
 B1: Bending, L = 2.62, T = 6, T1 = 3, T2 = 3, N = Nbend, Method = Meth;  
 
 QH1: Quadrupole,L = 0.275, K =  -0.633003627605627, N = Nquad, Method = Meth;  
-#QH2: Quadrupole,L = 0.448, K =  1.47764975851825,   N = Nquad, Method = Meth;  
-#QH3: Quadrupole,L = 0.275, K = -1.70755107069601,   N = Nquad, Method = Meth;
 QL1: Quadrupole,L = 0.275, K = -1.56215882877904,   N = Nquad, Method = Meth;  
 QL2: Quadrupole,L = 0.448, K =  1.81306845973439,   N = Nquad, Method = Meth;  
 QL3: Quadrupole,L = 0.275, K = -1.48927532178708,   N = Nquad, Method = Meth;  
@@ -122,16 +111,7 @@ QM1: Quadrupole,L = 0.25,  K = -0.803148359390124,  N = Nquad, Method = Meth;
 QM2: Quadrupole,L = 0.283, K =  1.22229548513137,   N = Nquad, Method = Meth;  
 SQ:  Quadrupole,L = 0.1,   K =  0,                  N = Nquad, Method = Meth;  
 
-# nu = [33.11, 16.20]
-#QH2:  Quadrupole, L = 0.448,   K =  1.46514,  N = Nquad, Method = Meth;
-#QH3:  Quadrupole, L = 0.275,   K = -1.69212,  N = Nquad, Method = Meth;
-# nu = [33.19, 16.32]
-#QH2:  Quadrupole, L = 0.448,   K =  1.46960,  N = Nquad, Method = Meth;
-#QH3:  Quadrupole, L = 0.275,   K = -1.70179,  N = Nquad, Method = Meth;
-# nu = [33.21, 16.32]
-#QH2:  Quadrupole, L = 0.448,   K =  1.47045,  N = Nquad, Method = Meth;
-#QH3:  Quadrupole, L = 0.275,   K = -1.70299,  N = Nquad, Method = Meth;
-# nu = [33.23, 16.33]
+ nu = [33.23, 16.33]
 QH2:  Quadrupole, L = 0.448,   K =  1.47131,  N = Nquad, Method = Meth;
 QH3:  Quadrupole, L = 0.275,   K = -1.70420,  N = Nquad, Method = Meth;
 
@@ -150,16 +130,6 @@ SM3A: Sextupole, L = 0.0, K = 0.0, N = Nsext, Method = Meth;
 SM3B: Sextupole, L = 0.0, K = 0.0, N = Nsext, Method = Meth;
 SM3C: Sextupole, L = 0.0, K = 0.0, N = Nsext, Method = Meth;
 SM3D: Sextupole, L = 0.0, K = 0.0, N = Nsext, Method = Meth;
-
-#SL1: Sextupole,  L = 0.200000, K =  15.121728, N = Nsext, Method = Meth;
-#SL2: Sextupole,  L = 0.200000, K =   4.844766, N = Nsext, Method = Meth;
-#SL3: Sextupole,  L = 0.200000, K = -10.673588, N = Nsext, Method = Meth;
-#SH1: Sextupole,  L = 0.200000, K =   9.629229, N = Nsext, Method = Meth;
-#SH3: Sextupole,  L = 0.200000, K =  -2.362839, N = Nsext, Method = Meth;
-#SH4: Sextupole,  L = 0.200000, K =  -8.016445, N = Nsext, Method = Meth;
-#SM1A: Sextupole, L = 0.200000, K = -14.538125, N = Nsext, Method = Meth;
-#SM1B: Sextupole, L = 0.200000, K = -10.075821, N = Nsext, Method = Meth;
-#SM2: Sextupole,  L = 0.250000, K =  14.000000, N = Nsext, Method = Meth;
 
 
 #lambda_DW = 0.10; n_DW = 70; L_DW = n_DW*lambda_DW; B_DW = 1.8;
