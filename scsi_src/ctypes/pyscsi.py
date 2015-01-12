@@ -9,12 +9,10 @@ home_dir = os.path.expanduser('~')
 #libc = cdll.LoadLibrary('libc.so.6')
 #libc++ =  cdll.LoadLibrary('libstdc++.so.6')
 
-gslcblas = CDLL('libgslcblas.so', mode=RTLD_GLOBAL)
-gsl = CDLL('libgsl.so', mode=RTLD_GLOBAL)
+#gslcblas = CDLL('libgslcblas.so', mode=RTLD_GLOBAL)
+#gsl = CDLL('libgsl.so', mode=RTLD_GLOBAL)
 
 scsi = cdll.LoadLibrary(home_dir+'/git_repos/scsi/scsi_src/lib/libscsi.so')
-
-#pyscsi = cdll.LoadLibrary(home_dir+'/git_repos/scsi/scsi_src/lib/_pyscsi.so')
 
 #sys.path.append(home_dir+'/git_repos/scsi/scsi_src/lib/_pyscsi.so')
 #import pyscsi
@@ -62,7 +60,7 @@ class globvalrec(Structure):
 
 print scsi
 globval = cast(scsi.globval, POINTER(globvalrec))[0]
-print globval.dPcommon, globval.TotalTune[0], globval.TotalTune[1]
+print globval.dPcommon
 
 #scsi.Read_Lattice(home_dir+'/git_repos/scsi/scsi_src/glps/tracy_1')
    

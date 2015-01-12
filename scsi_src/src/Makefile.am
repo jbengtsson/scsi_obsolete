@@ -12,6 +12,9 @@ libscsi_ptc_la_SOURCES = scsi_ptc_lib.cc \
 libscsi_la_LDFLAGS     = -module -avoid-version -shared
 libscsi_ptc_la_LDFLAGS = -module -avoid-version -shared
 
+# Include GSL directly.
+LIBS = -lgsl -lgslcblas
+
 INCLUDES = -I../inc -I/usr -I../glps
 
 # Ignore case in patterns.
@@ -20,6 +23,7 @@ LFLAGS   = -i
 YFLAGS   = -t -v -d -y
 # Flags: generate Position Independenct Code (PIC); for shared library.
 CXXFLAGS = -g -O0 -Wall -Wno-error=all -fPIC
+
 #CXXFLAGS = -g -O0 -Wall -Wno-error=all -fno-implicit-templates -fPIC
 #CXXFLAGS = -pg -O2 -Wall -fno-implicit-templates -fPIC
 #CXXFLAGS = -g -O2 -Wall -frepo
