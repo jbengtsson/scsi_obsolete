@@ -73,11 +73,12 @@ class globvalrec(Structure):
                 ]
 
 print scsi
+#print dir(scsi)
 print c_bool.in_dll(scsi, 'trace')
 print c_int.in_dll(scsi, 'no_tps')
 print c_int.in_dll(scsi, 'nv_tps')
-print scsi.globval
-print dir(scsi.globval)
+#print scsi.globval
+#print dir(scsi.globval)
 
 globval = cast(scsi.globval, POINTER(globvalrec))[0]
 print dir(globval)
@@ -86,10 +87,14 @@ for ps in globval.CODvect:
     sys.stdout.write('%6.3f' % ps)
 sys.stdout.write('\n')
 
-print c_double.in_dll(scsi, 'globval')
-globval = POINTER(globvalrec).in_dll(scsi, 'globval')
-print dir(globval)
-print globval
+#print c_double.in_dll(scsi, 'globval')
+globval = globvalrec.in_dll(scsi, 'globval')
+#print dir(globval)
+#print globval
+print globval.dPcommon
+for ps in globval.CODvect:
+    sys.stdout.write('%6.3f' % ps)
+sys.stdout.write('\n')
 
 #scsi.Read_Lattice(home_dir+'/git_repos/scsi/scsi_src/glps/tracy_1')
    
