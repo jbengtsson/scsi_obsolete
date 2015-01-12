@@ -1,17 +1,6 @@
-# Needs to be made after library has been made.
-# Test program.
-#bin_PROGRAMS = tst
-#main_SOURCES = tst.cc
-
-#LIBS = $(HOME)/git_repos/scsi/scsi_src/src/libscsi.a \
-#       $(HOME)/git_repos/scsi/scsi_src/glps/libglps.a \
-#       -lstdc++ \
-#       -lgsl -lgslcblas \
-#       -lfl
-
 # Shared library required for pytracy.
 lib_LTLIBRARIES        = libscsi.la libscsi_ptc.la 
-libscsi_la_SOURCES      = scsi_lib.cc \
+libscsi_la_SOURCES     = scsi_lib.cc \
 			 ../glps/glpsutil.cc ../glps/elemtree.c ../glps/glps.c \
 			 ../glps/glpserror.c \
 			 ../glps/scanner.l ../glps/parser.y
