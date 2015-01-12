@@ -6,11 +6,11 @@ import os
 #current_dir = os.getcwd()
 home_dir = os.path.expanduser('~')
 
-#libc = cdll.LoadLibrary('/lib/libc.so.6')
-#libc++ =  cdll.LoadLibrary('/usr/lib/libstdc++.so.6')
+#libc = cdll.LoadLibrary('libc.so.6')
+#libc++ =  cdll.LoadLibrary('libstdc++.so.6')
 
-#cdll.LoadLibrary('/usr/lib/libgslcblas.so')
-#cdll.LoadLibrary('/usr/lib/libgsl.so')
+gslcblas = CDLL('libgslcblas.so', mode=RTLD_GLOBAL)
+gsl = CDLL('libgsl.so', mode=RTLD_GLOBAL)
 
 scsi = cdll.LoadLibrary(home_dir+'/git_repos/scsi/scsi_src/lib/libscsi.so')
 
@@ -60,9 +60,9 @@ class globvalrec(Structure):
                 ('Energy', c_double),
                 ('Cell_nLoc', c_long))
 
-print pyscsi
-#globval = cast(pyscsi.globval, POINTER(globvalrec))[0]
-#print globval.dPcommon
+print scsi
+globval = cast(scsi.globval, POINTER(globvalrec))[0]
+print globval.dPcommon, globval.TotalTune[0], globval.TotalTune[1]
 
-#pyscsi.Read_Lattice(home_dir+'/git_repos/scsi/scsi_src/glps/tracy_1')
+#scsi.Read_Lattice(home_dir+'/git_repos/scsi/scsi_src/glps/tracy_1')
    
