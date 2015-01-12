@@ -7,11 +7,13 @@ import os
 home_dir = os.path.expanduser('~')
 
 #libc = cdll.LoadLibrary('/lib/libc.so.6')
-#libc =  cdll.LoadLibrary('/usr/lib/libstdc++.so.6')
-#libc =  cdll.LoadLibrary('/usr/lib/libgslcblas.so')
-#libc =  cdll.LoadLibrary('/usr/lib/libgsl.so')
+#libc++ =  cdll.LoadLibrary('/usr/lib/libstdc++.so.6')
+
+#cdll.LoadLibrary('/usr/lib/libgslcblas.so')
+#cdll.LoadLibrary('/usr/lib/libgsl.so')
 
 scsi = cdll.LoadLibrary(home_dir+'/git_repos/scsi/scsi_src/lib/libscsi.so')
+
 #pyscsi = cdll.LoadLibrary(home_dir+'/git_repos/scsi/scsi_src/lib/_pyscsi.so')
 
 #sys.path.append(home_dir+'/git_repos/scsi/scsi_src/lib/_pyscsi.so')
