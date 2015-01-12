@@ -6,7 +6,6 @@ _pyscsi_la_SOURCES = pyscsi_wrap.cxx
 _pyscsi_la_LDFLAGS = -module -avoid-version -shared
 
 LIBS     = -L../src -lscsi \
-           -L../glps -lglps \
 	   -lgsl -lstdc++ -lgslcblas pyscsi_wrap.cxx
 
 INCLUDES = -I../inc -I/usr -I/usr/include/python2.6

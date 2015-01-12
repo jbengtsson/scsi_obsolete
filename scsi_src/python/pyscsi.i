@@ -7,8 +7,6 @@
 // Include the header files in the wrapper code.
 #include "scsi_lib.h"
 
-int no_tps   = NO;
-
 // Friend declarations are ignored by SWIG.
 void TPSAEps(const double);
 
@@ -25,7 +23,7 @@ int ndpt_tps = 2;
 extern const int   nv_tps, nd_tps, iref_tps;
 
 // Not defined in the C code...
-extern int         no_tps, ndpt_tps;
+extern int         ndpt_tps;
 extern double      eps_tps;
 
 extern ElemFamType ElemFam[];

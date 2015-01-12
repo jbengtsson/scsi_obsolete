@@ -16,6 +16,7 @@ INCLUDES = -I../inc -I/usr -I../glps
 
 LFLAGS   = -i # Ignore case in patterns.
 YFLAGS   = -t -v -d -y
+# Use PIC flag (Position Independenct Code).
 CXXFLAGS = -g -O0 -Wall -Wno-error=all -fPIC
 #CXXFLAGS = -g -O0 -Wall -Wno-error=all -fno-implicit-templates -fPIC
 #CXXFLAGS = -pg -O2 -Wall -fno-implicit-templates -fPIC
