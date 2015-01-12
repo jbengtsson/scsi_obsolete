@@ -5124,12 +5124,12 @@ void bend_cal_Fam(const int Fnum)
   double size;
 
   /* Starting point */
-  x = gsl_vector_alloc (n_prm);
+  x = gsl_vector_alloc(n_prm);
   gsl_vector_set_all(x, 0.0);
 
   /* Set initial step sizes to 1 */
   step = gsl_vector_alloc (n_prm);
-  gsl_vector_set_all (step, 1.0);
+  gsl_vector_set_all(step, 1.0);
 
   /* Initialize method and iterate */
   minex_func.n = n_prm;
@@ -5137,7 +5137,7 @@ void bend_cal_Fam(const int Fnum)
   minex_func.params = par;
 
   s = gsl_multimin_fminimizer_alloc(AA, n_prm);
-  gsl_multimin_fminimizer_set (s, &minex_func, x, step);
+  gsl_multimin_fminimizer_set(s, &minex_func, x, step);
 
   cout << endl;
   cout << "bend_cal: " << ElemFam[Fnum-1].ElemF.PName << ":" << endl;

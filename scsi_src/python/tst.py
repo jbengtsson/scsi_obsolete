@@ -1,10 +1,9 @@
 import sys
 import os
 
-home_dir = os.getcwd()
-len = len(home_dir)
-lib_dir = home_dir[0:len-7]+'/lib'
-sys.path.append(lib_dir)
+#current_dir = os.getcwd()
+home_dir = os.path.expanduser('~')
+sys.path.append(home_dir+'/git_repos/scsi/scsi_src/python/_pyscsi.so')
 
 import pyscsi
 
@@ -19,7 +18,7 @@ pyscsi.gv.globval.Cavity_on  = False; pyscsi.gv.globval.radiation   = False;
 pyscsi.gv.globval.emittance  = False; pyscsi.gv.globval.IBS         = False;
 pyscsi.gv.globval.pathlength = False; pyscsi.gv.globval.bpm         = 0;
 
-pyscsi.Read_Lattice('/home/bengtsson/git_repos/scsi/scsi_src/glps/tracy_1')
+pyscsi.Read_Lattice(home_dir+'/git_repos/scsi/scsi_src/glps/tracy_1')
 
 pyscsi.Ring_GetTwiss(True, 0.0); pyscsi.printglob()
 

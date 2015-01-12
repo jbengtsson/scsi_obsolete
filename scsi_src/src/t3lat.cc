@@ -17,6 +17,7 @@ extern int yydebug;
 
 // using namespace std;
 extern GLPS_SYMB* symbtab;
+
 jmp_buf env0;
 
 void GetRingType();/* define whether a ring or a transfer line */

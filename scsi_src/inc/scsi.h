@@ -20,25 +20,25 @@
 
 #define debug           false
 
-#define S_SIZE 200  // max size for file name of a lattice file
+#define S_SIZE 200 // Max size for file name of a lattice file.
 
 #define nv_             6
 
-// maximum number of LEGO blocks (Cell_nLoc)
+// Max number of LEGO blocks (Cell_nLoc).
 //#define Cell_nLocMax    25000
-/* #define Cell_nLocMax    5000 */
+//#define Cell_nLocMax    5000
 #define Cell_nLocMax    10000
 
-// maximum number of families for Elem_NFam
+// Max number of families for Elem_NFam.
 #define Elem_nFamMax    3000
 
-// maximum number of kids */
+// Max number of kids.
 #define nKidMax         5000
 
 #define DBNameLen       39
 
-#define NameLength      150  // maximum length of identifiers (e.g. file names)
-#define SymbolLength    15   // maximum length of element name
+#define NameLength      150  // Max length of identifiers (e.g. file names).
+#define SymbolLength    15   // Max length of element name.
 
 #define blankname       "               "
 

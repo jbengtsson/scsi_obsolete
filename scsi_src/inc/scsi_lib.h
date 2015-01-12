@@ -51,7 +51,7 @@ using namespace std;
   #include "tpsa_lin.h"
   #include "tpsa_lin_pm.h"
 #else
-  // interface to M. Berz' TPSA
+  // interface to arbitrary order TPSA
   #include "tpsa_for.h"
   #include "tpsa_for_pm.h"
 #endif
@@ -92,8 +92,8 @@ using namespace std;
 
 
 // Truncated Power Series Algebra (TPSA)
-extern const int  nv_tps, nd_tps, iref_tps;
-extern int        no_tps, ndpt_tps;
+extern const int  no_tps, nv_tps, nd_tps, iref_tps;
+extern int        ndpt_tps;
 extern double     eps_tps;
 
 extern ElemFamType ElemFam[];

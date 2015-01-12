@@ -10,9 +10,7 @@
 */
 
 
-extern const int  nv_tps, nd_tps, iref_tps;
-extern int        no_tps, ndpt_tps;
-extern double     eps_tps, pi;
+extern double pi;
 
 bool    ini_tps = false, header = false, res_basis = false, stable = false;
 

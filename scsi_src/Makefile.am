@@ -1,1 +1,1 @@
-SUBDIRS = src glps TPSA python sip
+SUBDIRS = src TPSA python

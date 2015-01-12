@@ -7,13 +7,11 @@
 
 */
 
-extern int  no_tps, ndpt_tps;
+bool ini_tps = false, header = false, res_basis = false, stable = false;
 
-bool    ini_tps = false, header = false, res_basis = false, stable = false;
-
-unsigned short int  seq_tps = 0;       // sequence no for TPSA vector
-//const int           n_max   = 150;     // max iterations for LieExp
-const int           n_max   = 200;     // max iterations for LieExp
+unsigned short int seq_tps = 0;       // sequence no for TPSA vector
+//const int          n_max   = 150;     // max iterations for LieExp
+const int          n_max   = 200;     // max iterations for LieExp
 
 int  bufsize; // Note, max no of monomials is (no+nv)!/(nv!*no!)
 
