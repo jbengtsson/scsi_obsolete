@@ -77,10 +77,6 @@ class globvalrec(Structure):
 #globval = cast(scsi.globval, POINTER(globvalrec))[0]
 globval = globvalrec.in_dll(scsi, 'globval')
 
-for ps in globval.CODvect:
-    sys.stdout.write('%6.3f' % ps)
-sys.stdout.write('\n')
-
 scsi._Z12Read_LatticePc(
     c_char_p(home_dir+'/git_repos/scsi/scsi_src/glps/tracy_1'))
 
@@ -88,6 +84,8 @@ scsi._Z13Ring_GetTwissbd(c_bool(True), c_double(0.0))
    
 scsi._Z9printglobv()
 
-for i in range(0, 6):
-    sys.stdout.write('%6.3f' % globval.CODvect[i])
 sys.stdout.write('\n')
+for i in range(0, 6):
+    for j in range(0, 6):
+        sys.stdout.write('%14.6e' % globval.OneTurnMat[i][j])
+    sys.stdout.write('\n')
