@@ -73,25 +73,21 @@ class globvalrec(Structure):
                 ('Vi',         Matrix)
                 ]
 
-print scsi
-#print dir(scsi)
-print c_bool.in_dll(scsi, 'trace')
-print c_int.in_dll(scsi, 'no_tps')
-print c_int.in_dll(scsi, 'nv_tps')
-#print scsi.globval
-#print dir(scsi.globval)
 
 #globval = cast(scsi.globval, POINTER(globvalrec))[0]
 globval = globvalrec.in_dll(scsi, 'globval')
-#print dir(globval)
-#print globval
-print globval.dPcommon
+
 for ps in globval.CODvect:
     sys.stdout.write('%6.3f' % ps)
 sys.stdout.write('\n')
 
-scsi._Z6no_sxtv()
-
 scsi._Z12Read_LatticePc(
     c_char_p(home_dir+'/git_repos/scsi/scsi_src/glps/tracy_1'))
+
+scsi._Z13Ring_GetTwissbd(c_bool(True), c_double(0.0))
    
+scsi._Z9printglobv()
+
+for i in range(0, 6):
+    sys.stdout.write('%6.3f' % globval.CODvect[i])
+sys.stdout.write('\n')
