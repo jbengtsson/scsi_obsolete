@@ -18,6 +18,9 @@ import pyscsi
 #scsi = CDLL(home_dir+'/git_repos/scsi/scsi_src/lib/libscsi.so')
 scsi = cdll.LoadLibrary(home_dir+'/git_repos/scsi/scsi_src/lib/libscsi.so')
 
+ss_dim = 6
+DOF = ss_dim/2
+
 Vector2 = c_double*2
 Vector  = c_double*6
 Matrix  = Vector*6
@@ -46,32 +49,60 @@ class CellType(Structure):
                 ('BeamPos', Vector))
 
 class globvalrec(Structure):
-    _fields_ = [('dPcommon',   c_double),
-                ('dPparticle', c_double),
-                ('delta_RF',   c_double),
-                ('TotalTune',  Vector2),
-                ('Omega',      c_double),
-                ('U0',         c_double),
-                ('Alphac',     c_double),
-                ('Chrom',      Vector2),
-                ('Energy',     c_double),
-                ('Cell_nLoc',  c_long),
-                ('Elem_nFam',  c_long),
-                ('CODimax',    c_long),
+    _fields_ = [('dPcommon',    c_double),
+                ('dPparticle',  c_double),
+                ('delta_RF',    c_double),
+                ('TotalTune',   Vector2),
+                ('Omega',       c_double),
+                ('U0',          c_double),
+                ('Alphac',      c_double),
+                ('Chrom',       Vector2),
+                ('Energy',      c_double),
+                ('Cell_nLoc',   c_long),
+                ('Elem_nFam',   c_long),
+                ('CODimax',     c_long),
 
-                ('CODeps',     c_double),
-                ('CODvect',    Vector),
-                ('bpm',        c_int),
-                ('hcorr',      c_int),
-                ('vcorr',      c_int),
-                ('qt',         c_int),
-                ('gs',         c_int),
-                ('ge',         c_int),
-                ('OneTurnMat', Matrix),
-                ('Ascr',       Matrix),
-                ('Ascrinv',    Matrix),
-                ('Vr',         Matrix),
-                ('Vi',         Matrix)
+                ('CODeps',      c_double),
+                ('CODvect',     Vector),
+                ('bpm',         c_int),
+                ('hcorr',       c_int),
+                ('vcorr',       c_int),
+                ('qt',          c_int),
+                ('gs',          c_int),
+                ('ge',          c_int),
+                ('OneTurnMat',  Matrix),
+                ('Ascr',        Matrix),
+                ('Ascrinv',     Matrix),
+                ('Vr',          Matrix),
+                ('Vi',          Matrix),
+
+                ('MatMeth',     c_bool),
+                ('Cavity_on',   c_bool),
+                ('radiation',   c_bool),
+                ('emittance',   c_bool),
+                ('quad_fringe', c_bool),
+                ('H_exact',     c_bool),
+                ('pathlength',  c_bool),
+                ('stable',      c_bool),
+                ('Aperture_on', c_bool),
+                ('EPU',         c_bool),
+                ('wake_on',     c_bool),
+
+                ('dE',          c_double),
+                ('alpha_rad',   c_double*DOF),
+                ('D_rad',       c_double*DOF),
+                ('J',           c_double*DOF),
+                ('tau',         c_double*DOF),
+                ('IBS',         c_double),
+                ('Qb',          c_bool),
+                ('D_IBS',       c_double*DOF),
+                ('wr',          Vector),
+                ('wi',          Vector),
+                ('eps',         c_double*DOF),
+                ('epsp',        c_double*DOF),
+                ('alpha_z',     c_double),
+                ('beta_z',      c_double),
+                ('RingType',    c_int)
                 ]
 
 
