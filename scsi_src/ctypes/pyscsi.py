@@ -11,6 +11,7 @@ home_dir = os.path.expanduser('~')
 #gslcblas = CDLL('libgslcblas.so', mode=RTLD_GLOBAL)
 #gsl = CDLL('libgsl.so', mode=RTLD_GLOBAL)
 
+#scsi = CDLL(home_dir+'/git_repos/scsi/scsi_src/lib/libscsi.so')
 scsi = cdll.LoadLibrary(home_dir+'/git_repos/scsi/scsi_src/lib/libscsi.so')
 
 #sys.path.append(home_dir+'/git_repos/scsi/scsi_src/lib/_pyscsi.so')
@@ -80,14 +81,7 @@ print c_int.in_dll(scsi, 'nv_tps')
 #print scsi.globval
 #print dir(scsi.globval)
 
-globval = cast(scsi.globval, POINTER(globvalrec))[0]
-print dir(globval)
-print globval.dPcommon
-for ps in globval.CODvect:
-    sys.stdout.write('%6.3f' % ps)
-sys.stdout.write('\n')
-
-#print c_double.in_dll(scsi, 'globval')
+#globval = cast(scsi.globval, POINTER(globvalrec))[0]
 globval = globvalrec.in_dll(scsi, 'globval')
 #print dir(globval)
 #print globval
@@ -96,5 +90,8 @@ for ps in globval.CODvect:
     sys.stdout.write('%6.3f' % ps)
 sys.stdout.write('\n')
 
-#scsi.Read_Lattice(home_dir+'/git_repos/scsi/scsi_src/glps/tracy_1')
+scsi._Z6no_sxtv()
+
+scsi._Z12Read_LatticePc(
+    c_char_p(home_dir+'/git_repos/scsi/scsi_src/glps/tracy_1'))
    
