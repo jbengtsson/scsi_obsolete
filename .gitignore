@@ -13,7 +13,6 @@ parser.c
 parser.output
 #
 pyscsi_wrap.cxx
-pyscsi.py
 pyscsi.pyc
 #
 scsi_src/lib
