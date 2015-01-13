@@ -5,17 +5,18 @@ import os
 
 #current_dir = os.getcwd()
 home_dir = os.path.expanduser('~')
+print home_dir+'/git_repos/scsi/scsi_src/lib'
+
+sys.path.append(home_dir+'/git_repos/scsi/scsi_src/lib')
+import pyscsi
 
 #libc = cdll.LoadLibrary('libc.so.6')
 #libc++ =  cdll.LoadLibrary('libstdc++.so.6')
 #gslcblas = CDLL('libgslcblas.so', mode=RTLD_GLOBAL)
 #gsl = CDLL('libgsl.so', mode=RTLD_GLOBAL)
 
-scsi = CDLL(home_dir+'/git_repos/scsi/scsi_src/lib/libscsi.so')
-#scsi = cdll.LoadLibrary(home_dir+'/git_repos/scsi/scsi_src/lib/libscsi.so')
-
-#sys.path.append(home_dir+'/git_repos/scsi/scsi_src/lib')
-#import pyscsi
+#scsi = CDLL(home_dir+'/git_repos/scsi/scsi_src/lib/libscsi.so')
+scsi = cdll.LoadLibrary(home_dir+'/git_repos/scsi/scsi_src/lib/libscsi.so')
 
 Vector2 = c_double*2
 Vector  = c_double*6
@@ -77,12 +78,9 @@ class globvalrec(Structure):
 #globval = cast(scsi.globval, POINTER(globvalrec))[0]
 globval = globvalrec.in_dll(scsi, 'globval')
 
-scsi._Z12Read_LatticePc(
-    c_char_p(home_dir+'/git_repos/scsi/scsi_src/glps/tracy_1'))
+pyscsi.Read_Lattice(home_dir+'/git_repos/scsi/scsi_src/glps/tracy_1')
 
-scsi._Z13Ring_GetTwissbd(c_bool(True), c_double(0.0))
-   
-scsi._Z9printglobv()
+pyscsi.Ring_GetTwiss(True, 0.0); pyscsi.printglob()
 
 sys.stdout.write('\n')
 for i in range(0, 6):

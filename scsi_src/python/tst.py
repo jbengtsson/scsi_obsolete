@@ -3,7 +3,7 @@ import os
 
 #current_dir = os.getcwd()
 home_dir = os.path.expanduser('~')
-sys.path.append(home_dir+'/git_repos/scsi/scsi_src/python/_pyscsi.so')
+sys.path.append(home_dir+'/git_repos/scsi/scsi_src/lib')
 
 import pyscsi
 
