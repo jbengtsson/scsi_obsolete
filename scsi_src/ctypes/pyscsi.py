@@ -11,10 +11,10 @@ home_dir = os.path.expanduser('~')
 #gslcblas = CDLL('libgslcblas.so', mode=RTLD_GLOBAL)
 #gsl = CDLL('libgsl.so', mode=RTLD_GLOBAL)
 
-#scsi = CDLL(home_dir+'/git_repos/scsi/scsi_src/lib/libscsi.so')
-scsi = cdll.LoadLibrary(home_dir+'/git_repos/scsi/scsi_src/lib/libscsi.so')
+scsi = CDLL(home_dir+'/git_repos/scsi/scsi_src/lib/libscsi.so')
+#scsi = cdll.LoadLibrary(home_dir+'/git_repos/scsi/scsi_src/lib/libscsi.so')
 
-#sys.path.append(home_dir+'/git_repos/scsi/scsi_src/lib/_pyscsi.so')
+#sys.path.append(home_dir+'/git_repos/scsi/scsi_src/lib')
 #import pyscsi
 
 Vector2 = c_double*2
