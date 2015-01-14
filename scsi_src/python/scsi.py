@@ -21,21 +21,64 @@ scsi = cdll.LoadLibrary(home_dir+'/git_repos/scsi/scsi_src/lib/libscsi.so')
 
 PLANES = 2
 
-ss_dim = 6
-DOF = ss_dim/2
+ss_dim = 6; DOF = ss_dim/2
 
-Vector2 = c_double*2
-Vector  = c_double*6
-Matrix  = Vector*6
+Vector2    = c_double*2
+Vector     = c_double*6
+Matrix     = Vector*6
 
-partsName = c_char*150
-PartsKind = c_long
+partsName  = c_char*150
+PartsKind  = c_long
+
+HOMmax     = 20
+mpolArray  = c_double*(2*HOMmax+1)
+pthicktype = c_long
+
+class DriftType(Structure):
+    _fields_ = [('D55', Matrix)]
+
+class MpoleType(Structure):
+    _fields_ = [('Pmethod', c_int),
+                ('PN',      c_int),
+
+                ('PdSsys',  Vector2),
+                ('PdSrms',  Vector2),
+                ('PdSrnd',  Vector2),
+
+                ('PdTpar',  c_double),
+                ('PdTsys',  c_double),
+                ('PdTrms',  c_double),
+                ('PdTrnd',  c_double),
+
+                ('PBpar',    mpolArray),
+                ('PBsys',    mpolArray),
+                ('PBrms',    mpolArray),
+                ('PBrnd',    mpolArray),
+                ('PB',       mpolArray),
+                ('Porder',   c_int),
+                ('n_design', c_int),
+                ('Pthick',   pthicktype),
+                ('PTx1',     c_double),
+                ('PTx2',     c_double),
+                ('Pgap',     c_double),
+                ('Pirho',    c_double),
+                ('Pc0',      c_double),
+                ('Pc1',      c_double),
+                ('Ps1',      c_double),
+                ('AU55',     Matrix),
+                ('AD55',     Matrix)]
+
+class CavityType (Structure):
+    _fields_ = [('Pvolt', c_double),
+                ('Pfreq', c_double),
+                ('phi',   c_double),
+                ('Ph',    c_int)]
 
 class elemtype(Structure):
     _fields_ = [('PName', partsName),
                 ('PL',    c_double),
                 ('Pkind', PartsKind),
-                ('UU',    c_void_p)]
+                ('M',     POINTER(MpoleType))]
 
 class CellType(Structure):
     _fields_ = [('Fnum',     c_int),
@@ -144,4 +187,7 @@ loc = pyscsi.Elem_GetPos(Fnum, 1)
 
 print
 print Cell[loc].Elem.PName, Cell[loc].Elem.Pkind
-print Cell[loc].Elem.UU
+
+print Cell[loc].Elem.M
+M = cast(scsi.Cell[loc].Elem.M, POINTER(MpoleType))
+print M
