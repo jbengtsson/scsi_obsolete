@@ -74,6 +74,11 @@ class CavityType (Structure):
                 ('phi',   c_double),
                 ('Ph',    c_int)]
 
+class UType(Union):
+    [('D',     POINTER(DriftType)),
+     ('M',     POINTER(MpoleType)),
+     ('C',     POINTER(CavityType))]
+
 class elemtype(Structure):
     _fields_ = [('PName', partsName),
                 ('PL',    c_double),
@@ -84,7 +89,7 @@ class CellType(Structure):
     _fields_ = [('Fnum',     c_int),
                 ('Knum',     c_int),
                 ('S',        c_double),
-                ('next_ptr', POINTER(MpoleType)),
+                ('next_ptr', POINTER(c_void_p)),
                 ('dS',       Vector2),
                 ('dT',       Vector2),
                 ('Elem',     elemtype),
@@ -187,7 +192,4 @@ loc = pyscsi.Elem_GetPos(Fnum, 1)
 
 print
 print Cell[loc].Elem.PName, Cell[loc].Elem.Pkind
-
-M = cast(Cell[loc].Elem.M, POINTER(MpoleType))[0]
-print M.Pmethod
-print Cell[loc].Elem.M[0].Pmethod
+print Cell[loc].Elem.M[0].Pmethod, Cell[loc].Elem.M[0].PN
