@@ -19,12 +19,14 @@ d1 = 2.0*c1; d2 = 1.0 - 2.0*d1
 
 def get_opt():
     s = zeros(globval.Cell_nLoc+1)
-    code = zeros(globval.Cell_nLoc+1, dtype=int8)
+    code = zeros(globval.Cell_nLoc+1)
     beta = zeros((2, globval.Cell_nLoc+1))
     nu = zeros((2, globval.Cell_nLoc+1))
     eta = zeros((2, globval.Cell_nLoc+1))
     for k in range(0, globval.Cell_nLoc+1):
-        s[k] = Cell[k].S;  code[k] = get_code(k)
+        s[k] = Cell[k].S
+        code[k] = get_code(k)
+#        code[k] = pyscsi.get_code(byref(Cell[k]))
         beta[X_, k] = Cell[k].Beta[X_]; beta[Y_, k] = Cell[k].Beta[Y_]
         nu[X_, k] = Cell[k].Nu[X_]; nu[Y_, k] = Cell[k].Nu[Y_]
         eta[X_, k] = Cell[k].Eta[X_]; eta[Y_, k] = Cell[k].Eta[Y_]
@@ -54,96 +56,6 @@ def get_code(k):
         code = 0.0
 
     return code
-
-
-def propagate_optics(i, n):
-    ss = zeros(n+1); codes = zeros(n+1)
-    alphas = zeros((n+1, 2)); betas = zeros((n+1, 2))
-    nus = zeros((n+1, 2)); etas = zeros((n+1, 4))
-
-    n1 = 1; j = 0 if i == 0 else i-1
-
-    ss[0] = Cell[j].S; codes[0] = get_code(j)
-    alphas[0] = array(Cell[j].Alpha)
-    betas[0] = array(Cell[j].Beta)
-    nus[0] = array(Cell[j].Nu)
-    etas[0] = array([
-        Cell[j].Eta[X_], Cell[j].Etap[X_],
-        Cell[j].Eta[Y_], Cell[j].Etap[Y_]])
-
-    L = Cell[i].Elem.PL
-    if (i != 0) and \
-           ((Cell[i].Elem.Pkind == drift) or
-            ((Cell[i].Elem.Pkind == Mpole) and (L != 0.0))):
-        n1 = n; s = Cell[i].S - L;
-
-        alpha = Cell[i-1].Alpha; beta = Cell[i-1].Beta
-        nu = Cell[i-1].Nu
-        eta = Cell[i-1].Eta; etap = Cell[i-1].Etap
-
-        h = L/n; A = get_A(alpha, beta, eta, etap)
-        for j in range(0, n):
-            s += h
-
-            if Cell[i].Elem.Pkind == drift:
-                A = Drift(h, A)
-            elif Cell[i].Elem.Pkind == Mpole:
-                Mp = Cell[i].Elem.M[0]
-
-                if j == 1 and Mp.Pirho != 0.0:
-                    A = EdgeFocus(Mp.Pirho, Mp.PTx1, Mp.Pgap, A)
-
-                A = Drift(c1*h, A)
-                A = thin_kick(
-                    Mp.Porder, Mp.PB, d1*h, Mp.Pirho, Mp.Pirho, A)
-                A = Drift(c2*h, A)
-                A = thin_kick(
-                    Mp.Porder, Mp.PB, d2*h, Mp.Pirho, Mp.Pirho, A)
-                A = Drift(c2*h, A)
-                A = thin_kick(
-                    Mp.Porder, Mp.PB, d1*h, Mp.Pirho, Mp.Pirho, A)
-                A = Drift(c1*h, A)
-
-                if j == n and Mp.Pirho != 0.0:
-                    A = EdgeFocus(Mp.Pirho, Mp.PTx2, Mp.Pgap, A)
-
-            [alpha, beta, dnu, eta, etap] = get_ab(A)
-            dnu = array(dnu)
-
-            if L < 0.0:
-                dnu = dnu - (1.0, 1.0)
-
-            ss[j] = s; codes[j] = get_code(i)
-            alphas[j] = alpha; betas[j] = beta; nus[j] = nu+dnu
-            etas[j] = array([eta[X_], etap[X_], eta[Y_], etap[Y_]])
-
-    return (n1, ss, codes, alphas, betas, nus, etas)
-
-
-def prt_lat(fname, n):
-    outf = open(fname, 'w')
-    outf.write('#        name           s   code'
-               '  alphax  betax   nux   etax   etapx')
-    outf.write('  alphay  betay   nuy   etay   etapy\n')
-    outf.write('#                      [m]'
-               '                 [m]           [m]')
-    outf.write('                   [m]           [m]\n')
-    outf.write('#\n')
-
-    for i in range(0, globval.Cell_nLoc+1):
-        [n1, ss, codes, alphas, betas, nus, etas] = propagate_optics(i, n)
-
-        for k in range(0, n1):
-            outf.write('%4ld %15s %6.2f %4.1f'
-                       ' %7.3f %6.3f %6.3f %6.3f %6.3f'
-                       ' %7.3f %6.3f %6.3f %6.3f %6.3f\n' %
-                       (i, Cell[i].Elem.PName, ss[k], codes[k],
-                        alphas[k][X_], betas[k][X_], nus[k][X_],
-                        etas[k][x_], etas[k][px_],
-                        alphas[k][Y_], betas[k][Y_], nus[k][Y_],
-                        etas[k][y_], etas[k][py_]))
-
-    outf.close()
 
 
 def plt_opt(displ):
