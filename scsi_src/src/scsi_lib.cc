@@ -10,4 +10,7 @@
 
 #define NO 1
 
+// Use explicit declaration in header files; for SWIG.
+using namespace std;
+
 #include "scsi.cc"

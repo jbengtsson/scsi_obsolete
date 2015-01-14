@@ -55,6 +55,7 @@
 #include "soleillib.cc"
 
 #include "nsls-ii_lib.cc"
+#include "usr_lib.cc"
 
 
 // Truncated Power Series Algebra (TPSA)

@@ -138,8 +138,10 @@ sys.stdout.write('\n')
 for k in range(0, 5):
     sys.stdout.write('%14.6e %14.6e\n' % (Cell[k].Beta[0], Cell[k].Beta[1]))
 
-print
-print Cell[7].Elem.PName, Cell[7].Elem.Pkind
+
+Fnum = pyscsi.ElemIndex('SL1G2C01A')
+loc = pyscsi.Elem_GetPos(Fnum, 1)
 
 print
-print pyscsi.ElemIndex('SL1G2C01A')
+print Cell[loc].Elem.PName, Cell[loc].Elem.Pkind
+print Cell[loc].Elem.UU

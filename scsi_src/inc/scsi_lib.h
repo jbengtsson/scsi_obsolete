@@ -30,8 +30,6 @@
 #include <string>
 #include <vector>
 
-using namespace std;
-
 // GSL
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_permutation.h>
