@@ -18,6 +18,9 @@ import pyscsi
 #scsi = CDLL(home_dir+'/git_repos/scsi/scsi_src/lib/libscsi.so')
 scsi = cdll.LoadLibrary(home_dir+'/git_repos/scsi/scsi_src/lib/libscsi.so')
 
+
+PLANES = 2
+
 ss_dim = 6
 DOF = ss_dim/2
 
@@ -29,24 +32,28 @@ partsName = c_char*150
 PartsKind = c_long
 
 class elemtype(Structure):
-    _fields_ = (('PName', partsName),
+    _fields_ = [('PName', partsName),
                 ('PL',    c_double),
-                ('PKind', PartsKind),
-                ('UU',    c_void_p))
+                ('Pkind', PartsKind),
+                ('UU',    c_void_p)]
 
 class CellType(Structure):
-    _fields_ = (('Fnum',    c_long),
-                ('Knum',    c_long),
-                ('S',       c_double),
-                ('dS',      Vector2),
-                ('dT',      Vector2),
-                ('Elem',    elemtype),
-                ('Nu',      Vector2),
-                ('Alpha',   Vector2),
-                ('Beta',    Vector2),
-                ('Eta',     Vector2),
-                ('Etap',    Vector2),
-                ('BeamPos', Vector))
+    _fields_ = [('Fnum',     c_int),
+                ('Knum',     c_int),
+                ('S',        c_double),
+                ('next_ptr', c_void_p),
+                ('dS',       Vector2),
+                ('dT',       Vector2),
+                ('Elem',     elemtype),
+                ('Nu',       Vector2),
+                ('Alpha',    Vector2),
+                ('Beta',     Vector2),
+                ('Eta',      Vector2),
+                ('Etap',     Vector2),
+                ('BeamPos',  Vector),
+                ('A',        Matrix),
+                ('sigma',    Matrix),
+                ('maxampl',  Vector2*PLANES)]
 
 class globvalrec(Structure):
     _fields_ = [('dPcommon',    c_double),
@@ -109,12 +116,30 @@ class globvalrec(Structure):
 #globval = cast(scsi.globval, POINTER(globvalrec))[0]
 globval = globvalrec.in_dll(scsi, 'globval')
 
+#Cell = POINTER(CellType).in_dll(scsi, 'Cell')
+Cell = cast(scsi.Cell, POINTER(CellType))
+
 pyscsi.Read_Lattice(home_dir+'/git_repos/scsi/scsi_src/glps/tracy_1')
 
 pyscsi.Ring_GetTwiss(True, 0.0); pyscsi.printglob()
+
+pyscsi.prt_lat('linlat.out', globval.bpm, True);
 
 sys.stdout.write('\n')
 for i in range(0, 6):
     for j in range(0, 6):
         sys.stdout.write('%14.6e' % globval.OneTurnMat[i][j])
     sys.stdout.write('\n')
+
+print
+print globval.radiation
+
+sys.stdout.write('\n')
+for k in range(0, 5):
+    sys.stdout.write('%14.6e %14.6e\n' % (Cell[k].Beta[0], Cell[k].Beta[1]))
+
+print
+print Cell[7].Elem.PName, Cell[7].Elem.Pkind
+
+print
+print pyscsi.ElemIndex('SL1G2C01A')

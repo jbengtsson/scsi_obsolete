@@ -32,7 +32,7 @@ long CheckElementtable(const string name);
 
 void RegisterKids(); /* Check wether too many elements */
 
-long ElemIndex(const string &name)
+long ElemIndex(const std::string &name)
 {
   long    i, j;
   string  name1;
@@ -88,10 +88,10 @@ long ElemIndex(const string &name)
 bool Lattice_Read(const char *fi_)
 {
   printf(" Lattice Read (t3lat):");
-  printf(" NO %d\n",NO); 
+  printf(" NO %d\n",NO);
   if (setjmp(env0)) return(false);
-    
-  globval.Cell_nLoc = 0; globval.Elem_nFam = 0; 
+
+  globval.Cell_nLoc = 0; globval.Elem_nFam = 0;
 
   globval.CODeps   = 0.0; globval.dPcommon = 0.0; globval.Energy   = 0.0;
 
@@ -147,7 +147,7 @@ bool Lattice_Read(const char *fi_)
       string unknown=*i; //strdup(*i);
       for(int k=0; k<(int)unknown.length();++k)
 	unknown[k]=tolower(unknown[k]);
-      if (!unknown.compare("use")){ 
+      if (!unknown.compare("use")){
 	use = str;
 	continue;
       }
@@ -159,7 +159,7 @@ bool Lattice_Read(const char *fi_)
 
     mpolArray B;
     bool BA[2*HOMmax+1];
- 
+
     double val;
     std::vector<double> vec;
 
@@ -189,7 +189,7 @@ bool Lattice_Read(const char *fi_)
     //      long           i;
     int            kx, kz;
     double         scaling;
-                
+
     int harm[n_harm_max];
     double kxV[n_harm_max],kxH[n_harm_max];
     double BoBrhoV[n_harm_max],BoBrhoH[n_harm_max];
@@ -218,11 +218,11 @@ bool Lattice_Read(const char *fi_)
 	       << "(" << (long)Elem_nFamMax << ")" << endl;
 	  longjmp(env0, 1);
 	}
-    
+
 	break;
 
       case 1: //bending
-    
+
 	QL = 0.0;   /* L */
 	QK = 0.0;   /* K */
 	k1 = 0;     /* N */
@@ -251,7 +251,7 @@ bool Lattice_Read(const char *fi_)
 	      (1 << Meth_Fourth))) == 0)
 	  longjmp(env0,1);
 	//              +   +
-	if (GLPS_SUCCESS==glps_read(*i,"hom",vec)) 
+	if (GLPS_SUCCESS==glps_read(*i,"hom",vec))
 	  for (int k=0; k<(int)vec.size()/3;k++) {
 	    long order = (long) floor(vec[3*k] + 0.5);
 	    if (order < 1 || order > HOMmax) {
@@ -265,7 +265,7 @@ bool Lattice_Read(const char *fi_)
 	//    case dbnsym:
 	//      GetDBN_(&V);
 	//      break;
-      
+
 	//              +   +
 	globval.Elem_nFam++;
 	if (globval.Elem_nFam <= Elem_nFamMax) {
@@ -334,7 +334,7 @@ bool Lattice_Read(const char *fi_)
 
 	//    case dbnsym:
 	//      GetDBN_(&V);
-      
+
 
 	globval.Elem_nFam++;
 	if (globval.Elem_nFam <= Elem_nFamMax) {
@@ -436,7 +436,7 @@ bool Lattice_Read(const char *fi_)
 	//    case dbnsym:
 	//      GetDBN_(&V);
 	//      break;
-      
+
 	globval.Elem_nFam++;
 	if (globval.Elem_nFam <= Elem_nFamMax) {
 	  WITH = &ElemFam[globval.Elem_nFam-1];
@@ -474,7 +474,7 @@ bool Lattice_Read(const char *fi_)
 	  k2 = (long) floor(val+0.5);
 	if (GLPS_SUCCESS==glps_read(*i,"plane",val)) QK = val;
 	if (GLPS_SUCCESS==glps_read(*i,"roll",val)) dt = val;
-	if (k2 != Meth_Linear) globval.MatMeth = false; 
+	if (k2 != Meth_Linear) globval.MatMeth = false;
 	if ((unsigned int)k2 >= 32 ||
 	    ((1 << k2) &
 	     ((1 << Meth_Linear) | (1 << Meth_Second) |
@@ -518,7 +518,7 @@ bool Lattice_Read(const char *fi_)
 	//  ClearHOMandDBN(&V);
 	//    if (sym1 == dbnsym)
 	//      GetDBN_(&V);
-    
+
 	globval.Elem_nFam++;
 	if (globval.Elem_nFam <= Elem_nFamMax) {
 	  WITH = &ElemFam[globval.Elem_nFam-1];
@@ -605,7 +605,7 @@ bool Lattice_Read(const char *fi_)
 	//    case dbnsym:
 	//      GetDBN_(&V);
 	//      break;
-      
+
 	globval.Elem_nFam++;
 	if (globval.Elem_nFam <= Elem_nFamMax) {
 	  WITH = &ElemFam[globval.Elem_nFam-1];
@@ -636,13 +636,13 @@ bool Lattice_Read(const char *fi_)
 	  longjmp(env0, 1);
 	}
 	break;
- 
+
       case  9 :// Wiggler
 
 	QL = 0e0; QK = 0e0; QKV = 0e0; QKH = 0e0; QKxV = 0e0; QKxH = 0e0;
 	QPhi = 0e0; QKS = 0e0; k1 = 0; k2 = Meth_Linear; dt = 0e0;
 	//                    ClearHOMandDBN(&V);
-                
+
 	if (GLPS_SUCCESS==glps_read(*i,"l",val)) QL = val;
 	if (GLPS_SUCCESS==glps_read(*i,"bobrhov",val)) QKV = val;
 	if (GLPS_SUCCESS==glps_read(*i,"bobrhoh",val)) QKH = val;
@@ -661,7 +661,7 @@ bool Lattice_Read(const char *fi_)
 	  longjmp(env0, 1);
 	if (GLPS_SUCCESS==glps_read(*i,"harm",vec))
 	  for(int n=0; n<(int)(vec.size())/6;++n)
-	    { 
+	    {
 	      n_harm++;harm[n] = (long) floor(vec[6*n] + 0.5);
 	      if (harm[n] < 1 || n_harm_max < n + 2)
 		{
@@ -697,7 +697,7 @@ bool Lattice_Read(const char *fi_)
 	  WITH4->kxH[0] = QKxH; WITH4->BoBrhoH[0] = QKH;
 	  WITH4->phi[0] = QPhi;
 	  //                    AssignHarm(globval.Elem_nFam, &V);
-	  //   W = ElemFam[elem-1].ElemF.W; 
+	  //   W = ElemFam[elem-1].ElemF.W;
 	  WITH4->n_harm += n_harm;
 	  // the fundamental is stored in harm[0], etc.
 	  for (int k = 1; k < WITH4->n_harm; k++) {
@@ -734,7 +734,7 @@ bool Lattice_Read(const char *fi_)
 	  WITH1->PL = QL; WITH1->Pkind = FieldMap;
 	  FieldMap_Alloc(WITH1);
 	  //,true);
-	  WITH6 = WITH1->FM; 
+	  WITH6 = WITH1->FM;
 	  WITH6->phi = t*M_PI/180.0;WITH6->n_step = k1; WITH6->scl = scaling;
 
 	  if (glps_read("energy",val)==GLPS_SUCCESS) {
@@ -765,7 +765,7 @@ bool Lattice_Read(const char *fi_)
 	if (GLPS_SUCCESS!=glps_read(*i,"file2",str2))
 	  {str2=""; secondflag=false; }
 	if (GLPS_SUCCESS==glps_read(*i,"scaling",val))
-	  scaling = abs((long)floor(val));      
+	  scaling = abs((long)floor(val));
 	if (GLPS_SUCCESS==glps_read(*i,"method",val))
 	  // method for interpolation: 1 means linear 2 spline
 	  k2 = (long) floor(val+0.5);
@@ -795,7 +795,7 @@ bool Lattice_Read(const char *fi_)
 	  // }
 
 	  // Check if filename given for first order kicks
-	  //    if (firstflag) 
+	  //    if (firstflag)
 	  if (str1.length() > 0) {
 	    strcpy(WITH5->fname1,str1.c_str());
 	    WITH5->firstorder = true;
@@ -814,7 +814,7 @@ bool Lattice_Read(const char *fi_)
 	  }
 
 	  // Check if filename given for Second order kicks
-	  //    if (secondflag) 
+	  //    if (secondflag)
 	  if (str2.length() >0) {
 	    //        strcpy(WITH5->fname2,"/*No_Filename2_Given*/");
 	    strcpy(WITH5->fname2,str2.c_str());
@@ -828,7 +828,7 @@ bool Lattice_Read(const char *fi_)
 	  }
 
 	  // check whether no Radia filename read: something is wrong
-	  //    if (!firstflag && !secondflag) 
+	  //    if (!firstflag && !secondflag)
 	  if (str1.length()<1 && str2.length()<1) {
 	    cerr << "Error: no Insertion filename found as"
 		 << " an input in lattice file" << endl;
@@ -943,11 +943,11 @@ bool Lattice_Read(const char *fi_)
 
 
   }   // elem
-            
+
 
   cout << "Beamline <" << use << "> will be used" << endl;
   //    return 0;
-    
+
   std::list<string> lines = glps_lines();
   //  cout << "Number of lines: " << lines.size() << endl;
   string beamline;
@@ -1059,7 +1059,7 @@ bool CheckWiggler( long i)
   cerr << endl << ">>> Incorrect definition of " << WITH1->PName << endl;
   cerr         << "    L      ( total length ) = " << L << endl;           //%20.12f [m]\n", L);
   cerr         << "    Lambda ( wave  length ) = " << Lambda << endl;      //%20.12f [m]\n", L);
-  cerr         << "    # of Period = L /Lambda = " << L/Lambda << "?????" << endl;     //     
+  cerr         << "    # of Period = L /Lambda = " << L/Lambda << "?????" << endl;     //
   return false;
 }
 /*
@@ -1102,7 +1102,7 @@ void GetEnergy()
     {
       cout << "> Energy is not defined, default is 3.0 GeV" << endl;
       globval.Energy = 3.0;
-    } else 
+    } else
     globval.Energy = val;
 }
 
@@ -1117,7 +1117,7 @@ void GetRingType()
       cout << "> Ring type is not defined or not correctly, default is ring."
 	   << endl;
       globval.RingType = 1;
-    } else 
+    } else
     globval.RingType = floor(val+0.5);
 }
 
@@ -1130,7 +1130,7 @@ void GetDP()
     {
       cout << "> dP/P is not defined, default is 1.0e-8." << endl;
       globval.dPcommon = 1e-8;
-    } else 
+    } else
     globval.dPcommon = val;
 }
 
@@ -1142,7 +1142,7 @@ void GetCODEPS()
     {
       cout << "> CODEPS is not defined, default is 1.0e-12." << endl;
       globval.CODeps = 1e-12;
-    } else 
+    } else
     globval.CODeps = val;
 }
 
@@ -1166,7 +1166,7 @@ void RegisterKids()
   long i, FORLIM;
   ElemFamType *WITH;
 
-  if (setjmp(env0)) return; 
+  if (setjmp(env0)) return;
   if (globval.Elem_nFam <= Elem_nFamMax) {
     FORLIM = globval.Elem_nFam;
     for (i = 0; i < FORLIM; i++)
@@ -1200,7 +1200,7 @@ void RegisterKids()
   long j, nKid, FORLIM;
   struct tm *newtime;
 
-  // Get time and date 
+  // Get time and date
   newtime = GetTime();
 
   printf("\n");

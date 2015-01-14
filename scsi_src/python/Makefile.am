@@ -2,11 +2,9 @@
 lib_LTLIBRARIES   = _pyscsi.la
 
 _pyscsi_la_SOURCES = pyscsi_wrap.cxx
-
 _pyscsi_la_LDFLAGS = -module -avoid-version -shared
 
-LIBS = -L../src -lscsi \
-       -lgsl -lstdc++ -lgslcblas pyscsi_wrap.cxx
+LIBS = -L../src -lscsi -lgsl -lstdc++ -lgslcblas
 
 INCLUDES = -I../inc -I/usr -I/usr/include/python2.6
 

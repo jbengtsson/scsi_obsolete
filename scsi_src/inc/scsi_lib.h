@@ -29,6 +29,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
+
 using namespace std;
 
 // GSL
@@ -42,7 +43,7 @@ using namespace std;
 #include <gsl/gsl_multimin.h>
 #include "gslport.h"
 
-// PTC 
+// PTC
 #include "field.h"
 #include "mathlib.h"
 

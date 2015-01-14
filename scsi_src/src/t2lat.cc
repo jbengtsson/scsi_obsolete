@@ -4113,7 +4113,7 @@ void PrintResult(struct LOC_Lattice_Read *LINK)
 }
 
 
-long ElemIndex(const string &name)
+long ElemIndex(const std::string &name)
 {
   long    i, j;
   string  name1;

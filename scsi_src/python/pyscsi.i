@@ -1,4 +1,7 @@
 %module pyscsi
+
+%include "std_string.i"
+
 %{
 
 #define PYAPI 1
