@@ -17,53 +17,19 @@ c1 = 1.0/(2.0*(2.0-2.0**(1.0/3.0))); c2 = 0.5 - c1
 d1 = 2.0*c1; d2 = 1.0 - 2.0*d1
 
 
-def getS():
+def get_opt():
     s = zeros(globval.Cell_nLoc+1)
+    code = zeros(globval.Cell_nLoc+1, dtype=int8)
+    beta = zeros((2, globval.Cell_nLoc+1))
+    nu = zeros((2, globval.Cell_nLoc+1))
+    eta = zeros((2, globval.Cell_nLoc+1))
     for k in range(0, globval.Cell_nLoc+1):
-        s[k] = Cell[k].S
-    return s
+        s[k] = Cell[k].S;  code[k] = get_code(k)
+        beta[X_, k] = Cell[k].Beta[X_]; beta[Y_, k] = Cell[k].Beta[Y_]
+        nu[X_, k] = Cell[k].Nu[X_]; nu[Y_, k] = Cell[k].Nu[Y_]
+        eta[X_, k] = Cell[k].Eta[X_]; eta[Y_, k] = Cell[k].Eta[Y_]
 
-
-def getBetaX():
-    betax = zeros(globval.Cell_nLoc+1)
-    for k in range(0, globval.Cell_nLoc+1):
-        betax[k] = Cell[k].Beta[X_];
-    return betax
-
-
-def getBetaY():
-    betay = zeros(globval.Cell_nLoc+1)
-    for k in range(0, globval.Cell_nLoc+1):
-        betay[k] = Cell[k].Beta[Y_];
-    return betay
-
-
-def getPhiX():
-    phix = zeros(globval.Cell_nLoc+1)
-    for k in range(0, globval.Cell_nLoc+1):
-        phix[k] = Cell[k].Nu[X_];
-    return phix
-
-
-def getPhiY():
-    phiy = zeros(globval.Cell_nLoc+1)
-    for k in range(0, globval.Cell_nLoc+1):
-        phiy[k] = Cell[k].Nu[Y_];
-    return phiy
-
-
-def getEtaX():
-    etax = zeros(globval.Cell_nLoc+1)
-    for k in range(0, globval.Cell_nLoc+1):
-        etax[k] = Cell[k].Eta[X_];
-    return etax
-
-
-def getEtaY():
-    etay = zeros(globval.Cell_nLoc+1)
-    for k in range(0, globval.Cell_nLoc+1):
-        etay[k] = Cell[k].Eta[Y_];
-    return etay
+    return(s, code, beta, nu, eta)
 
 
 def get_code(k):
@@ -180,18 +146,8 @@ def prt_lat(fname, n):
     outf.close()
 
 
-def get_codes():
-    codes = []
-    for k in range(0, globval.Cell_nLoc+1):
-        codes.append(get_code(k))
-    return codes
-
-
 def plt_opt(displ):
-    s = getS(); code = get_codes()
-    beta = [getBetaX(), getBetaY()]
-    nu = [getPhiX(), getPhiY()]
-    eta = [getEtaX(), getEtaY()]
+    (s, code, beta, nu, eta) = get_opt()
 
     plt.rcParams['savefig.dpi'] = 600 # For png.
 
@@ -241,6 +197,7 @@ sys.stdout.write('nu  = [%7.5f, %7.5f]\n' % \
 sys.stdout.write('ksi = [%5.3f, %5.3f]\n' % \
                      (globval.Chrom[0], globval.Chrom[1]))
 
-#pyscsi.prt_lat('linlat.out', 10)
+pyscsi.prt_lat('linlat1.out', globval.bpm, True)
+pyscsi.prt_lat('linlat.out', globval.bpm, True, 10)
 
 plt_opt(True)
