@@ -1,13 +1,10 @@
-from pylab import *
-from sys   import *
+from ctypes import *
+from pylab  import *
 
+import sys
 import os
 
-#current_dir = os.getcwd()
-home_dir = os.path.expanduser('~')
-sys.path.append(home_dir+'/git_repos/scsi/scsi_src/python/_pyscsi.so')
-
-import pyscsi
+from scsi import *
 
 
 twopi = 2.0*math.pi
@@ -21,69 +18,69 @@ d1 = 2.0*c1; d2 = 1.0 - 2.0*d1
 
 
 def getS():
-    s = zeros(pyscsi.gv.globval.Cell_nLoc+1)
-    for k in range(0, pyscsi.gv.globval.Cell_nLoc+1):
-        s[k] = pyscsi.gv.Cell[k].S
+    s = zeros(globval.Cell_nLoc+1)
+    for k in range(0, globval.Cell_nLoc+1):
+        s[k] = Cell[k].S
     return s
 
 
 def getBetaX():
-    betax = zeros(pyscsi.gv.globval.Cell_nLoc+1)
-    for k in range(0, pyscsi.gv.globval.Cell_nLoc+1):
-        betax[k] = pyscsi.gv.Cell[k].gvec('Beta')[X_];
+    betax = zeros(globval.Cell_nLoc+1)
+    for k in range(0, globval.Cell_nLoc+1):
+        betax[k] = Cell[k].Beta[X_];
     return betax
 
 
 def getBetaY():
-    betay = zeros(pyscsi.gv.globval.Cell_nLoc+1)
-    for k in range(0, pyscsi.gv.globval.Cell_nLoc+1):
-        betay[k] = pyscsi.gv.Cell[k].gvec('Beta')[Y_];
+    betay = zeros(globval.Cell_nLoc+1)
+    for k in range(0, globval.Cell_nLoc+1):
+        betay[k] = Cell[k].Beta[Y_];
     return betay
 
 
 def getPhiX():
-    phix = zeros(pyscsi.gv.globval.Cell_nLoc+1)
-    for k in range(0, pyscsi.gv.globval.Cell_nLoc+1):
-        phix[k] = pyscsi.gv.Cell[k].gvec('Phi')[X_];
+    phix = zeros(globval.Cell_nLoc+1)
+    for k in range(0, globval.Cell_nLoc+1):
+        phix[k] = Cell[k].Nu[X_];
     return phix
 
 
 def getPhiY():
-    phiy = zeros(pyscsi.gv.globval.Cell_nLoc+1)
-    for k in range(0, pyscsi.gv.globval.Cell_nLoc+1):
-        phiy[k] = pyscsi.gv.Cell[k].gvec('Phi')[Y_];
+    phiy = zeros(globval.Cell_nLoc+1)
+    for k in range(0, globval.Cell_nLoc+1):
+        phiy[k] = Cell[k].Nu[Y_];
     return phiy
 
 
 def getEtaX():
-    etax = zeros(pyscsi.gv.globval.Cell_nLoc+1)
-    for k in range(0, pyscsi.gv.globval.Cell_nLoc+1):
-        etax[k] = pyscsi.gv.Cell[k].gvec('Eta')[X_];
+    etax = zeros(globval.Cell_nLoc+1)
+    for k in range(0, globval.Cell_nLoc+1):
+        etax[k] = Cell[k].Eta[X_];
     return etax
 
 
 def getEtaY():
-    etay = zeros(pyscsi.gv.globval.Cell_nLoc+1)
-    for k in range(0, pyscsi.gv.globval.Cell_nLoc+1):
-        etay[k] = pyscsi.gv.Cell[k].gvec('Eta')[Y_];
+    etay = zeros(globval.Cell_nLoc+1)
+    for k in range(0, globval.Cell_nLoc+1):
+        etay[k] = Cell[k].Eta[Y_];
     return etay
 
 
 def get_code(k):
-    if pyscsi.gv.Cell[k].Elem.Pkind == drift:
+    if Cell[k].Elem.Pkind == drift:
         code = 0.0
-    elif pyscsi.gv.Cell[k].Elem.Pkind == Mpole:
-        if pyscsi.gv.Cell[k].Elem.M.Pirho != 0.0:
+    elif Cell[k].Elem.Pkind == Mpole:
+        if Cell[k].Elem.M[0].Pirho != 0.0:
             code = 0.5
-        elif pyscsi.gv.Cell[k].Elem.M.n_design == Quad:
+        elif Cell[k].Elem.M[0].n_design == Quad:
             (b2, a2) = pyscsi.get_bn_design_elem(
-                pyscsi.gv.Cell[k].Fnum, pyscsi.gv.Cell[k].Knum, Quad)
+                Cell[k].Fnum, Cell[k].Knum, Quad)
             code = math.copysign(1, b2)
-        elif pyscsi.gv.Cell[k].Elem.M.n_design == Sext:
+        elif Cell[k].Elem.M[0].n_design == Sext:
             (b3, a3) = pyscsi.get_bn_design_elem(
-                pyscsi.gv.Cell[k].Fnum, pyscsi.gv.Cell[k].Knum, Sext)
+                Cell[k].Fnum, Cell[k].Knum, Sext)
             code = 1.5*math.copysign(1, b3)
-        elif pyscsi.gv.Cell[k].Fnum == pyscsi.gv.globval.bpm:
+        elif Cell[k].Fnum == globval.bpm:
             code = 2.0
         else:
             code = 0.0
@@ -100,32 +97,32 @@ def propagate_optics(i, n):
 
     n1 = 1; j = 0 if i == 0 else i-1
 
-    ss[0] = pyscsi.gv.Cell[j].S; codes[0] = get_code(j)
-    alphas[0] = array(pyscsi.gv.Cell[j].Alpha)
-    betas[0] = array(pyscsi.gv.Cell[j].Beta)
-    nus[0] = array(pyscsi.gv.Cell[j].Nu)
+    ss[0] = Cell[j].S; codes[0] = get_code(j)
+    alphas[0] = array(Cell[j].Alpha)
+    betas[0] = array(Cell[j].Beta)
+    nus[0] = array(Cell[j].Nu)
     etas[0] = array([
-        pyscsi.gv.Cell[j].Eta[X_], pyscsi.gv.Cell[j].Etap[X_],
-        pyscsi.gv.Cell[j].Eta[Y_], pyscsi.gv.Cell[j].Etap[Y_]])
+        Cell[j].Eta[X_], Cell[j].Etap[X_],
+        Cell[j].Eta[Y_], Cell[j].Etap[Y_]])
 
-    L = pyscsi.gv.Cell[i].Elem.PL
+    L = Cell[i].Elem.PL
     if (i != 0) and \
-           ((pyscsi.gv.Cell[i].Elem.Pkind == drift) or
-            ((pyscsi.gv.Cell[i].Elem.Pkind == Mpole) and (L != 0.0))):
-        n1 = n; s = pyscsi.gv.Cell[i].S - L;
+           ((Cell[i].Elem.Pkind == drift) or
+            ((Cell[i].Elem.Pkind == Mpole) and (L != 0.0))):
+        n1 = n; s = Cell[i].S - L;
 
-        alpha = pyscsi.gv.Cell[i-1].Alpha; beta = pyscsi.gv.Cell[i-1].Beta
-        nu = pyscsi.gv.Cell[i-1].Nu
-        eta = pyscsi.gv.Cell[i-1].Eta; etap = pyscsi.gv.Cell[i-1].Etap
+        alpha = Cell[i-1].Alpha; beta = Cell[i-1].Beta
+        nu = Cell[i-1].Nu
+        eta = Cell[i-1].Eta; etap = Cell[i-1].Etap
 
         h = L/n; A = get_A(alpha, beta, eta, etap)
         for j in range(0, n):
             s += h
 
-            if pyscsi.gv.Cell[i].Elem.Pkind == drift:
+            if Cell[i].Elem.Pkind == drift:
                 A = Drift(h, A)
-            elif pyscsi.gv.Cell[i].Elem.Pkind == Mpole:
-                Mp = pyscsi.gv.Cell[i].Elem.M
+            elif Cell[i].Elem.Pkind == Mpole:
+                Mp = Cell[i].Elem.M[0]
 
                 if j == 1 and Mp.Pirho != 0.0:
                     A = EdgeFocus(Mp.Pirho, Mp.PTx1, Mp.Pgap, A)
@@ -167,14 +164,14 @@ def prt_lat(fname, n):
     outf.write('                   [m]           [m]\n')
     outf.write('#\n')
 
-    for i in range(0, pyscsi.gv.globval.Cell_nLoc+1):
+    for i in range(0, globval.Cell_nLoc+1):
         [n1, ss, codes, alphas, betas, nus, etas] = propagate_optics(i, n)
 
         for k in range(0, n1):
             outf.write('%4ld %15s %6.2f %4.1f'
                        ' %7.3f %6.3f %6.3f %6.3f %6.3f'
                        ' %7.3f %6.3f %6.3f %6.3f %6.3f\n' %
-                       (i, pyscsi.gv.Cell[i].Elem.PName, ss[k], codes[k],
+                       (i, Cell[i].Elem.PName, ss[k], codes[k],
                         alphas[k][X_], betas[k][X_], nus[k][X_],
                         etas[k][x_], etas[k][px_],
                         alphas[k][Y_], betas[k][Y_], nus[k][Y_],
@@ -185,7 +182,7 @@ def prt_lat(fname, n):
 
 def get_codes():
     codes = []
-    for k in range(0, pyscsi.gv.globval.Cell_nLoc+1):
+    for k in range(0, globval.Cell_nLoc+1):
         codes.append(get_code(k))
     return codes
 
@@ -238,13 +235,11 @@ pyscsi.Ring_GetTwiss(True, 0)
 
 sys.stdout.write('\n')
 sys.stdout.write('C   = %7.5f [m]\n'
-                 % (pyscsi.gv.Cell[pyscsi.gv.globval.Cell_nLoc].S))
+                 % (Cell[globval.Cell_nLoc].S))
 sys.stdout.write('nu  = [%7.5f, %7.5f]\n' % \
-                     (pyscsi.gv.globval.gvec('TotalTune')[0],
-                      pyscsi.gv.globval.gvec('TotalTune')[1]))
+                     (globval.TotalTune[0], globval.TotalTune[1]))
 sys.stdout.write('ksi = [%5.3f, %5.3f]\n' % \
-                     (pyscsi.gv.globval.gvec('Chrom')[0],
-                      pyscsi.gv.globval.gvec('Chrom')[1]))
+                     (globval.Chrom[0], globval.Chrom[1]))
 
 #pyscsi.prt_lat('linlat.out', 10)
 
