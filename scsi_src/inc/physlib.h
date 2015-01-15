@@ -56,10 +56,6 @@ void GetMean(long n, double *x);
 
 bool getcod(double dP, long &lastpos);
 
-void get_twiss3(long int loc,
-                       Vector2 alpha[], Vector2 beta[], Vector2 nu[],
-                       Vector2 eta[], Vector2 etap[]);
-
 void getabn(Vector2 &alpha, Vector2 &beta, Vector2 &nu);
 
 void TraceABN(long i0, long i1, const Vector2 &alpha, const Vector2 &beta,
@@ -253,10 +249,6 @@ void findcod(double dP);
 void computeFandJ(int n, Vector &x, Matrix &fjac, Vector &fvect);
 int Newton_Raphson(int n, Vector &x, int ntrial, double tolx);
 
-
-/* Transport mode routine */
-void TransTwiss(Vector2 &alpha, Vector2 &beta, Vector2 &eta, Vector2 &etap,
-		Vector &codvect);
 
 /* Vacuum chamber */
 void PrintCh(void);
