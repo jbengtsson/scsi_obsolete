@@ -172,5 +172,8 @@ class CellType(Structure):
 #globval = cast(scsi.globval, POINTER(globvalrec))[0]
 globval = globvalrec.in_dll(scsi, 'globval')
 
-#Cell = POINTER(CellType).in_dll(scsi, 'Cell')
 Cell = cast(scsi.Cell, POINTER(CellType))
+# Returns the same type and address but, somehow, does not work.
+#Cell = POINTER(CellType).in_dll(scsi, 'Cell')
+
+print pyscsi.get_code(pyscsi.gv.Cell[5])

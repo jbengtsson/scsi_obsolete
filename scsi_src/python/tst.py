@@ -17,7 +17,7 @@ print globval.radiation
 
 sys.stdout.write('\n')
 for k in range(0, 5):
-    sys.stdout.write('%14.6e %14.6e\n' % (Cell[k].Beta[0], Cell[k].Beta[1]))
+    sys.stdout.write('%14.6e %14.6e\n' % (Cell[k].Beta[X_], Cell[k].Beta[Y_]))
 
 
 Fnum = pyscsi.ElemIndex('SL1G2C01A'); loc = pyscsi.Elem_GetPos(Fnum, 1)

@@ -34,6 +34,13 @@ extern CellType    Cell[];
 extern globvalrec  globval;
 
 
+%extend CellType {
+  // Python method for array access.
+  CellType* __getitem__(int k) { return self+k; };
+#  CellType* __setitem__(int k) { return self+k; };
+  }
+
+
 // Parse the header files to generate the wrapper code.
 
 %include "../inc/gslport.h"
