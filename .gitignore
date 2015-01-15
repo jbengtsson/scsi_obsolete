@@ -17,6 +17,8 @@ pyscsi_wrap.cxx
 pyscsi.py
 pyscsi.pyc
 optics.ps
+linlat.out
+linlat1.out
 #
 scsi_src/lib
 #

@@ -33,7 +33,7 @@ def get_opt():
     nu = zeros((2, globval.Cell_nLoc+1))
     eta = zeros((2, globval.Cell_nLoc+1))
     for k in range(0, globval.Cell_nLoc+1):
-        s[k] = Cell[k].S
+        s[k] = Cell[k].S;
         code[k] = get_code(k)
 #        code[k] = pyscsi.get_code(byref(Cell[k]))
         beta[X_, k] = Cell[k].Beta[X_]; beta[Y_, k] = Cell[k].Beta[Y_]
