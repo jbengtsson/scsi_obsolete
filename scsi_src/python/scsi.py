@@ -18,6 +18,14 @@ import pyscsi
 scsi = cdll.LoadLibrary(home_dir+'/git_repos/scsi/scsi_src/lib/libscsi.so')
 
 
+drift = 0; Mpole = 2; Quad = 2; Sext = 3
+X_ = 0; Y_ = 1
+x_ = 0; px_ = 1; y_ = 2; py_ = 3; delta_ = 4; ct_ = 5
+
+c1 = 1.0/(2.0*(2.0-2.0**(1.0/3.0))); c2 = 0.5 - c1
+d1 = 2.0*c1; d2 = 1.0 - 2.0*d1
+
+
 PLANES = 2
 
 ss_dim = 6; DOF = ss_dim/2
@@ -29,89 +37,9 @@ Matrix     = Vector*6
 partsName  = c_char*150
 PartsKind  = c_long
 
-HOMmax     = 20
+HOMmax     = 21
 mpolArray  = c_double*(2*HOMmax+1)
 pthicktype = c_long
-
-class DriftType(Structure):
-    _fields_ = [('D55', Matrix)]
-
-class MpoleType(Structure):
-    _fields_ = [('Pmethod', c_int),
-                ('PN',      c_int),
-
-                ('PdSsys',  Vector2),
-                ('PdSrms',  Vector2),
-                ('PdSrnd',  Vector2),
-
-                ('PdTpar',  c_double),
-                ('PdTsys',  c_double),
-                ('PdTrms',  c_double),
-                ('PdTrnd',  c_double),
-
-                ('PBpar',    mpolArray),
-                ('PBsys',    mpolArray),
-                ('PBrms',    mpolArray),
-                ('PBrnd',    mpolArray),
-                ('PB',       mpolArray),
-                ('Porder',   c_int),
-                ('n_design', c_int),
-                ('Pthick',   pthicktype),
-                ('PTx1',     c_double),
-                ('PTx2',     c_double),
-                ('Pgap',     c_double),
-                ('Pirho',    c_double),
-                ('Pc0',      c_double),
-                ('Pc1',      c_double),
-                ('Ps1',      c_double),
-                ('AU55',     Matrix),
-                ('AD55',     Matrix)]
-
-class CavityType (Structure):
-    _fields_ = [('Pvolt', c_double),
-                ('Pfreq', c_double),
-                ('phi',   c_double),
-                ('Ph',    c_int)]
-
-class UType(Union):
-    [('D',     POINTER(DriftType)),
-     ('M',     POINTER(MpoleType)),
-     ('C',     POINTER(CavityType))]
-
-class elemtype(Structure):
-    def deref(self, type):
-        if type == 'D':
-            return cast(self.U, POINTER(DriftType))[0]
-        elif type == 'M':
-            return cast(self.U, POINTER(MpoleType))[0]
-        elif type == 'C':
-            return cast(self.U, POINTER(CavityType))[0]
-        else:
-            print "deref: undef. type:", type
-            exit(1)
-
-    _fields_ = [('PName', partsName),
-                ('PL',    c_double),
-                ('Pkind', PartsKind),
-                ('U',     POINTER(c_void_p))]
-
-class CellType(Structure):
-    _fields_ = [('Fnum',     c_int),
-                ('Knum',     c_int),
-                ('S',        c_double),
-                ('next_ptr', POINTER(c_void_p)),
-                ('dS',       Vector2),
-                ('dT',       Vector2),
-                ('Elem',     elemtype),
-                ('Nu',       Vector2),
-                ('Alpha',    Vector2),
-                ('Beta',     Vector2),
-                ('Eta',      Vector2),
-                ('Etap',     Vector2),
-                ('BeamPos',  Vector),
-                ('A',        Matrix),
-                ('sigma',    Matrix),
-                ('maxampl',  Vector2*PLANES)]
 
 class globvalrec(Structure):
     _fields_ = [('dPcommon',    c_double),
@@ -168,12 +96,78 @@ class globvalrec(Structure):
                 ('beta_z',      c_double),
                 ('RingType',    c_int)]
 
-class Pointer(object):
-    def __init__(self, pointee):
-        self.pointee = pointee
+class DriftType(Structure):
+    _fields_ = []
 
-    def deref(self):
-        return self.pointee
+class MpoleType(Structure):
+    _fields_ = [('Pmethod', c_int),
+                ('PN',      c_int),
+
+                ('PdSsys',  Vector2),
+                ('PdSrms',  Vector2),
+                ('PdSrnd',  Vector2),
+
+                ('PdTpar',  c_double),
+                ('PdTsys',  c_double),
+                ('PdTrms',  c_double),
+                ('PdTrnd',  c_double),
+
+                ('PBpar',    mpolArray),
+                ('PBsys',    mpolArray),
+                ('PBrms',    mpolArray),
+                ('PBrnd',    mpolArray),
+                ('PB',       mpolArray),
+                ('Porder',   c_int),
+                ('n_design', c_int),
+                ('Pthick',   pthicktype),
+                ('PTx1',     c_double),
+                ('PTx2',     c_double),
+                ('Pgap',     c_double),
+                ('Pirho',    c_double),
+                ('Pc0',      c_double),
+                ('Pc1',      c_double),
+                ('Ps1',      c_double)]
+
+class CavityType (Structure):
+    _fields_ = [('Pvolt', c_double),
+                ('Pfreq', c_double),
+                ('phi',   c_double),
+                ('Ph',    c_int)]
+
+class elemtype(Structure):
+    def deref(self, type):
+        if type == 'D':
+            return cast(self.U, POINTER(DriftType))[0]
+        elif type == 'M':
+            return cast(self.U, POINTER(MpoleType))[0]
+        elif type == 'C':
+            return cast(self.U, POINTER(CavityType))[0]
+        else:
+            print "deref: undef. type:", type
+            exit(1)
+
+    _fields_ = [('PName', partsName),
+                ('PL',    c_double),
+                ('Pkind', PartsKind),
+                ('U',     POINTER(c_void_p))]
+
+class CellType(Structure):
+    _fields_ = [('Fnum',     c_int),
+                ('Knum',     c_int),
+                ('S',        c_double),
+                ('next_ptr', POINTER(c_void_p)),
+                ('dS',       Vector2),
+                ('dT',       Vector2),
+                ('Elem',     elemtype),
+                ('Nu',       Vector2),
+                ('Alpha',    Vector2),
+                ('Beta',     Vector2),
+                ('Eta',      Vector2),
+                ('Etap',     Vector2),
+                ('BeamPos',  Vector),
+                ('A',        Matrix),
+                ('sigma',    Matrix),
+                ('maxampl',  Vector2*PLANES)]
 
 #globval = cast(scsi.globval, POINTER(globvalrec))[0]
 globval = globvalrec.in_dll(scsi, 'globval')

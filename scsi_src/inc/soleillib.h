@@ -9,7 +9,6 @@
 */
 
  /**** Protypes ****/
-void SetErr(void);
 void InducedAmplitude(long spos);
 void Hfonction(long pos, double dP,Vector2 H);
 void Hcofonction(long pos, double dP,Vector2 H);
@@ -25,13 +24,11 @@ void PhasePoly(long pos, double x0,double px0, double z0, double pz0, double del
 void Check_Trac(double x, double px, double y, double py, double dp);
 void PhasePortrait(double x0,double px0,double z0, double pz0, double delta0,
 		   double ctau, double end, long Nb, long Nbtour, int num);
-void Multipole(void);
 void MomentumAcceptance(long deb, long fin, double ep_min, double ep_max, long nstepp,
                         double em_min, double em_max, long nstepm);
 void Trac_Tab(double x, double px, double y, double py, double dp,
 	      long nmax, long pos, long &lastn, long &lastpos, FILE *outf1,
 	      double Tx[][NTURN]);
-void SetSkewQuad(void);
 void TracCO(double x, double px, double y, double py, double dp, double ctau,
 	    long nmax, long pos, long &lastn, long &lastpos, FILE *outf1);
 void Dyna(long Nbx, long Nbz, long Nbtour, double xmax, double zmax,
@@ -46,12 +43,8 @@ void fmapdp(long Nbx, long Nbe, long Nbtour, double xmax, double emax,
 void NuDx(long Nbx, long Nbz, long Nbtour, double xmax, double ymax,
                  double energy);
 
-/* Vacuum chamber */
-void DefineCh(void);
 void Enveloppe(double x, double px, double y, double py,
                       double dp, double nturn);
-void ChamberOn(void);
-
 /* Longitudinal Hamiltonian*/
 void PhaseLongitudinalHamiltonien(void);
 void PassA(double *phi, double delta0, double step);

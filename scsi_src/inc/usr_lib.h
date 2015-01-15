@@ -9,3 +9,6 @@ void get_bn(const string type, const int Fnum, const int Knum,
 void set_bn(const string type, const int Fnum, const int Knum,
 	    const int n, const double bn, const double an);
 
+void set_bn(const string type, const int Fnum
+	    const int n, const double bn, const double an);
+

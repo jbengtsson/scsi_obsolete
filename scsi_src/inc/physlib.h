@@ -166,53 +166,11 @@ void set_aper(const int Fnum, const double Dxmin, const double Dxmax,
 
 void LoadApertures(const char *ChamberFileName);
 
-void LoadTolerances(const char *TolFileName);
-
-void ScaleTolerances(const char *TolFileName, const double scl);
-
-void SetKpar(int Fnum, int Knum, int Order, double k);
-
-void SetdKpar(int Fnum, int Knum, int Order, double k);
-
 void SetL(int Fnum, int Knum, double L);
 
 void SetL(int Fnum, double L);
 
-void SetKLpar(int Fnum, int Knum, int Order, double kL);
-
-void SetdKLpar(int Fnum, int Knum, int Order, double dkL);
-
-void SetdKrpar(int Fnum, int Knum, int Order, double dkrel);
-
-void Setbn(int Fnum, int order, double bn);
-
-void SetbnL(int Fnum, int order, double bnL);
-
-void Setdbn(int Fnum, int order, double dbn);
-
-void SetdbnL(int Fnum, int order, double dbnL);
-
-void Setbnr(int Fnum, int order, double bnr);
-
-void SetbnL_sys(int Fnum, int Order, double bnL_sys);
-
-void set_dbn_rel(const int type, const int n, const double dbn_rel);
-
-double GetKpar(int Fnum, int Knum, int Order);
-
 double GetL(int Fnum, int Knum);
-
-double GetKLpar(int Fnum, int Knum, int Order);
-
-void SetdKLrms(int Fnum, int Order, double dkLrms);
-
-void Setdkrrms(int Fnum, int Order, double dkrrms);
-
-void SetKL(int Fnum, int Order);
-
-void set_dx(const int type, const double sigma_x, const double sigma_y);
-
-void SetBpmdS(int Fnum, double dxrms, double dyrms);
 
 void codstat(double *mean, double *sigma, double *xmax, long lastpos,
 		    bool all);

@@ -1,20 +1,29 @@
-from ctypes import *
-from pylab  import *
-
-import sys
-import os
-
-from scsi import *
+from scsi  import *
+from pylab import *
 
 
-twopi = 2.0*math.pi
+def get_code(k):
+    if Cell[k].Elem.Pkind == drift:
+        code = 0.0
+    elif Cell[k].Elem.Pkind == Mpole:
+        if Cell[k].Elem.deref('M').Pirho != 0.0:
+            code = 0.5
+        elif Cell[k].Elem.deref('M').n_design == Quad:
+            (b2, a2) = pyscsi.get_bn_design_elem(
+                Cell[k].Fnum, Cell[k].Knum, Quad)
+            code = math.copysign(1, b2)
+        elif Cell[k].Elem.deref('M').n_design == Sext:
+            (b3, a3) = pyscsi.get_bn_design_elem(
+                Cell[k].Fnum, Cell[k].Knum, Sext)
+            code = 1.5*math.copysign(1, b3)
+        elif Cell[k].Fnum == globval.bpm:
+            code = 2.0
+        else:
+            code = 0.0
+    else:
+        code = 0.0
 
-drift = 0; Mpole = 2; Quad = 2; Sext = 3
-X_ = 0; Y_ = 1
-x_ = 0; px_ = 1; y_ = 2; py_ = 3; delta_ = 4; ct_ = 5
-
-c1 = 1.0/(2.0*(2.0-2.0**(1.0/3.0))); c2 = 0.5 - c1
-d1 = 2.0*c1; d2 = 1.0 - 2.0*d1
+    return code
 
 
 def get_opt():
@@ -32,30 +41,6 @@ def get_opt():
         eta[X_, k] = Cell[k].Eta[X_]; eta[Y_, k] = Cell[k].Eta[Y_]
 
     return(s, code, beta, nu, eta)
-
-
-def get_code(k):
-    if Cell[k].Elem.Pkind == drift:
-        code = 0.0
-    elif Cell[k].Elem.Pkind == Mpole:
-        if Cell[k].Elem.M[0].Pirho != 0.0:
-            code = 0.5
-        elif Cell[k].Elem.M[0].n_design == Quad:
-            (b2, a2) = pyscsi.get_bn_design_elem(
-                Cell[k].Fnum, Cell[k].Knum, Quad)
-            code = math.copysign(1, b2)
-        elif Cell[k].Elem.M[0].n_design == Sext:
-            (b3, a3) = pyscsi.get_bn_design_elem(
-                Cell[k].Fnum, Cell[k].Knum, Sext)
-            code = 1.5*math.copysign(1, b3)
-        elif Cell[k].Fnum == globval.bpm:
-            code = 2.0
-        else:
-            code = 0.0
-    else:
-        code = 0.0
-
-    return code
 
 
 def plt_opt(displ):

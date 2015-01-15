@@ -5,7 +5,7 @@ void get_bn(const string type, const int Fnum, const int Knum,
 {
   elemtype  elem;
 
-  if (n < 1) {
+  if ((n < 1) || (n > HOMmax)) {
     cout << "get_bn: n < 1 (" << n << ")" << endl;
     exit(1);
   }
@@ -30,7 +30,7 @@ void set_bn(const string type, const int Fnum, const int Knum,
 {
   elemtype  elem;
 
-  if (n < 1) {
+  if ((n < 1) || (n > HOMmax)) {
     cout << "set_bn: n < 1 (" << n << ")" << endl;
     exit(1);
   }
@@ -51,3 +51,17 @@ void set_bn(const string type, const int Fnum, const int Knum,
   Mpole_SetPB(Fnum, Knum, n); Mpole_SetPB(Fnum, Knum, -n);
 }
 
+
+void set_bn(const string type, const int Fnum,
+	    const int n, const double bn, const double an)
+{
+  int k;
+
+  if ((n < 1) || (n > HOMmax)) {
+    cout << "set_bn: n < 1 (" << n << ")" << endl;
+    exit(1);
+  }
+
+  for (k = 1; k <= GetnKid(Fnum); k++)
+    set_bn(type, Fnum, k, n, bn, an);
+}

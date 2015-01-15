@@ -233,7 +233,7 @@ void no_sxt(void)
   cout << "zeroing sextupoles" << endl;
   for (k = 0; k <= globval.Cell_nLoc; k++)
     if ((Cell[k].Elem.Pkind == Mpole) && (Cell[k].Elem.M->Porder >= Sext))
-      SetKpar(Cell[k].Fnum, Cell[k].Knum, Sext, 0.0);
+      set_bn_design_elem(Cell[k].Fnum, Cell[k].Knum, Sext, 0e0, 0e0);
 }
 
 
@@ -2712,19 +2712,22 @@ void FindCoupVector(double *VertCouple)
   // Find off diagonal terms for horizontal trims
   for (j = 1; j <= N_HCOR; j++) {
     // positive kick: "+Dip" for horizontal
-    SetdKLpar(Cell[h_corr[j-1]].Fnum, Cell[h_corr[j-1]].Knum, +Dip, kick);
+    set_dbn_design_elem(Cell[h_corr[j-1]].Fnum, Cell[h_corr[j-1]].Knum, Dip,
+			kick,  0e0);
     cod = getcod(0.0, lastpos); chk_cod(cod, "FindCoupVector");
     for (i = 1; i <= N_BPM; i++)
       orbitP[i] = Cell[bpm_loc[i-1]].BeamPos[y_];
 
     //negative kick: "+Dip" for horizontal
-    SetdKLpar(Cell[h_corr[j-1]].Fnum, Cell[h_corr[j-1]].Knum, +Dip, -2*kick);
+    set_dbn_design_elem(Cell[h_corr[j-1]].Fnum, Cell[h_corr[j-1]].Knum, Dip,
+			-2e0*kick,  0e0);
     cod = getcod(0.0, lastpos); chk_cod(cod, "FindCoupVector");
     for (i = 1; i <= N_BPM; i++)
       orbitN[i] = Cell[bpm_loc[i-1]].BeamPos[y_];
 
     // restore trim valueL: "+Dip" for horizontal
-    SetdKLpar(Cell[h_corr[j-1]].Fnum, Cell[h_corr[j-1]].Knum, +Dip, kick);
+    set_dbn_design_elem(Cell[h_corr[j-1]].Fnum, Cell[h_corr[j-1]].Knum, Dip,
+			kick,  0e0);
 
     for (i = 1; i <= N_BPM; i++)
       VertCouple[N_BPM+(j-1)*N_HCOR+i] =
@@ -2735,19 +2738,22 @@ void FindCoupVector(double *VertCouple)
   // Find off diagonal terms for vertical trims
   for (j = 1; j <= N_VCOR; j++){
     // positive kick: "-Dip" for vertical
-    SetdKLpar(Cell[v_corr[j-1]].Fnum, Cell[v_corr[j-1]].Knum, -Dip, kick);
+    set_dbn_design_elem(Cell[v_corr[j-1]].Fnum, Cell[v_corr[j-1]].Knum, Dip,
+			0e0, kick);
     cod = getcod(0.0, lastpos); chk_cod(cod, "FindCoupVector");
     for (i = 1;  i <= N_BPM; i++)
       orbitP[i] = Cell[bpm_loc[i-1]].BeamPos[x_];
 
     // negative kick: "-Dip" for vertical
-    SetdKLpar(Cell[v_corr[j-1]].Fnum, Cell[v_corr[j-1]].Knum, -Dip, -2*kick);
+    set_dbn_design_elem(Cell[v_corr[j-1]].Fnum, Cell[v_corr[j-1]].Knum, Dip,
+			0e0, -2e0*kick);
     cod = getcod(0.0, lastpos); chk_cod(cod, "FindCoupVector");
     for (i = 1; i <= N_BPM; i++)
       orbitN[i] = Cell[bpm_loc[i-1]].BeamPos[x_];
 
     // restore corrector: "-Dip" for vertical
-    SetdKLpar(Cell[v_corr[j-1]].Fnum, Cell[v_corr[j-1]].Knum, -Dip, kick);
+    set_dbn_design_elem(Cell[v_corr[j-1]].Fnum, Cell[v_corr[j-1]].Knum, Dip,
+			0e0, kick);
 
     for (i = 1; i <= N_BPM; i++)
       VertCouple[N_BPM+N_BPM*N_HCOR+(j-1)*N_VCOR+i] =
@@ -2762,12 +2768,12 @@ void FindCoupVector(double *VertCouple)
 void SkewStat(double VertCouple[])
 {
   int     i;
-  double  max, rms, sk;
+  double  max, rms, sk, b2;
 
   // statistics for skew quadrupoles
   max = 0.0; rms = 0.0;
   for(i = 1; i <= N_SKEW; i++) {
-    sk = GetKLpar(globval.qt, i, -Quad);
+    get_bnL_design_elem(globval.qt, i, Quad, b2, sk);
     if (fabs(sk) > max) max = fabs(sk);
     rms += sqr(sk);
   }
@@ -2837,7 +2843,7 @@ void corr_eps_y(void)
     printf("Applying correction\n");
     // Add correction
     for (j = 1; j <= N_SKEW; j++)
-      SetdKLpar(globval.qt, j, -Quad, SkewStrengthCorr[j]);
+      set_dbn_design_elem(globval.qt, j, Quad, 0e0, SkewStrengthCorr[j]);
 
     printf("\n");
     printf("Looking for coupling error\n");
@@ -4652,7 +4658,7 @@ void get_bn(const char file_name[], int n, const bool prt)
       if (order == 0)
         SetL(Fnum, bnL);
       else
-        SetbnL(Fnum, order, bnL);
+	set_bnL_design_fam(Fnum, order, bnL, 0e0);
 
       L = GetL(Fnum, 1);
       if (Knum == 1) {
@@ -5089,7 +5095,7 @@ double f_bend(const gsl_vector *vb0L, void *params)
 
   n_iter_Cart++;
 
-  SetbnL_sys(Fnum_Cart, Dip, b0L[1]);
+  set_bnL_sys_fam(Fnum_Cart, Dip, b0L[1], 0e0);
 
   ps.zero();
   Cell_Pass(Elem_GetPos(Fnum_Cart, 1)-1, Elem_GetPos(Fnum_Cart, 1),
