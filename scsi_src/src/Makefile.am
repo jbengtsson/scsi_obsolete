@@ -1,13 +1,13 @@
 # Shared library required for pytracy.
-lib_LTLIBRARIES        = libscsi.la libscsi_ptc.la 
-libscsi_la_SOURCES     = scsi_lib.cc \
+lib_LTLIBRARIES        = libscsi.la libscsi_ptc.la
+libscsi_la_SOURCES     = ../glps/scanner.l ../glps/parser.y \
 			 ../glps/glpsutil.cc ../glps/elemtree.c ../glps/glps.c \
 			 ../glps/glpserror.c \
-			 ../glps/scanner.l ../glps/parser.y
-libscsi_ptc_la_SOURCES = scsi_ptc_lib.cc \
+			 scsi_lib.cc
+libscsi_ptc_la_SOURCES = ../glps/scanner.l ../glps/parser.y \
 			 ../glps/glpsutil.cc ../glps/elemtree.c ../glps/glps.c \
 			 ../glps/glpserror.c \
-			 ../glps/scanner.l ../glps/parser.y
+			 scsi_ptc_lib.cc
 
 libscsi_la_LDFLAGS     = -module -avoid-version -shared
 libscsi_ptc_la_LDFLAGS = -module -avoid-version -shared
