@@ -225,7 +225,7 @@ struct SolenoidType {
 struct elemtype {
   partsName PName; // Element name
   double    PL;    // Length[m]
-  PartsKind Pkind; // Enumeration  for magnet types
+  PartsKind Pkind; // Enumeration for magnet types
   union {
     DriftType      *D;   // Drift
     MpoleType      *M;   // Multipole
