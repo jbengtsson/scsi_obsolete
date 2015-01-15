@@ -20,9 +20,16 @@ for k in range(0, 5):
     sys.stdout.write('%14.6e %14.6e\n' % (Cell[k].Beta[0], Cell[k].Beta[1]))
 
 
-Fnum = pyscsi.ElemIndex('SL1G2C01A')
-loc = pyscsi.Elem_GetPos(Fnum, 1)
+Fnum = pyscsi.ElemIndex('SL1G2C01A'); loc = pyscsi.Elem_GetPos(Fnum, 1)
 
 print
 print Cell[loc].Elem.PName, Cell[loc].Elem.Pkind
-print Cell[loc].Elem.M[0].Pmethod, Cell[loc].Elem.M[0].PN
+print cast(Cell[loc].Elem.U, POINTER(MpoleType))[0].Pmethod, \
+      cast(Cell[loc].Elem.U, POINTER(MpoleType))[0].PN
+
+Fnum = pyscsi.ElemIndex('CAV'); loc = pyscsi.Elem_GetPos(Fnum, 1)
+
+print
+print Cell[loc].Elem.PName, Cell[loc].Elem.Pkind
+print cast(Cell[loc].Elem.U, POINTER(CavityType))[0].Pvolt, \
+      cast(Cell[loc].Elem.U, POINTER(CavityType))[0].Pfreq

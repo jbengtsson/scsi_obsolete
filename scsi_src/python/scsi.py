@@ -82,7 +82,7 @@ class elemtype(Structure):
     _fields_ = [('PName', partsName),
                 ('PL',    c_double),
                 ('Pkind', PartsKind),
-                ('M',     POINTER(MpoleType))]
+                ('U',     POINTER(c_void_p))]
 
 class CellType(Structure):
     _fields_ = [('Fnum',     c_int),
