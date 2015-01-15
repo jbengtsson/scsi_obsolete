@@ -24,12 +24,10 @@ Fnum = pyscsi.ElemIndex('SL1G2C01A'); loc = pyscsi.Elem_GetPos(Fnum, 1)
 
 print
 print Cell[loc].Elem.PName, Cell[loc].Elem.Pkind
-print cast(Cell[loc].Elem.U, POINTER(MpoleType))[0].Pmethod, \
-      cast(Cell[loc].Elem.U, POINTER(MpoleType))[0].PN
+print Cell[loc].Elem.deref('M').Pmethod, Cell[loc].Elem.deref('M').PN
 
 Fnum = pyscsi.ElemIndex('CAV'); loc = pyscsi.Elem_GetPos(Fnum, 1)
 
 print
 print Cell[loc].Elem.PName, Cell[loc].Elem.Pkind
-print cast(Cell[loc].Elem.U, POINTER(CavityType))[0].Pvolt, \
-      cast(Cell[loc].Elem.U, POINTER(CavityType))[0].Pfreq
+print Cell[loc].Elem.deref('C').Pvolt, Cell[loc].Elem.deref('C').Pfreq

@@ -79,6 +79,17 @@ class UType(Union):
      ('C',     POINTER(CavityType))]
 
 class elemtype(Structure):
+    def deref(self, type):
+        if type == 'D':
+            return cast(self.U, POINTER(DriftType))[0]
+        elif type == 'M':
+            return cast(self.U, POINTER(MpoleType))[0]
+        elif type == 'C':
+            return cast(self.U, POINTER(CavityType))[0]
+        else:
+            print "deref: undef. type:", type
+            exit(1)
+
     _fields_ = [('PName', partsName),
                 ('PL',    c_double),
                 ('Pkind', PartsKind),
@@ -155,9 +166,14 @@ class globvalrec(Structure):
                 ('epsp',        c_double*DOF),
                 ('alpha_z',     c_double),
                 ('beta_z',      c_double),
-                ('RingType',    c_int)
-                ]
+                ('RingType',    c_int)]
 
+class Pointer(object):
+    def __init__(self, pointee):
+        self.pointee = pointee
+
+    def deref(self):
+        return self.pointee
 
 #globval = cast(scsi.globval, POINTER(globvalrec))[0]
 globval = globvalrec.in_dll(scsi, 'globval')
