@@ -46,8 +46,6 @@
 typedef long ipeakbuf[npeakmax];
 typedef double peakbuf[npeakmax];
 
-double int_curly_H1(long int n);
-
 void rm_mean(long int n, double x[]);
 
 void printglob(void);

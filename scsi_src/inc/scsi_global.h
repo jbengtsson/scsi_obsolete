@@ -27,8 +27,7 @@ typedef struct globvalrec {
           Vr,              // real part of the eigenvectors
           Vi;              // imaginal par of the eigenvectors
 
-  bool    MatMeth,         // matrix method
-          Cavity_on,       // if true, cavity turned on
+  bool    Cavity_on,       // if true, cavity turned on
           radiation,       // if true, radiation turned on
           emittance,
           quad_fringe,     // dipole- and quadrupole hard-edge fringe fields.
@@ -56,7 +55,6 @@ typedef struct globvalrec {
 
 
 struct DriftType {
-  Matrix D55; // Linear matrix
 };
 
 
@@ -87,8 +85,6 @@ struct MpoleType {
   double     Pgap;          // total magnet gap [m]
   double     Pirho;         // 1/rho [1/m]
   double     Pc0, Pc1, Ps1; // corrections for roll error of bend
-  Matrix     AU55,          // Upstream 5x5 matrix
-             AD55;          // Downstream 5x5 matrix
 };
 
 const int  n_harm_max = 10;

@@ -244,7 +244,6 @@ bool Lattice_Read(const char *fi_)
 	if (GLPS_SUCCESS==glps_read(*i,"gap",val)) gap = val;
 	if (GLPS_SUCCESS==glps_read(*i,"method",val))
 	  k2 = (long) floor(val+0.5);
-	if (k2 != Meth_Linear) globval.MatMeth = false;
 	if ((unsigned int)k2 >= 32 ||
 	    ((1 << k2) &
 	     ((1 << Meth_Linear) | (1 << Meth_Second) |
@@ -312,7 +311,6 @@ bool Lattice_Read(const char *fi_)
 	if (GLPS_SUCCESS==glps_read(*i,"roll",val)) dt = val;
 	if (GLPS_SUCCESS==glps_read(*i,"method",val))
 	  k2 = (long) floor(val+0.5);
-	if (k2 != Meth_Linear) globval.MatMeth = false;
 	if ((unsigned int)k2 >= 32 ||
 	    ((1 << k2) &
 	     ((1 << Meth_Linear) | (1 << Meth_First) |
@@ -369,7 +367,6 @@ bool Lattice_Read(const char *fi_)
 	if (GLPS_SUCCESS==glps_read(*i,"n",val)) k1 = (long) floor(val+0.5);
 	if (GLPS_SUCCESS==glps_read(*i,"roll",val)) dt = val;
 	if (GLPS_SUCCESS==glps_read(*i,"method",val)) k2 = (long) floor(val+0.5);
-	if (k2 != Meth_Linear) globval.MatMeth = false;
 	if ((unsigned int)k2 >= 32 ||
 	    ((1 << k2) &
 	     ((1 << Meth_Linear) | (1 << Meth_Second) |
@@ -474,7 +471,6 @@ bool Lattice_Read(const char *fi_)
 	  k2 = (long) floor(val+0.5);
 	if (GLPS_SUCCESS==glps_read(*i,"plane",val)) QK = val;
 	if (GLPS_SUCCESS==glps_read(*i,"roll",val)) dt = val;
-	if (k2 != Meth_Linear) globval.MatMeth = false;
 	if ((unsigned int)k2 >= 32 ||
 	    ((1 << k2) &
 	     ((1 << Meth_Linear) | (1 << Meth_Second) |
@@ -582,7 +578,6 @@ bool Lattice_Read(const char *fi_)
 	if (GLPS_SUCCESS==glps_read(*i,"roll",val)) dt = val;
 	if (GLPS_SUCCESS==glps_read(*i,"method",val))
 	  k2 = (long) floor(val+0.5);
-	if (k2 != Meth_Linear) globval.MatMeth = false;
 	if ((unsigned int)k2 >= 32 ||
 	    ((1 << k2) &
 	     ((1 << Meth_Linear) | (1 << Meth_Second) |
@@ -653,7 +648,6 @@ bool Lattice_Read(const char *fi_)
 	if (GLPS_SUCCESS==glps_read(*i,"lambda",val)) QKS = val;
 	if (GLPS_SUCCESS==glps_read(*i,"roll",val)) dt = val;
 	if (GLPS_SUCCESS==glps_read(*i,"method",val)) k2 = (long) floor(val+0.5);
-	if (k2 != Meth_Linear) globval.MatMeth = false;
 	if ((unsigned int)k2 >= 32 ||
 	    ((1 << k2) &
 	     ((1 << Meth_Linear) | (1 << Meth_First) | (1 << Meth_Second) |
@@ -769,7 +763,6 @@ bool Lattice_Read(const char *fi_)
 	if (GLPS_SUCCESS==glps_read(*i,"method",val))
 	  // method for interpolation: 1 means linear 2 spline
 	  k2 = (long) floor(val+0.5);
-	if (k2 != Meth_Linear) globval.MatMeth = false;
 
 	globval.Elem_nFam++;
 	/* Fills up the ID */

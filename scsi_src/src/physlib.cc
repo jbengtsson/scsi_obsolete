@@ -63,7 +63,6 @@ void printglob(void)
 	 "  RFAccept [%%] = \xB1%4.2f\n",
          Cell[0].maxampl[X_][0], Cell[0].maxampl[Y_][0],
 	 globval.delta_RF*1e2);
-  printf("  MatMeth      =  %s     ", globval.MatMeth ? "TRUE " : "FALSE");
   printf(" Cavity_On    =  %s    ", globval.Cavity_on ? "TRUE " : "FALSE");
   printf("  Radiation_On = %s     \n",
 	 globval.radiation ? "TRUE " : "FALSE");
@@ -87,26 +86,6 @@ void printglob(void)
   printf("\n");
   prtmat(2*DOF, globval.OneTurnMat);
   fflush(stdout);
-}
-
-
-double int_curly_H1(long int n)
-{
-  /* Integration with Simpson's Rule */
-
-  double    curly_H;
-  Vector2   alpha[3], beta[3], nu[3], eta[3], etap[3];
-
-  // only works for matrix style calculations
-  get_twiss3(n, alpha, beta, nu, eta, etap);
-
-  curly_H = (get_curly_H(alpha[0][X_], beta[0][X_], eta[0][X_], etap[0][X_])
-            +4.0*get_curly_H(alpha[1][X_], beta[1][X_],
-                             eta[1][X_], etap[1][X_])
-	    + get_curly_H(alpha[2][X_], beta[2][X_], eta[2][X_], etap[2][X_]))
-	    /6.0;
-
-  return curly_H;
 }
 
 
@@ -173,63 +152,6 @@ bool getcod(double dP, long &lastpos)
 }
 
 
-void get_twiss3(long int loc,
-		Vector2 alpha[], Vector2 beta[], Vector2 nu[],
-		Vector2 eta[], Vector2 etap[])
-{
-  /* Get Twiss functions at magnet entrance-, center-, and exit. */
-
-  long int  j, k;
-  Vector2   dnu;
-  Matrix    Ascr0, Ascr1;
-
-  // Lattice functions at the magnet entrance
-  for (k = 0; k <= 1; k++) {
-    alpha[0][k] = Cell[loc-1].Alpha[k]; beta[0][k] = Cell[loc-1].Beta[k];
-    nu[0][k] = Cell[loc-1].Nu[k];
-    eta[0][k] = Cell[loc-1].Eta[k]; etap[0][k] = Cell[loc-1].Etap[k];
-  }
-
-  UnitMat(5, Ascr0);
-  for (k = 0; k <= 1; k++) {
-    Ascr0[2*k][2*k] = sqrt(Cell[loc-1].Beta[k]); Ascr0[2*k][2*k+1] = 0.0;
-    Ascr0[2*k+1][2*k] = -Cell[loc-1].Alpha[k]/Ascr0[2*k][2*k];
-    Ascr0[2*k+1][2*k+1] = 1/Ascr0[2*k][2*k];
-  }
-  Ascr0[0][4] = eta[0][X_]; Ascr0[1][4] = etap[0][X_];
-  Ascr0[2][4] = eta[1][Y_]; Ascr0[3][4] = etap[1][Y_];
-  CopyMat(5, Ascr0, Ascr1); MulLMat(5, Cell[loc].Elem.M->AU55, Ascr1);
-  dnu[0] = (atan(Ascr1[0][1]/Ascr1[0][0])-atan(Ascr0[0][1]/Ascr0[0][0]))
-           /(2.0*M_PI);
-  dnu[1] = (atan(Ascr1[2][3]/Ascr1[2][2])-atan(Ascr0[2][3]/Ascr0[2][2]))
-           /(2.0*M_PI);
-
-  // Lattice functions at the magnet center
-  for (k = 0; k <= 1; k++) {
-    alpha[1][k] = -Ascr1[2*k][2*k]*Ascr1[2*k+1][2*k]
-                  - Ascr1[2*k][2*k+1]*Ascr1[2*k+1][2*k+1];
-    beta[1][k] = pow(Ascr1[2*k][2*k], 2.0) + pow(Ascr1[2*k][2*k+1], 2);
-    nu[1][k] = nu[0][k] + dnu[k];
-    j = 2*k + 1; eta[1][k] = Ascr1[j-1][4]; etap[1][k] = Ascr1[j][4];
-  }
-
-  CopyMat(5, Ascr1, Ascr0); MulLMat(5, Cell[loc].Elem.M->AD55, Ascr1);
-  dnu[0] = (atan(Ascr1[0][1]/Ascr1[0][0])-atan(Ascr0[0][1]/Ascr0[0][0]))
-           /(2.0*M_PI);
-  dnu[1] = (atan(Ascr1[2][3]/Ascr1[2][2])-atan(Ascr0[2][3]/Ascr0[2][2]))
-           /(2.0*M_PI);
-
-  // Lattice functions at the magnet exit
-  for (k = 0; k <= 1; k++) {
-    alpha[2][k] = -Ascr1[2*k][2*k]*Ascr1[2*k+1][2*k]
-                  - Ascr1[2*k][2*k+1]*Ascr1[2*k+1][2*k+1];
-    beta[2][k] = pow(Ascr1[2*k][2*k], 2.0) + pow(Ascr1[2*k][2*k+1], 2);
-    nu[2][k] = nu[1][k] + dnu[k];
-    j = 2*k + 1; eta[2][k] = Ascr1[j-1][4]; etap[2][k] = Ascr1[j][4];
-  }
-}
-
-
 void getabn(Vector2 &alpha, Vector2 &beta, Vector2 &nu)
 {
   Vector2 gamma;
@@ -257,17 +179,12 @@ void TraceABN(long i0, long i1, const Vector2 &alpha, const Vector2 &beta,
     globval.CODvect[i] = 0.0;
   globval.CODvect[4] = dP;
 
-  if (globval.MatMeth)
-    Cell_Twiss_M(i0, i1, globval.Ascr, false, false, dP);
-  else {
-    for (i = 0; i <= 5; i++) {
-      Ascr[i] = tps(globval.CODvect[i]);
-      for (j = 0; j <= 5; j++)
-	Ascr[i] += globval.Ascr[i][j]*tps(0.0, j+1);
-    }
-    Cell_Twiss(i0, i1, Ascr, false, false, dP);
+  for (i = 0; i <= 5; i++) {
+    Ascr[i] = tps(globval.CODvect[i]);
+    for (j = 0; j <= 5; j++)
+      Ascr[i] += globval.Ascr[i][j]*tps(0.0, j+1);
   }
-
+  Cell_Twiss(i0, i1, Ascr, false, false, dP);
 }
 
 
@@ -449,18 +366,12 @@ void track(const char *file_name,
 	   1e2*x2[delta_], 1e3*x2[ct_]);
   }
 
-  if (globval.MatMeth) Cell_Concat(dp);
-
   do {
     (lastn)++;
     for (i = 0; i < nv_; i++)
       x1[i] = x2[i];
 
-    if (globval.MatMeth) {
-      Cell_fPass(x2, lastpos);
-    } else {
-      Cell_Pass(0, globval.Cell_nLoc, x2, lastpos);
-    }
+    Cell_Pass(0, globval.Cell_nLoc, x2, lastpos);
 
     for (i = x_; i <= py_; i++)
       xf[i] = x2[i] - globval.CODvect[i];
@@ -493,9 +404,6 @@ void track(const char *file_name,
 	      1e2*xf[4], 2.0*f_rf*180.0*xf[5]/c0);
   } while ((lastn != nmax) && (lastpos == globval.Cell_nLoc));
 
-  if (globval.MatMeth)
-    Cell_Pass(0, globval.Cell_nLoc, x1, lastpos);
-
   fclose(outf);
 }
 
@@ -525,11 +433,7 @@ void track_(double r, struct LOC_getdynap *LINK)
   lastn = 0;
   do {
     lastn++;
-    if (globval.MatMeth) {
-      Cell_fPass(x, lastpos);
-    } else {
-      Cell_Pass(0, globval.Cell_nLoc, x, lastpos);
-    }
+    Cell_Pass(0, globval.Cell_nLoc, x, lastpos);
   } while (lastn != LINK->nturn && lastpos == globval.Cell_nLoc);
   LINK->lost = (lastn != LINK->nturn);
 }
@@ -676,10 +580,7 @@ bool chk_if_lost(double x0, double y0, double delta,
   }
   do {
     lastn++;
-    if (globval.MatMeth)
-      Cell_fPass(x, lastpos);
-    else
-      Cell_Pass(0, globval.Cell_nLoc, x, lastpos);
+    Cell_Pass(0, globval.Cell_nLoc, x, lastpos);
     if (prt)
       printf("%4ld %7.3f %7.3f %7.3f %7.3f %7.3f %7.3f\n",
 	     lastn, 1e3*x[x_], 1e3*x[px_], 1e3*x[y_], 1e3*x[py_],
@@ -727,7 +628,6 @@ void getdynap(double &r, double phi, double delta, double eps,
 
   if (prt) printf("\n");
 
-  if (globval.MatMeth) Cell_Concat(delta);
   while (!chk_if_lost(rmax*cos(phi), rmax*sin(phi), delta, nturn, floqs)) {
     if (rmax < r_reset) rmax = r0;
     rmax *= 2.0;
@@ -2351,9 +2251,6 @@ void Read_Lattice(char *fic)
     globval.CODimax     = 40;    /* maximum number of iterations for COD
 				    algo */
     globval.delta_RF = RFacceptance;/* energy acceptance for SOLEIL */
-
-    Cell_SetdP(dP);  /* added for correcting BUG if non convergence:
-                        compute on momentum linear matrices */
   } else {
     // for transfer lines
     /* Initial settings : */
@@ -2378,7 +2275,7 @@ void Read_Lattice(char *fic)
 
     ChamberOff();
 
-    TransTwiss(alpha, beta, eta, etap, codvect);
+    ttwiss(alpha, beta, eta, etap, dP);
   }
 }
 
@@ -2517,42 +2414,6 @@ void GetTuneTrac(long Nbtour, double emax, double *nux, double *nuz)
 #undef nterm
 
 /****************************************************************************/
-/* void TransTwiss(double *alpha, double *beta, double *eta, double *etap, double *codvect)
-
-   Purpose: high level application
-          Calculate Twiss functions for a transport line
-
-   Input:
-       alpha   alpha fonctions at the line entrance
-       beta    beta fonctions at the line entrance
-       eta     disperion fonctions at the line entrance
-       etap    dipersion derivatives fonctions at the line entrance
-       codvect closed orbit fonctions at the line entrance
-
-   Output:
-       none
-
-   Return:
-       none
-
-   Global variables:
-
-
-   Specific functions:
-       TransTrace
-
-   Comments:
-       redundant with ttwiss
-
-****************************************************************************/
-void TransTwiss(Vector2 &alpha, Vector2 &beta, Vector2 &eta, Vector2 &etap,
-		Vector &codvect)
-{
-  TransTrace(0, globval.Cell_nLoc, alpha, beta, eta, etap, codvect);
-}
-
-
-/****************************************************************************/
 /* void ttwiss(double *alpha, double *beta, double *eta, double *etap, double dP)
 
    Purpose:
@@ -2574,7 +2435,6 @@ void TransTwiss(Vector2 &alpha, Vector2 &beta, Vector2 &eta, Vector2 &etap,
        none
 
    Comments:
-       redundant with TransTwiss
 
 ****************************************************************************/
 void ttwiss(const Vector2 &alpha, const Vector2 &beta,

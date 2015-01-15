@@ -130,7 +130,6 @@ class globvalrec(Structure):
                 ('Vr',          Matrix),
                 ('Vi',          Matrix),
 
-                ('MatMeth',     c_bool),
                 ('Cavity_on',   c_bool),
                 ('radiation',   c_bool),
                 ('emittance',   c_bool),

@@ -602,7 +602,7 @@ template<typename T>
 void Mpole_Pass(CellType &Cell, ss_vect<T> &x)
 {
   int        seg = 0;
-  double     k = 0.0, dL = 0.0, dL1 = 0.0, dL2 = 0.0;
+  double     dL = 0.0, dL1 = 0.0, dL2 = 0.0;
   double     dkL1 = 0.0, dkL2 = 0.0, h_ref = 0.0;
   elemtype   *elemp;
   MpoleType  *M;
@@ -645,25 +645,13 @@ void Mpole_Pass(CellType &Cell, ss_vect<T> &x)
   case Meth_Linear:
 
   case Meth_First:
-    if (M->Pthick == thick) {
-      /* First Linear  */
-//      LinTrans(5L, M->AU55, x);
-      k = M->PB[Quad+HOMmax];
-      /* retrieve normal quad component already in AU55 */
-      M->PB[Quad+HOMmax] = 0.0;
-      /* Kick w/o quad component */
-      thin_kick(M->Porder, M->PB, elemp->PL, 0.0, 0.0, x);
-      /* restore quad component */
-      M->PB[Quad+HOMmax] = k;
-      /* Second Linear */
-//      LinTrans(5L, M->AD55, x);
-    } else /* thin kick */
-      thin_kick(M->Porder, M->PB, 1.0, 0.0, 0.0, x);
+    cout << "Mpole_Pass: Meth_First not supported" << endl;
+    exit_(1);
     break;
 
   case Meth_Second:
     cout << "Mpole_Pass: Meth_Second not supported" << endl;
-    exit_(0);
+    exit_(1);
     break;
 
   case Meth_Fourth:
@@ -1179,7 +1167,6 @@ void Wiggler_Pass(CellType &Cell, ss_vect<T> &X)
   switch (W->Pmethod) {
 
   case Meth_Linear:
-//    LinTrans(5L, W->W55, X);
     cout << "Wiggler_Pass: Meth_Linear not supported" << endl;
     exit_(1);
     break;
@@ -2018,667 +2005,6 @@ void Solenoid_Pass(CellType &Cell, ss_vect<T> &ps)
 }
 
 
-// Matrix model
-
-void GtoL_M(Matrix &X, Vector2 &T)
-{
-  Matrix R;
-
-  /* Rotate */
-  R[0][0] = T[0];  R[0][1] = 0.0;   R[0][2] = T[1]; R[0][3] = 0.0;
-  R[1][0] = 0.0;   R[1][1] = T[0];  R[1][2] = 0.0;  R[1][3] = T[1];
-  R[2][0] = -T[1]; R[2][1] = 0.0;   R[2][2] = T[0]; R[2][3] = 0.0;
-  R[3][0] = 0.0;   R[3][1] = -T[1]; R[3][2] = 0.0;  R[3][3] = T[0];
-  MulLMat(4L, R, X);
-}
-
-
-void LtoG_M(Matrix &X, Vector2 &T)
-{
-  Matrix  R;
-
-  /* Rotate */
-  R[0][0] = T[0]; R[0][1] = 0.0;  R[0][2] = -T[1]; R[0][3] = 0.0;
-  R[1][0] = 0.0;  R[1][1] = T[0]; R[1][2] = 0.0;   R[1][3] = -T[1];
-  R[2][0] = T[1]; R[2][1] = 0.0;  R[2][2] = T[0];  R[2][3] = 0.0;
-  R[3][0] = 0.0;  R[3][1] = T[1]; R[3][2] = 0.0;   R[3][3] = T[0];
-  MulLMat(4, R, X);
-}
-
-
-void Drift_Pass_M(CellType &Cell, Vector &xref, Matrix &X)
-{
-
-  MulLMat(5, Cell.Elem.D->D55, X); Drift(Cell.Elem.PL, xref);
-}
-
-
-void thin_kick_M(int Order, double MB[], double L, double irho,
-		 Vector &xref, Matrix &x)
-{
-  int        i;
-  mpolArray  MMB;
-  Vector     z;
-  Matrix     Mk;
-
-  if (2 > Order || Order > HOMmax)
-    return;
-  for (i = 2; i <= Order; i++) {
-    MMB[i+HOMmax-1] = (i-1)*MB[i+HOMmax]; MMB[HOMmax-i+1] = (i-1)*MB[HOMmax-i];
-  }
-  z[0] = xref[0]; z[1] = 0.0; z[2] = xref[2]; z[3] = 0.0;
-  z[4] = 0.0; z[5] = 0.0;
-  thin_kick(Order-1, MMB, L, 0.0, 0.0, z);
-  z[1] -= L*sqr(irho);
-  UnitMat(5L, Mk);
-  Mk[1][0] = z[1]; Mk[1][2] = z[3]; Mk[3][0] = z[3]; Mk[3][2] = -z[1];
-  MulLMat(5L, Mk, x);
-}
-
-
-static void make3by3(Matrix &A,
-		     double a11, double a12, double a13,
-		     double a21, double  a22, double a23,
-		     double a31, double a32, double a33)
-{
-  /*
-       Set the 3x3 matrix A to:
-                                     (a11 a12 a13)
-                                 A = (a21 a22 a23)
-                                     (a31 a32 a33)
-  */
-
-  UnitMat(ss_dim, A);  /* set matrix to unit 3x3 matrix */
-  A[0][0] = a11; A[0][1] = a12; A[0][2] = a13;
-  A[1][0] = a21; A[1][1] = a22; A[1][2] = a23;
-  A[2][0] = a31; A[2][1] = a32; A[2][2] = a33;
-}
-
-
-static void make4by5(Matrix &A, double a11, double a12, double a15,
-                     double a21, double a22, double a25, double a33,
-                     double a34, double a35, double a43, double a44,
-                     double a45)
-{
-  UnitMat(ss_dim, A);  /* Initializes A to identity matrix */
-  A[0][0] = a11; A[0][1] = a12; A[0][4] = a15;
-  A[1][0] = a21; A[1][1] = a22; A[1][4] = a25;
-  A[2][2] = a33; A[2][3] = a34; A[2][4] = a35;
-  A[3][2] = a43; A[3][3] = a44; A[3][4] = a45;
-}
-
-
-static void mergeto4by5(Matrix &A, Matrix &AH, Matrix &AV)
-{
-  /*
-       merges two 3x3 matrices AH (H-plane) and AV (V-plane) into one
-       big 4x5 matrix
-
-                   (ah11 ah12    0    0    ah13)
-                   (ah21 ah22    0    0    ah23)
-               A=  (  0    0   av11 av12   av13)
-                   (  0    0   av21 av22   ah13)
-                   (  0    0     0    0       1)
-  */
-  int i, j;
-
-  UnitMat(ss_dim, A);
-  for (i = 1; i <= 2; i++) {
-    A[i-1][4] = AH[i-1][2]; A[i+1][4] = AV[i-1][2];
-    for (j = 1; j <= 2; j++) {
-      A[i-1][j-1] = AH[i-1][j-1]; A[i+1][j+1] = AV[i-1][j-1];
-    }
-  }
-}
-
-
-void Drift_SetMatrix(int Fnum1, int Knum1)
-{
-  /*
-        Make transport matrix for drift from
-        familiy Fnum1 and Kid number Knum
-              L = L / (1 + dP)
-
-                     ( 1 L 0 0 0)
-             D55  =  ( 0 1 0 0 0)
-                     ( 0 0 1 L 0)
-                     ( 0 0 0 1 0)
-  */
-
-  double    L;
-  CellType  *cellp;
-  elemtype  *elemp;
-  DriftType *D;
-
-  if (ElemFam[Fnum1-1].nKid <= 0) return;
-  cellp  = &Cell[ElemFam[Fnum1-1].KidList[Knum1-1]];
-  elemp = &cellp->Elem;
-  D = elemp->D;
-  L = elemp->PL/(1.0+globval.dPparticle);  /* L = L / (1 + dP) */
-  make4by5(D->D55,
-	   1.0, L, 0.0, 0.0, 1.0, 0.0,
-	   1.0, L, 0.0, 0.0, 1.0, 0.0);
-}
-
-
-static void driftmat(Matrix &ah, double L)
-{
-  L /= 1 + globval.dPparticle;
-  make4by5(ah,
-	   1.0, L, 0.0, 0.0, 1.0, 0.0,
-	   1.0, L, 0.0, 0.0, 1.0, 0.0);
-}
-
-
-static void quadmat(Matrix &ahv, double L, double k)
-{
-  /*
-     creates the avh matrix for a quadrupole
-     where av and ah are the horizontal and vertical
-     focusing or defocusing matrices
-
-
-                            1/2                         1/2
-                cos(L* (|K|)   )            sin(L* (|K|)   )
-            c = ---------------          s = ---------------
-                          1/2                         1/2
-                 (1  + Dp)                    (1  + Dp)
-                            1/2
-            sk = (|K|(1+dP))
-
-        - if k > 0
-                  H plane                      V plane
-
-                (  c   s/sk 0 )              (   ch sh/k 0 )
-           ah = ( sk*s  c   0 )         av = ( sk*sh ch  0 )
-                (  0    0   1 )              (   0   0   1 )
-
-
-                         ( ah11 ah12    0    0    ah13 )
-                         ( ah21 ah22    0    0    ah23 )
-                  avh =  (  0    0    av11 av12   av13 )
-                         (  0    0    av21 av22   ah13 )
-                         (  0    0     0    0       1  )                     */
-
-  double t, sk, sk0, s, c;
-  Matrix a, ah, av;
-
-  if (k == 0.0) {
-    /* pure drift focusing */
-    driftmat(ahv, L);
-    return;
-  }
-  sk0 = sqrt(fabs(k));
-  t = L*sk0/sqrt(1.0+globval.dPparticle);
-  c = cos(t); s = sin(t);
-  sk = sk0*sqrt(1.0+globval.dPparticle);
-  make3by3(a, c, s/sk, 0.0, -sk*s, c, 0.0, 0.0, 0.0, 1.0);
-  if (k > 0.0)
-    CopyMat(3L, a, ah);
-  else
-    CopyMat(3L, a, av);
-  c  = cosh(t); s  = sinh(t);
-  sk = sk0*sqrt(1.0+globval.dPparticle);
-  make3by3(a, c, s/sk, 0.0, sk*s, c, 0.0, 0.0, 0.0, 1.0);
-  if (k > 0.0)
-    CopyMat(3L, a, av);
-  else
-    CopyMat(3L, a, ah);
-  mergeto4by5(ahv, ah, av);
-}
-
-
-static void bendmat(Matrix &M, double L, double irho, double phi1,
-                    double phi2, double gap, double k)
-{
-  /*  called  by Mpole_Setmatrix
-
-       For a quadrupole  see quadmat routine for explanation
-
-       For a dipole
-
-                         (1            0 0)
-           Edge(theta) = (h*tan(theta) 1 0)
-                         (0            0 1)
-
-                         (1                 0 0)
-           Edge(theta) = (-h*tan(theta-psi) 1 0)
-                         (0                 0 1)
-
-                                    2
-                   K1*gap*h*(1 + sin phi)
-            psi = -----------------------, K1 = 1/2
-                        cos phi                                              */
-
-  double r, s, c, sk, p, fk, afk;
-  Matrix edge, ah, av;
-  double coef, scoef;
-
-  if (irho == 0.0) {
-    /* Quadrupole matrix */
-    quadmat(M, L, k);
-    return;
-  }
-
-  /* For multipole w/ irho !=0 eg dipole */
-  coef  = 1.0 + globval.dPparticle; scoef = sqrt(coef); r = L*irho/scoef;
-
-  if (k == 0.0) {
-    /* simple vertical dipole magnet */
-    /*
-       H-plane
-                          2    2                2
-                        px + py              2 x
-                   H = --------  - h*x*dP + h ---
-                        2*(1+dP)               2
-
-                     2     2
-                   dx     h        h*dP
-                   --2 + ---- x = -----
-                   ds    1+dP      1+dP
-
-
-       let be u = Lh/sqrt(1+dP) then the transfert matrix becomes:
-
-    (                              sin(u)              1- cos(u)      )
-    (          cos(u)         --------------       -----------------  )
-    (                          h sqrt(1+dP)                 h         )
-    (  -sin(u)*sqrt(1+dP)*h        cos(u)           sin(u)*sqrt(1+dP) )
-    (            0                  0                       1         )
-
-    */
-    c = cos(r); s = sin(r);
-    make3by3(ah, c, s/(irho*scoef), (1.0-c)/irho, -s*scoef*irho, c,
-             s*scoef, 0.0, 0.0, 1.0);
-    /*
-      V-plane: it is just a drift
-      (        L     )
-      (   1   ----  0)
-      (       1+dP   )
-      (   0     1   0)
-      (   0     0   1)
-    */
-    make3by3(av, 1.0, L/coef, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0);
-  } else {
-    /* gradient bend, k= n/rho^2 */
-    /*
-      K = -k -h*h
-      p = L*sqrt(|K|)/sqrt(1+dP)
-    */
-    fk  = -k - irho*irho; afk = fabs(fk); sk = sqrt(afk); p = L*sk/scoef;
-    if (fk < 0.0) {
-     /*
-       H-plane
-                          2    2                     2
-                        px + py                 2   x
-                   H = --------  - h*x*dP + (k+h ) ---
-                        2*(1+dP)                    2
-
-                     2      2
-                   dx    k+h        h*dP
-                   --2 + ---- x = -----
-                   ds    1+dP      1+dP
-
-
-       let be u = Lsqrt(|h*h+b2|)/sqrt(1+dP)
-       then the transfert matrix becomes:
-
-    (                              sin(u)              1- cos(u)      )
-    (          cos(u)         --------------       -----------------  )
-    (                          sk*sqrt(1+dP)           |k+h*h|*h      )
-    (  -sin(u)*sqrt(1+dP)*sk      cos(u)        h*sin(u)*sqrt(1+dP)/sk)
-    (            0                  0                       1         )
-
-    */
-      c = cos(p); s = sin(p);
-      make3by3(ah, c, s/sk/scoef, irho*(1.0-c)/(coef*afk),
-              -scoef*sk*s, c, scoef*irho/sk*s, 0.0, 0.0, 1.0);
-      sk = sqrt(fabs(k)); p = L*sk/scoef; c = cosh(p); s = sinh(p);
-      make3by3(av, c, s/sk/scoef, 0.0, sk*s*scoef, c, 0.0, 0.0, 0.0,
-               1.0);
-    } else {
-      /* vertically focusing */
-      c = cosh(p); s = sinh(p);
-      make3by3(ah, c, s/sk/scoef, (c-1.0)*irho/afk, scoef*s*sk, c,
-               scoef*s*irho/sk, 0.0, 0.0, 1.0);
-      sk = sqrt(fabs(k)); p = L*sk/scoef; c = cos(p); s = sin(p);
-      make3by3(av, c, s/sk/scoef, 0.0, -sk*s*scoef, c, 0.0, 0.0, 0.0, 1.0);
-    }
-  }
-  /* Edge focusing, no effect due to gap between AU and AD */
-
-  /*
-                          (1            0 0)
-            Edge(theta) = (h*tan(theta) 1 0)
-                          (0            0 1)
-
-                          (1                 0 0)
-            Edge(theta) = (-h*tan(theta-psi) 1 0)
-                          (0                 0 1)
-
-                                    2
-                   K1*gap*h*(1 + sin phi)
-            psi = -----------------------, K1 = 1/2
-                        cos phi
-
-  */
-  if (phi1 != 0.0 || gap > 0.0) {
-    UnitMat(3L, edge);
-    edge[1][0] = irho*tan(dtor(phi1));
-    MulRMat(3L, ah, edge); /* ah <- ah*edge */
-    if (true)
-      edge[1][0] = -irho*tan(dtor(phi1)-get_psi(irho, phi1, gap))/coef;
-    else
-      edge[1][0] = -irho*tan(dtor(phi1)-get_psi(irho, phi1, gap));
-    MulRMat(3L, av, edge); /* av <- av*edge */
-  } else if (phi2 != 0.0 || gap < 0.0) {
-    UnitMat(3L, edge);
-    edge[1][0] = irho*tan(dtor(phi2));
-    MulLMat(3L, edge, ah); /* av <- edge*av */
-    if (true)
-      edge[1][0] = -irho*tan(dtor(phi2)-get_psi(irho, phi2, fabs(gap)))/coef;
-    else
-      edge[1][0] = -irho*tan(dtor(phi2)-get_psi(irho, phi2, fabs(gap)));
-    MulLMat(3L, edge, av); /* av <- edge*av */
-  }
-  mergeto4by5(M, ah, av);
-}
-
-
-void Mpole_Setmatrix(int Fnum1, int Knum1, double K)
-{
-  /*   Compute transfert matrix for a quadrupole magnet
-       the transfert matrix A is plitted into two part
-           A = AD55xAU55
-
-           where AD55 is the downstream transfert matrix
-           corresponding to a half magnet w/ an exit angle
-           and no entrance angle.
-           The linear frindge field is taken into account
-
-           where AU55 is the upstream transfert matrix
-           corresponding to a half magnet w/ an entrance
-           angle and no exit angle.
-           The linear frindge field is taken into account                    */
-
-  CellType  *cellp;
-  elemtype  *elemp;
-  MpoleType *M;
-
-  if (ElemFam[Fnum1-1].nKid <= 0) {
-    printf("Mpole_Setmatrix: no kids in famile %d\n", Fnum1);
-    return;
-  }
-  cellp  = &Cell[ElemFam[Fnum1-1].KidList[Knum1-1]]; elemp = &cellp->Elem;
-  M = elemp->M;
-
-  bendmat(M->AU55, elemp->PL/2.0, M->Pirho,
-          M->PTx1, 0.0, M->Pgap, K);
-  bendmat(M->AD55, elemp->PL/2.0, M->Pirho, 0.0,
-          M->PTx2, -M->Pgap, K);
-}
-
-
-void Wiggler_Setmatrix(int Fnum1, int Knum1, double L, double kx, double kz,
-		       double k0)
-{
-  double       t, s, c, k, ky, LL;
-  Matrix       ah, av;
-  double       TEMP;
-  WigglerType  *W;
-
-  LL = L/(1.0+globval.dPparticle);
-  if (kx == 0e0)
-    make3by3(ah, 1.0, LL, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0);
-  else {
-    TEMP = kx/kz; k = sqrt(TEMP*TEMP*fabs(k0));
-    t = LL*k; c = cosh(t); s = sinh(t);
-    make3by3(ah, c, s/k, 0.0, k*s, c, 0.0, 0.0, 0.0, 1.0);
-  }
-  if (k0 == 0e0)
-    make3by3(av, 1.0, LL, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0);
-  else {
-    ky = sqrt(kx*kx+kz*kz); TEMP = ky/kz; k = sqrt(TEMP*TEMP*fabs(k0));
-    t = LL*k; c = cos(t); s = sin(t);
-    make3by3(av, c, s/k, 0.0, -k*s, c, 0.0, 0.0, 0.0, 1.0);
-  }
-  W = Cell[ElemFam[Fnum1-1].KidList[Knum1-1]].Elem.W;
-  mergeto4by5(W->W55, ah, av);
-}
-
-
-void Mpole_Pass_M(CellType &Cell, Vector &xref, Matrix &x)
-{
-  double     k;
-  elemtype   *elemp;
-  MpoleType  *M;
-
-  elemp = &Cell.Elem; M = elemp->M;
-  /* Global -> Local */
-  GtoL_M(x, Cell.dT); GtoL(xref, Cell.dS, Cell.dT, M->Pc0, M->Pc1, M->Ps1);
-
-  switch (M->Pmethod) {
-
-  case Meth_Linear:
-
-  case Meth_Fourth:   /* Nothing */
-// Laurent
-//  case Meth_First:   /* Nothing */
-    /* Tracy integrator */
-    if (M->Pthick == thick) {
-      /* thick element */
-      /* First Linear */
-      MulLMat(5, M->AU55, x); LinTrans(5, M->AU55, xref);
-      k = M->PB[Quad+HOMmax];
-      M->PB[Quad+HOMmax] = 0.0;
-      /* Kick */
-      thin_kick_M(M->Porder, M->PB, elemp->PL, 0.0, xref, x);
-      thin_kick(M->Porder, M->PB, elemp->PL, 0.0, 0.0, xref);
-      M->PB[Quad+HOMmax] = k;
-      /* Second Linear */
-      MulLMat(5L, M->AD55, x); LinTrans(5L, M->AD55, xref);
-    }
-    else {
-      /* thin kick */
-      thin_kick_M(M->Porder, M->PB, 1.0, 0.0, xref, x);
-      thin_kick(M->Porder, M->PB, 1.0, 0.0, 0.0, xref);
-    }
-    break;
-  }
-
-  /* Local -> Global */
-  LtoG_M(x, Cell.dT);
-  LtoG(xref, Cell.dS, Cell.dT, M->Pc0, M->Pc1, M->Ps1);
-}
-
-
-void Wiggler_Pass_M(CellType &Cell, Vector &xref, Matrix &x)
-{
-  elemtype     *elemp;
-  WigglerType  *W;
-
-  elemp = &Cell.Elem; W = elemp->W;
-
-  /* Global -> Local */
-  GtoL_M(x, Cell.dT); GtoL(xref, Cell.dS, Cell.dT, 0.0, 0.0, 0.0);
-
-  switch (W->Pmethod) {
-  case Meth_Linear:   /* Nothing */
-    /* Tracy integrator */
-    MulLMat(5, W->W55, x); LinTrans(5L, W->W55, xref);
-    break;
-  }
-
-  /* Local -> Global */
-  LtoG_M(x, Cell.dT); LtoG(xref, Cell.dS, Cell.dT, 0.0, 0.0, 0.0);
-}
-
-
-void Insertion_SetMatrix(int Fnum1, int Knum1)
-{
-/* void Insertion_SetMatrix(int Fnum1, int Knum1)
-
-   Purpose: called by Insertion_Init
-       Constructs the linear matrices
-          K55 kick matrix for one slice
-          D55 drift matrix for one slice
-          KD55 full linear transport matrix
-
-   Input:
-       Fnum1 Family number
-       Knum1 Kid number
-
-   Output:
-       none
-
-   Return:
-       none
-
-   Global variables:
-       globval
-
-   Specific functions:
-       LinearInterpDeriv2
-
-   Comments:
-       04/07/03 derivative interpolation around closed orbit
-       10/01/05 First order kick added
-
-       Need to be checked energy dependence and so on.                       */
-
-  int            i = 0;
-  double         L = 0.0;
-  CellType       *cellp;
-  elemtype       *elemp;
-  InsertionType  *ID;
-  double         alpha0 = 0.0, alpha02 = 0.0;
-  double         DTHXDX = 0.0, DTHXDZ = 0.0, DTHZDX = 0.0, DTHZDZ = 0.0;
-  int            Nslice = 0;
-
-  if (ElemFam[Fnum1-1].nKid <= 0)
-    return;
-
-  cellp   = &Cell[ElemFam[Fnum1-1].KidList[Knum1-1]];
-  elemp  = &cellp->Elem;
-  ID  = elemp->ID;
-  Nslice = ID->PN;
-  alpha0 = c0/globval.Energy*1E-9*ID->scaling;
-  alpha02 = alpha0*alpha0/(1.0+globval.dPparticle);
-
-  UnitMat(6L,ID->D55);
-  UnitMat(6L,ID->K55);
-  UnitMat(6L,ID->KD55);
-
-//  if (globval.radiation == false && globval.Cavity_on == false)
-//  {
-    /* (Nslice + 1) Drifts for Nslice Kicks */
-
-    /* Drift Matrix */
-    L = elemp->PL/(Nslice+1)/(1.0+globval.dPparticle);
-    make4by5(ID->D55,
-	     1.0, L, 0.0, 0.0, 1.0, 0.0, 1.0, L, 0.0, 0.0, 1.0, 0.0);
-
-    /* First order Kick */
-    if (ID->firstorder) {
-      /* quadrupole Kick matrix linearized around closed orbit */
-      if (!ID->linear) {
-//        SplineInterpDeriv3(cellp->BeamPos[0], cellp->BeamPos[2],
-//			   &DTHXDX, &DTHXDZ, &DTHZDX, &DTHZDZ, cellp);
-      } else {
-//        LinearInterpDeriv2(cellp->BeamPos[0], cellp->BeamPos[2],
-//			   &DTHXDX, &DTHXDZ, &DTHZDX, &DTHZDZ, cellp, 1);
-      }
-      ID->K55[1][0] = ID->K55[1][0] + alpha0*DTHXDX/Nslice;
-      ID->K55[1][2] = ID->K55[1][2] + alpha0*DTHXDZ/Nslice;
-      ID->K55[3][0] = ID->K55[3][0] + alpha0*DTHZDX/Nslice;
-      ID->K55[3][2] = ID->K55[3][2] + alpha0*DTHZDZ/Nslice;
-    }
-
-    /* Second order Kick */
-    if (ID->secondorder){
-      /* quadrupole Kick matrix linearized around closed orbit */
-      if (!ID->linear){
-//        SplineInterpDeriv3(cellp->BeamPos[0], cellp->BeamPos[2],
-//			   &DTHXDX, &DTHXDZ, &DTHZDX, &DTHZDZ, cellp);
-      } else{
-//        LinearInterpDeriv2(cellp->BeamPos[0], cellp->BeamPos[2],
-//			   &DTHXDX, &DTHXDZ, &DTHZDX, &DTHZDZ, cellp, 2);
-      }
-      ID->K55[1][0] = ID->K55[1][0] + alpha02*DTHXDX/Nslice;
-      ID->K55[1][2] = ID->K55[1][2] + alpha02*DTHXDZ/Nslice;
-      ID->K55[3][0] = ID->K55[3][0] + alpha02*DTHZDX/Nslice;
-      ID->K55[3][2] = ID->K55[3][2] + alpha02*DTHZDZ/Nslice;
-    }
-
-    MulLMat(6L,ID->D55, ID->KD55);
-
-    for (i = 1; i <= Nslice; i++) {
-      MulLMat(6L,ID->K55, ID->KD55);
-      MulLMat(6L,ID->D55, ID->KD55);
-    }
-
-//  }
-//  else
-//  {
-//    L = elemp->PL/(1.0 + globval.dPparticle);  /* L = L/(1 + dP) */
-//    make4by5(ID->KD55,
-//	     1.0, L, 0.0, 0.0, 1.0, 0.0,
-//	     1.0, L, 0.0, 0.0, 1.0, 0.0);
-//  }
-}
-
-
-void Insertion_Pass_M(CellType &Cell, Vector &xref, Matrix &M)
-{
-  /* Purpose: called by Elem_Pass_M
-       matrix propagation through a insertion kick-driftlike matrix
-       x   = KD55*x
-       xref= insertion(xref)
-
-   Input:
-       xref vector
-       x    matrix
-
-   Output:
-       xref
-       x
-
-   Return:
-       none
-
-   Global variables:
-       none
-
-   Specific functions:
-       MulLMat, Drft
-
-   Comments:
-       01/07/03 6D tracking activated                                        */
-
-  elemtype *elemp;
-
-  elemp = &Cell.Elem;
-
-  /* Global -> Local */
-//  GtoL_M(x, Cell->dT);
-//  GtoL(xref, Cell->dS, Cell->dT, 0.0, 0.0, 0.0);
-//  if (globval.radiation == false && globval.Cavity_on == false)
-//  {
-    MulLMat(5, elemp->ID->KD55, M); /* M<-KD55*M */
-    LinTrans(5, elemp->ID->KD55, xref);
-//  }
-//  else
-//  {
-//    MulLMat(5L, elemp->ID->D55, M); /* X<-D55*X */
-//    Drft(elemp->PL, elemp->PL/(1.0+xref[4]), xref);
-//  }
-
-  /* Local -> Global */
-//  LtoG_M(x, Cell->dT);
-//  LtoG(xref, Cell->dS, Cell->dT, 0.0, 0.0, 0.0);
-}
-
-
 void getelem(long i, CellType *cellrec) { *cellrec = Cell[i]; }
 
 void putelem(long i, CellType *cellrec) { Cell[i] = *cellrec; }
@@ -3119,8 +2445,6 @@ void Drift_Init(int Fnum1)
     cellp->dT[1] = 0.0; /* sin = 0 */
     cellp->dS[0] = 0.0; /* no H displacement */
     cellp->dS[1] = 0.0; /* no V displacement */
-    /* set Drift matrix */
-    Drift_SetMatrix(Fnum1, i);
   }
 }
 
@@ -3185,7 +2509,6 @@ void Mpole_Init(int Fnum1)
       elemp->M->Pc1 = cellp->dT[0]*elemp->M->Pc0;
       /* sin roll: sin(theta/2)*cos(dT) */
       elemp->M->Ps1 = cellp->dT[1]*elemp->M->Pc0;
-      Mpole_Setmatrix(Fnum1, i, x);
     } else /* element as thin lens */
       elemp->M->Pthick = pthicktype(thin);
   }
@@ -3221,9 +2544,6 @@ void Wiggler_Init(int Fnum1)
     cellp->dT[1] = sin(dtor(elemp->W->PdTpar));
 
     cellp->dS[0] = 0.0; cellp->dS[1] = 0.0;
-    Wiggler_Setmatrix(Fnum1, i, cellp->Elem.PL,
-		      cellp->Elem.W->kxV[0], 2.0*M_PI/cellp->Elem.W->lambda,
-		      x);
   }
 }
 #undef order
@@ -3920,8 +3240,6 @@ void Insertion_Init(int Fnum1)
     cellp->dT[0] = cos(dtor(elemp->ID->PdTpar));
     cellp->dT[1] = sin(dtor(elemp->ID->PdTpar));
     cellp->dS[0] = 0.0; cellp->dS[1] = 0.0;
-
-    Insertion_SetMatrix(Fnum1, i);
   }
 }
 
@@ -4013,7 +3331,6 @@ void Mpole_SetPB(int Fnum1, int Knum1, int Order)
   /*  called by Cell_SetdP
        Compute full multipole composent as sum of design, systematic
        and random part
-       Compute transport matrix if quadrupole (Order=2)
        Set multipole order to Order if multipole (Order >2)                  */
 
   CellType *cellp;  /* pointer on the Cell */
@@ -4027,9 +3344,6 @@ void Mpole_SetPB(int Fnum1, int Knum1, int Order)
     M->PBrms[Order+HOMmax]*M->PBrnd[Order+HOMmax];
   if (abs(Order) > M->Porder && M->PB[Order+HOMmax] != 0.0)
     M->Porder = abs(Order);
-  if (M->Pmethod == Meth_Linear && Order == 2L)
-    Mpole_Setmatrix(Fnum1, Knum1, M->PB[Order+HOMmax]);
-  cellconcat = false;
 }
 
 
@@ -4083,7 +3397,6 @@ void Mpole_SetdS(int Fnum1, int Knum1)
   elemp = &cellp->Elem; M = elemp->M;
   for (j = 0; j <= 1; j++)
     cellp->dS[j] = M->PdSsys[j] + M->PdSrms[j]*M->PdSrnd[j];
-  cellconcat = false;
 }
 
 void Mpole_SetdT(int Fnum1, int Knum1)
@@ -4102,7 +3415,6 @@ void Mpole_SetdT(int Fnum1, int Knum1)
   M->Pc0 = sin(elemp->PL*M->Pirho/2e0);
   M->Pc1 = cos(dtor(M->PdTpar))*M->Pc0;
   M->Ps1 = sin(dtor(M->PdTpar))*M->Pc0;
-  cellconcat = false;
 }
 
 
@@ -4150,11 +3462,6 @@ void Wiggler_SetPB(int Fnum1, int Knum1, int Order)
   W = elemp->W;
   if (abs(Order) > W->Porder)
     W->Porder = abs(Order);
-  if (W->Pmethod == Meth_Linear && Order == 2)
-    Wiggler_Setmatrix(Fnum1, Knum1, elemp->PL,
-		      W->kxV[0], 2.0*M_PI/cellp->Elem.W->lambda,
-                      W->PBW[Order+HOMmax]);
-  cellconcat = false;
 }
 
 
@@ -4170,12 +3477,6 @@ void Wiggler_SetdS(int Fnum1, int Knum1)
   for (j = 0; j <= 1; j++)
     cellp->dS[j] = W->PdSsys[j]
                    + W->PdSrms[j]*W->PdSrnd[j];
-  cellconcat = false;
-  if (W->Pmethod == Meth_Linear)
-    Wiggler_Setmatrix(Fnum1, Knum1, elemp->PL,
-		      W->kxV[0], 2.0*M_PI/cellp->Elem.W->lambda,
-                      W->PBW[Quad+HOMmax]);
-  cellconcat = false;
 }
 
 void Wiggler_SetdT(int Fnum1, int Knum1)
@@ -4188,9 +3489,4 @@ void Wiggler_SetdT(int Fnum1, int Knum1)
   elemp = &cellp->Elem; W = elemp->W;
   cellp->dT[0] = cos(dtor(W->PdTpar+W->PdTsys+W->PdTrms*W->PdTrnd));
   cellp->dT[1] = sin(dtor(W->PdTpar+W->PdTsys+W->PdTrms*W->PdTrnd));
-  if (W->Pmethod == Meth_Linear)
-    Wiggler_Setmatrix(Fnum1, Knum1, elemp->PL, W->kxV[0],
-		      2.0*M_PI/cellp->Elem.W->lambda,
-		      W->PBW[Quad+HOMmax]);
-  cellconcat = false;
 }

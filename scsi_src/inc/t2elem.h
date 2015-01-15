@@ -98,30 +98,9 @@ template<typename T>
 void Solenoid_Pass(CellType &Cell, ss_vect<T> &x);
 
 
-void Drift_SetMatrix(int Fnum1, int Knum1);
-
-void Insertion_SetMatrix(int Fnum1, int Knum1);
-
-
 void Mpole_SetPB(int Fnum1, int Knum1, int Order);
 
 void Wiggler_SetPB(int Fnum1, int Knum1, int Order);
-
-
-void GtoL_M(Matrix &X, Vector2 &T);
-
-void LtoG_M(Matrix &X, Vector2 &T);
-
-void Drift_Pass_M(CellType &Cell, Vector &xref, Matrix &X);
-
-void thin_kick_M(int Order, double MB[], double L, double irho,
-		 Vector &xref, Matrix &x);
-
-void Mpole_Pass_M(CellType &Cell, Vector &xref, Matrix &x);
-
-void Wiggler_Pass_M(CellType &Cell, Vector &xref, Matrix &x);
-
-void Insertion_Pass_M(CellType &Cell, Vector &xref, Matrix &M);
 
 
 void MulLsMat(Matrix &A, Matrix &B);

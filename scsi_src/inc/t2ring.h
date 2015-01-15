@@ -13,9 +13,6 @@ void GetNu(Vector2 &nu, Matrix &M);
 void Cell_Twiss(long i0, long i1, ss_vect<tps> &Ascr, bool chroma, bool ring,
 		double dP);
 
-void Cell_Twiss_M(long i0, long i1, Matrix &Ascr, bool chroma, bool ring,
-		  double dP);
-
 void Cell_GetABGN(Matrix &M,
 		  Vector2 &alpha, Vector2 &beta, Vector2 &gamma, Vector2 &nu);
 
@@ -34,7 +31,3 @@ void Ring_Fitchrom(Vector2 &ksi, double eps, iVector2 &ns,
 
 void Ring_FitDisp(long pos, double eta, double eps, long nq, long q[],
                   double dkL, long imax);
-
-
-void TransTrace(long i0, long i1, Vector2 &alpha, Vector2 &beta, Vector2 &eta,
-                Vector2 &etap, Vector &codvect);
