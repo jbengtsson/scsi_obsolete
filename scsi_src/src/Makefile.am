@@ -19,6 +19,8 @@ INCLUDES = -I../inc -I/usr -Iglps
 
 # Ignore case in patterns.
 LFLAGS   = -i
+# Ensure header file is generated before build.
+BUILT_SOURCES = parser.h
 # Flags: debug, verbose, produce header file, and emulate POSIX Yacc.
 YFLAGS   = -t -v -d -y
 # Flags: generate Position Independenct Code (PIC); for shared library.
