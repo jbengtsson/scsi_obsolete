@@ -58,7 +58,7 @@ def plt_opt(displ):
 
 
 sys.stdout.write('\n')
-pyscsi.Read_Lattice('/home/bengtsson/git_repos/scsi/scsi_src/glps/tracy_1')
+pyscsi.Read_Lattice('/home/bengtsson/git_repos/scsi/scsi_src/src/glps/tracy_1')
 
 pyscsi.Ring_GetTwiss(True, 0)
 

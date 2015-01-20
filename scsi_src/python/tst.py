@@ -1,6 +1,6 @@
 from scsi import *
 
-pyscsi.Read_Lattice(home_dir+'/git_repos/scsi/scsi_src/glps/tracy_1')
+pyscsi.Read_Lattice(home_dir+'/git_repos/scsi/scsi_src/src/glps/tracy_1')
 
 pyscsi.Ring_GetTwiss(True, 0.0); pyscsi.printglob()
 
