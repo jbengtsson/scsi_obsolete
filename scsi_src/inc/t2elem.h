@@ -72,7 +72,7 @@ template<typename T>
 void Cav_Pass(CellType &Cell, ss_vect<T> &X);
 
 template<typename T>
-void Wiggler_pass_EF(const elemtype &elem, ss_vect<T> &x);
+void Wiggler_pass_EF(const ElemType &elem, ss_vect<T> &x);
 
 template<typename T>
 void Wiggler_pass_EF2(int nstep, double L, double kxV, double kxH, double kz,
@@ -80,7 +80,7 @@ void Wiggler_pass_EF2(int nstep, double L, double kxV, double kxH, double kz,
 		      ss_vect<T> &x);
 
 template<typename T>
-void Wiggler_pass_EF3(const elemtype &elem, ss_vect<T> &x);
+void Wiggler_pass_EF3(const ElemType &elem, ss_vect<T> &x);
 
 template<typename T>
 void Wiggler_Pass(CellType &Cell, ss_vect<T> &X);
@@ -92,7 +92,7 @@ template<typename T>
 void Insertion_Pass(CellType &Cell, ss_vect<T> &x);
 
 template<typename T>
-void sol_pass(const elemtype &elem, ss_vect<T> &x);
+void sol_pass(const ElemType &elem, ss_vect<T> &x);
 
 template<typename T>
 void Solenoid_Pass(CellType &Cell, ss_vect<T> &x);
@@ -108,23 +108,23 @@ void MulLsMat(Matrix &A, Matrix &B);
 void LinsTrans(Matrix &A, Vector &b);
 
 
-void Drift_Alloc(elemtype *Elem);
+void Drift_Alloc(ElemType *Elem);
 
-void Mpole_Alloc(elemtype *Elem);
+void Mpole_Alloc(ElemType *Elem);
 
-void Cav_Alloc(elemtype *Elem);
+void Cav_Alloc(ElemType *Elem);
 
-void Wiggler_Alloc(elemtype *Elem);
+void Wiggler_Alloc(ElemType *Elem);
 
-void FieldMap_Alloc(elemtype *Elem);
+void FieldMap_Alloc(ElemType *Elem);
 
-void Insertion_Alloc(elemtype *Elem);
+void Insertion_Alloc(ElemType *Elem);
 
-void Spreader_Alloc(elemtype *Elem);
+void Spreader_Alloc(ElemType *Elem);
 
-void Recombiner_Alloc(elemtype *Elem);
+void Recombiner_Alloc(ElemType *Elem);
 
-void Solenoid_Alloc(elemtype *Elem);
+void Solenoid_Alloc(ElemType *Elem);
 
 
 void SI_init(void);

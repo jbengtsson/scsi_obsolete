@@ -1004,7 +1004,7 @@ static void Factor(struct LOC_Term *LINK)
   double x = 0.0;
   partsName fname;
   long SET[(long)period_ / 32 + 2];
-  elemtype *WITH;
+  ElemType *WITH;
   MpoleType *WITH1;
   symset SET1;
   long SET2[(long)lsym / 32 + 2];
@@ -1046,12 +1046,12 @@ static void Factor(struct LOC_Term *LINK)
 	else if (!strncmp(fname, "gap            ", sizeof(partsName)))
 	  x = WITH1->Pgap;
 	else if (!strncmp(fname, "roll           ", sizeof(partsName))) {
-	  if (WITH->Pkind == Mpole)
+	  if (WITH->Kind == Mpole)
 	    x = WITH1->PdTpar;
-	  else if (WITH->Pkind == Wigl)
+	  else if (WITH->Kind == Wigl)
 	    x = WITH1->PdTpar;
 	} else if (!strncmp(fname, "n              ", sizeof(partsName))) {
-	  if (((1 << ((long)WITH->Pkind)) &
+	  if (((1 << ((long)WITH->Kind)) &
 	       ((1 << ((long)Mpole)) | (1 << ((long)Wigl)))) != 0)
 	    x = WITH1->PN;
 	} else if (!strncmp(fname, "b              ", sizeof(partsName)))
@@ -1687,7 +1687,7 @@ static bool Lat_CheckWiggler(FILE **fo, long i, struct LOC_Lattice_Read *LINK)
   double       a, Lambda, L, diff;
   long         NN;
   ElemFamType  *WITH;
-  elemtype     *WITH1;
+  ElemType     *WITH1;
   WigglerType  *WITH2;
 
   Result = false;
@@ -1994,7 +1994,7 @@ static bool Lat_DealElement(FILE **fi_, FILE **fo_, long *cc_, long *ll_,
   symset         mysys, SET;
   long           SET1[(long)lsym / 32 + 2];
   ElemFamType    *WITH;
-  elemtype       *WITH1;
+  ElemType       *WITH1;
   MpoleType      *WITH2;
   symset         SET2;
   CavityType     *WITH3;
@@ -2054,7 +2054,7 @@ static bool Lat_DealElement(FILE **fi_, FILE **fo_, long *cc_, long *ll_,
       WITH1 = &WITH->ElemF;
       memcpy(WITH1->PName, ElementName, sizeof(partsName));
       WITH1->PL = *V.rnum;
-      WITH1->Pkind = PartsKind(drift);
+      WITH1->Kind = PartsKind(drift);
       Drift_Alloc(&WITH->ElemF);
     } else {
       printf("Elem_nFamMax exceeded: %ld(%ld)\n",
@@ -2186,7 +2186,7 @@ static bool Lat_DealElement(FILE **fi_, FILE **fo_, long *cc_, long *ll_,
       WITH1 = &WITH->ElemF;
       memcpy(WITH1->PName, ElementName, sizeof(partsName));
       WITH1->PL = QL;
-      WITH1->Pkind = Mpole;
+      WITH1->Kind = Mpole;
       Mpole_Alloc(&WITH->ElemF);
       WITH2 = WITH1->M;
       WITH2->Pmethod = k2;
@@ -2296,7 +2296,7 @@ static bool Lat_DealElement(FILE **fi_, FILE **fo_, long *cc_, long *ll_,
       WITH = &ElemFam[globval.Elem_nFam-1];
       WITH1 = &WITH->ElemF;
       memcpy(WITH1->PName, ElementName, sizeof(partsName));
-      WITH1->PL = QL; WITH1->Pkind = Mpole;
+      WITH1->PL = QL; WITH1->Kind = Mpole;
       Mpole_Alloc(&WITH->ElemF);
       WITH2 = WITH1->M;
       WITH2->Pmethod = k2; WITH2->PN = k1; WITH2->PdTpar = dt;
@@ -2405,7 +2405,7 @@ static bool Lat_DealElement(FILE **fi_, FILE **fo_, long *cc_, long *ll_,
       WITH1 = &WITH->ElemF;
       memcpy(WITH1->PName, ElementName, sizeof(partsName));
       WITH1->PL = QL;
-      WITH1->Pkind = Mpole;
+      WITH1->Kind = Mpole;
       Mpole_Alloc(&WITH->ElemF);
       WITH2 = WITH1->M;
       WITH2->Pmethod = k2;
@@ -2494,7 +2494,7 @@ static bool Lat_DealElement(FILE **fi_, FILE **fo_, long *cc_, long *ll_,
       WITH = &ElemFam[globval.Elem_nFam-1];
       WITH1 = &WITH->ElemF;
       memcpy(WITH1->PName, ElementName, sizeof(partsName));
-      WITH1->Pkind = Cavity;
+      WITH1->Kind = Cavity;
       Cav_Alloc(&WITH->ElemF);
       WITH3 = WITH1->C;
       WITH3->Pvolt = Vrf;   /* Voltage [V] */
@@ -2602,7 +2602,7 @@ static bool Lat_DealElement(FILE **fi_, FILE **fo_, long *cc_, long *ll_,
       WITH1 = &WITH->ElemF;
       memcpy(WITH1->PName, ElementName, sizeof(partsName));
       WITH1->PL = QL;
-      WITH1->Pkind = Mpole;
+      WITH1->Kind = Mpole;
       Mpole_Alloc(&WITH->ElemF);
       WITH2 = WITH1->M;
       SetDBN(&V);
@@ -2657,7 +2657,7 @@ static bool Lat_DealElement(FILE **fi_, FILE **fo_, long *cc_, long *ll_,
       WITH = &ElemFam[globval.Elem_nFam-1];
       WITH1 = &WITH->ElemF;
       memcpy(WITH1->PName, ElementName, sizeof(partsName));
-      WITH1->Pkind = Mpole;
+      WITH1->Kind = Mpole;
       Mpole_Alloc(&WITH->ElemF);
       WITH2 = WITH1->M;
       WITH2->Pthick = pthicktype(thin);
@@ -2705,7 +2705,7 @@ static bool Lat_DealElement(FILE **fi_, FILE **fo_, long *cc_, long *ll_,
       WITH1 = &WITH->ElemF;
       memcpy(WITH1->PName, ElementName, sizeof(partsName));
       WITH1->PL = 0.0;
-      WITH1->Pkind = PartsKind(marker);
+      WITH1->Kind = PartsKind(marker);
       SetDBN(&V);
     } else {
       printf("Elem_nFamMax exceeded: %ld(%ld)\n",
@@ -2744,7 +2744,7 @@ static bool Lat_DealElement(FILE **fi_, FILE **fo_, long *cc_, long *ll_,
       with ElemFam[globval.Elem_nFam].ElemF do
       with ElementT[globval.Elem_nFam] do
       BEGIN
-      Pname:=ElementName; Pkind:=Ghost; PN:=round(QL);
+      Pname:=ElementName; Kind:=Ghost; PN:=round(QL);
       SetDBN;
       END;
       end
@@ -2876,7 +2876,7 @@ static bool Lat_DealElement(FILE **fi_, FILE **fo_, long *cc_, long *ll_,
       Mpole_Alloc(&WITH->ElemF);
       WITH2 = WITH1->M;
       memcpy(WITH1->PName, ElementName, sizeof(partsName));
-      WITH1->Pkind = Mpole;
+      WITH1->Kind = Mpole;
       WITH1->PL = QL;
       if (WITH1->PL != 0e0) {
 	WITH2->Pthick = pthicktype(thick);
@@ -3017,7 +3017,7 @@ static bool Lat_DealElement(FILE **fi_, FILE **fo_, long *cc_, long *ll_,
     if (globval.Elem_nFam <= Elem_nFamMax) {
       WITH = &ElemFam[globval.Elem_nFam-1]; WITH1 = &WITH->ElemF;
       memcpy(WITH1->PName, ElementName, sizeof(partsName));
-      WITH1->PL = QL; WITH1->Pkind = Wigl;
+      WITH1->PL = QL; WITH1->Kind = Wigl;
       Wiggler_Alloc(&WITH->ElemF); WITH4 = WITH1->W;
       WITH4->Pmethod = k2; WITH4->PN = k1;
       WITH4->PdTpar = dt;
@@ -3110,7 +3110,7 @@ static bool Lat_DealElement(FILE **fi_, FILE **fo_, long *cc_, long *ll_,
     if (globval.Elem_nFam <= Elem_nFamMax) {
       WITH = &ElemFam[globval.Elem_nFam-1]; WITH1 = &WITH->ElemF;
       memcpy(WITH1->PName, ElementName, sizeof(partsName));
-      WITH1->PL = QL; WITH1->Pkind = FieldMap;
+      WITH1->PL = QL; WITH1->Kind = FieldMap;
       FieldMap_Alloc(WITH1);
       WITH6 = WITH1->FM;
       WITH6->phi = t*M_PI/180.0; WITH6->n_step = k1; WITH6->scl = scaling;
@@ -3219,7 +3219,7 @@ static bool Lat_DealElement(FILE **fi_, FILE **fo_, long *cc_, long *ll_,
       WITH  = &ElemFam[globval.Elem_nFam-1];
       WITH1 = &WITH->ElemF;
       memcpy(WITH1->PName, ElementName, sizeof(partsName));
-      WITH1->Pkind = Insertion;
+      WITH1->Kind = Insertion;
       Insertion_Alloc(&WITH->ElemF);
       WITH5 = WITH1->ID;
       WITH5->Pmethod = k2;
@@ -3345,7 +3345,7 @@ static bool Lat_DealElement(FILE **fi_, FILE **fo_, long *cc_, long *ll_,
       WITH1 = &WITH->ElemF;
       memcpy(WITH1->PName, ElementName, sizeof(partsName));
       WITH1->PL = *V.rnum;
-      WITH1->Pkind = PartsKind(Spreader);
+      WITH1->Kind = PartsKind(Spreader);
       Spreader_Alloc(&WITH->ElemF);
     } else {
       printf("Elem_nFamMax exceeded: %ld(%ld)\n",
@@ -3385,7 +3385,7 @@ static bool Lat_DealElement(FILE **fi_, FILE **fo_, long *cc_, long *ll_,
       WITH1 = &WITH->ElemF;
       memcpy(WITH1->PName, ElementName, sizeof(partsName));
       WITH1->PL = *V.rnum;
-      WITH1->Pkind = PartsKind(Recombiner);
+      WITH1->Kind = PartsKind(Recombiner);
       Recombiner_Alloc(&WITH->ElemF);
     } else {
       printf("Elem_nFamMax exceeded: %ld(%ld)\n",
@@ -3456,7 +3456,7 @@ static bool Lat_DealElement(FILE **fi_, FILE **fo_, long *cc_, long *ll_,
       Solenoid_Alloc(&WITH->ElemF);
       WITH7 = WITH1->Sol;
       memcpy(WITH1->PName, ElementName, sizeof(partsName));
-      WITH1->Pkind = Solenoid;
+      WITH1->Kind = Solenoid;
       WITH1->PL = QL; WITH7->N = k1; WITH7->BoBrho = QK;
     } else {
       printf("Elem_nFamMax exceeded: %ld(%ld)\n",

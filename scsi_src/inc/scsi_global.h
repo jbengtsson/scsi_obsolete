@@ -59,48 +59,48 @@ struct DriftType {
 
 
 struct MpoleType {
-  int        Pmethod;       // Integration Method
-  int        PN;            // Number of integration steps
+  int        method;     // Integration Method
+  int        n;          // Number of integration steps
   // Displacement Errors
-  Vector2    PdSsys;        // systematic [m]
-  Vector2    PdSrms;        // rms [m]
-  Vector2    PdSrnd;        // random number
+  Vector2    dSsys;      // systematic [m]
+  Vector2    dSrms;      // rms [m]
+  Vector2    dSrnd;      // random number
   // Roll angle
-  double     PdTpar;        // design [deg]
-  double     PdTsys;        // systematic [deg]
-  double     PdTrms;        // rms [deg]
-  double     PdTrnd;        // random number
+  double     rollpar;      // design [deg]
+  double     rollsys;      // systematic [deg]
+  double     rollrms;      // rms [deg]
+  double     rollrnd;      // random number
   // Multipole strengths
-  mpolArray  PBpar;         // design
-  mpolArray  PBsys;         // systematic
-  mpolArray  PBrms;         // rms
-  mpolArray  PBrnd;         // random number
-  mpolArray  PB;            // total
-  int        Porder;        // The highest order in PB
-  int        n_design;      // multipole order (design)
-  pthicktype Pthick;
+  mpolArray  bnpar;      // design
+  mpolArray  bnsys;      // systematic
+  mpolArray  bnrms;      // rms
+  mpolArray  bnrnd;      // random number
+  mpolArray  bn;         // total
+  int        order;      // The highest order in PB
+  int        n_design;   // multipole order (design)
+  thicktype  thick;
   // Bending Angles
-  double     PTx1;          // horizontal entrance angle [deg]
-  double     PTx2;          // horizontal exit angle [deg]
-  double     Pgap;          // total magnet gap [m]
-  double     Pirho;         // 1/rho [1/m]
-  double     Pc0, Pc1, Ps1; // corrections for roll error of bend
+  double     tx1;        // horizontal entrance angle [deg]
+  double     tx2;        // horizontal exit angle [deg]
+  double     gap;        // total magnet gap [m]
+  double     irho;       // 1/rho [1/m]
+  double     c0, c1, s1; // corrections for roll error of bend
 };
 
 const int  n_harm_max = 10;
 
 struct WigglerType {
-  int       Pmethod;             // Integration Method
-  int       PN;                  // number of integration steps
+  int       method;             // Integration Method
+  int       n;                  // number of integration steps
   // Displacement Error
-  Vector2   PdSsys;              // systematic [m]
-  Vector2   PdSrms;              // rms [m]
-  Vector2   PdSrnd;              // random number
+  Vector2   dSsys;              // systematic [m]
+  Vector2   dSrms;              // rms [m]
+  Vector2   dSrnd;              // random number
   // Roll angle
-  double    PdTpar;              // design [deg]
-  double    PdTsys;              // systematic [deg]
-  double    PdTrms;              // rms [deg]
-  double    PdTrnd;              // random number
+  double    rollpar;              // design [deg]
+  double    rollsys;              // systematic [deg]
+  double    rollrms;              // rms [deg]
+  double    rollrnd;              // random number
   double    lambda;              // lambda
   int       n_harm;              // no of harmonics
   int       harm[n_harm_max];    // harmonic number
@@ -109,9 +109,8 @@ struct WigglerType {
   double    kxV[n_harm_max];     // kx
   double    kxH[n_harm_max];     // kx
   double    phi[n_harm_max];     // phi
-  mpolArray PBW;
-  Matrix    W55;                 // Transport matrix
-  int       Porder;              // The highest order in PB
+  mpolArray bn;
+  int       order;               // The highest order in PB
 };
 
 
@@ -136,8 +135,8 @@ struct FieldMapType {
 #define IDZMAX 100
 
 struct InsertionType {
-  int         Pmethod;      // Integration Method
-  int         PN;           // number of integration steps
+  int         method;       // Integration Method
+  int         n;            // number of integration steps
   char        fname1[100];  // Filename for insertion description: first ordre
   char        fname2[100];  // Filename for insertion description: second ordre
   int         nx;           // Horizontal point number
@@ -166,32 +165,28 @@ struct InsertionType {
   double      *tab1, *tab2; // tab of x and z meshes from Radia code
 
   // Displacement Error
-  Vector2     PdSsys;       // systematic [m]
-  Vector2     PdSrms;       // rms [m]
-  Vector2     PdSrnd;       // random number
+  Vector2     dSsys;        // systematic [m]
+  Vector2     dSrms;        // rms [m]
+  Vector2     dSrnd;        // random number
   // Roll angle
-  double      PdTpar;       // design [deg]
-  double      PdTsys;       // systematic [deg]
-  double      PdTrms;       // rms [deg]
-  double      PdTrnd;       // random number
+  double      rollpar;      // design [deg]
+  double      rollsys;      // systematic [deg]
+  double      rollrms;      // rms [deg]
+  double      rollrnd;      // random number
   // Strength
-  /* double      Plperiod;     // Length Period [m] */
-  /* int         Pnperiod;     // Number of periods */
-  /* double      PBoBrho;      // B/Brho */
-  /* double      PKx;          // kx */
-  /* mpolArray   PBW; */
-  Matrix      K55;          // Transport matrix:kick part
-  Matrix      D55;          // Transport matrix:drift part
-  Matrix      KD55;         // Transport matrix:concatenation of kicks and
-                            // drifts
-  int         Porder;       // The highest order in PB
+  /* double      lperiod;      // Length Period [m] */
+  /* int         nperiod;      // Number of periods */
+  /* double      BoBrho;       // B/Brho */
+  /* double      Kx;           // kx */
+  /* mpolArray   BW; */
+  int         order;        // The highest order in PB
 };
 
 struct CavityType {
-  double Pvolt; // Vrf [V]
-  double Pfreq; // Vrf [Hz]
+  double volt; // Vrf [V]
+  double freq; // Vrf [Hz]
   double phi;   // RF phase
-  int    Ph;    // Harmonic number
+  int    h;    // Harmonic number
 };
 
 struct CellType;
@@ -209,23 +204,24 @@ struct RecombinerType {
 };
 
 struct SolenoidType {
-  int     N;         // Number of integration steps
+  int     n;        // Number of integration steps
   // Displacement Errors
-  Vector2 PdSsys;    // systematic [m]
-  Vector2 PdSrms;    // rms [m]
-  Vector2 PdSrnd;    // random number
+  Vector2 dSsys;    // systematic [m]
+  Vector2 dSrms;    // rms [m]
+  Vector2 dSrnd;    // random number
   // Roll angle
-  double  dTpar;     // design [deg]
-  double  dTsys;     // systematic [deg]
-  double  dTrms;     // rms [deg]
-  double  dTrnd;     // random number
-  double  BoBrho;    // normalized field strength
+  double  rollpar;  // design [deg]
+  double  rollsys;  // systematic [deg]
+  double  rollrms;  // rms [deg]
+  double  rollrnd;  // random number
+  double  BoBrho;   // normalized field strength
 };
 
-struct elemtype {
-  partsName PName; // Element name
-  double    PL;    // Length[m]
-  PartsKind Pkind; // Enumeration for magnet types
+class ElemType {
+ public:
+  partsName name;        // Element name
+  double    L;           // Length[m]
+  ElemKind  kind;        // Element type enumerator.
   union {
     DriftType      *D;   // Drift
     MpoleType      *M;   // Multipole
@@ -239,8 +235,9 @@ struct elemtype {
   };
 };
 
-struct ElemFamType {
-  elemtype    ElemF;            // Structure (name, type)
+class ElemFamType {
+ public:
+  ElemType    ElemF;            // Structure (name, type)
   int         nKid;             // Kid number
   int         KidList[nKidMax];
   int         NoDBN;
@@ -254,8 +251,8 @@ struct CellType {
   double    S;               // Position in the ring
   CellType* next_ptr;        // pointer to next cell (for tracking)
   Vector2   dS,              // Transverse displacement
-            dT;              // dT = (cos(dT), sin(dT))
-  elemtype  Elem;            // Structure (name, type)
+            droll;           // droll = (cos(roll), sin(roll))
+  ElemType  Elem;            // Structure (name, type)
   Vector2   Nu,              // Phase advances
             Alpha,           // Alpha functions (redundant)
             Beta,            // beta fonctions (redundant)

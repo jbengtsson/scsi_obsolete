@@ -102,7 +102,7 @@ void prt_sigma(void)
   fprintf(outf, "#\n");
 
   for (i = 0; i <= globval.Cell_nLoc; i++) {
-    switch (Cell[i].Elem.Pkind) {
+    switch (Cell[i].Elem.Kind) {
     case drift:
       code = 0.0;
       break;

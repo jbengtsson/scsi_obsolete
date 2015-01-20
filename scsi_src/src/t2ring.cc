@@ -332,9 +332,9 @@ void Cell_Twiss(long i0, long i1, ss_vect<tps> &Ascr, bool chroma, bool ring,
 	(GetAngle(getmat(Ascr1, k, k), getmat(Ascr1, k, k+1)) -
 	 GetAngle(getmat(Ascr0, k, k), getmat(Ascr0, k, k+1)))/(2.0*M_PI);
 
-      if ((cellp->Elem.PL >= 0.0) && (dnu[j] < -1e-16))
+      if ((cellp->Elem.L >= 0.0) && (dnu[j] < -1e-16))
 	dnu[j] += 1.0;
-      else if ((cellp->Elem.PL < 0.0) && (dnu[j] > 1e-16))
+      else if ((cellp->Elem.L < 0.0) && (dnu[j] > 1e-16))
 	dnu[j] -= 1.0;
 
       nu1[j] += dnu[j];
@@ -579,12 +579,12 @@ struct LOC_Ring_Fittune
 void shiftk(long Elnum, double dk, struct LOC_Ring_Fittune *LINK)
 {
   CellType   *cellp;
-  elemtype   *elemp;
+  ElemType   *elemp;
   MpoleType  *M;
 
   cellp = &Cell[Elnum]; elemp = &cellp->Elem; M = elemp->M;
-  M->PBpar[Quad+HOMmax] += dk;
-  Mpole_SetPB(cellp->Fnum, cellp->Knum, (long)Quad);
+  M->bnpar[Quad+HOMmax] += dk;
+  Mpole_Setbn(cellp->Fnum, cellp->Knum, (long)Quad);
 }
 
 
@@ -736,12 +736,12 @@ void Ring_Fittune(Vector2 &nu, double eps, iVector2 &nq, long qf[], long qd[],
 void shiftkp(long Elnum, double dkp)
 {
   CellType  *cellp;
-  elemtype  *elemp;
+  ElemType  *elemp;
   MpoleType *M;
 
   cellp = &Cell[Elnum]; elemp = &cellp->Elem; M = elemp->M;
-  M->PBpar[Sext+HOMmax] += dkp;
-  Mpole_SetPB(cellp->Fnum, cellp->Knum, (long)Sext);
+  M->bnpar[Sext+HOMmax] += dkp;
+  Mpole_Setbn(cellp->Fnum, cellp->Knum, (long)Sext);
 }
 
 
@@ -832,14 +832,14 @@ struct LOC_Ring_FitDisp
 static void shiftk_(long Elnum, double dk, struct LOC_Ring_FitDisp *LINK)
 {
   CellType *cellp;
-  elemtype *elemp;
+  ElemType *elemp;
   MpoleType *M;
 
   cellp = &Cell[Elnum];
   elemp = &cellp->Elem;
   M = elemp->M;
-  M->PBpar[Quad+HOMmax] += dk;
-  Mpole_SetPB(cellp->Fnum, cellp->Knum, (long)Quad);
+  M->bnpar[Quad+HOMmax] += dk;
+  Mpole_Setbn(cellp->Fnum, cellp->Knum, (long)Quad);
 }
 
 

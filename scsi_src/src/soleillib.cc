@@ -1987,7 +1987,7 @@ void getA4antidamping()
   {
     getelem(i, &Cell); /* get element */
 
-    if (Cell.Elem.Pkind == Mpole)
+    if (Cell.Elem.Kind == Mpole)
     {
       if (fabs(Cell.Elem.M->PBpar[2L + HOMmax]) > 0.0)
       {
