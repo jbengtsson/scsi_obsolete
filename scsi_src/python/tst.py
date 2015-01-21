@@ -23,14 +23,14 @@ for k in range(0, 5):
 Fnum = pyscsi.ElemIndex('SL1G2C01A'); loc = pyscsi.Elem_GetPos(Fnum, 1)
 
 print
-print Cell[loc].Elem.PName, Cell[loc].Elem.Pkind
-print Cell[loc].Elem.deref('M').Pmethod, Cell[loc].Elem.deref('M').PN
-print Cell[loc].Elem.deref('M').Porder, Cell[loc].Elem.deref('M').n_design, \
-      Cell[loc].Elem.deref('M').Pthick, \
-      Cell[loc].Elem.deref('M').PBpar[HOMmax+Sext]
+print Cell[loc].Elem.name, Cell[loc].Elem.kind
+print Cell[loc].Elem.deref('M').method, Cell[loc].Elem.deref('M').n
+print Cell[loc].Elem.deref('M').order, Cell[loc].Elem.deref('M').n_design, \
+      Cell[loc].Elem.deref('M').thick, \
+      Cell[loc].Elem.deref('M').bnpar[HOMmax+Sext]
 
 Fnum = pyscsi.ElemIndex('CAV'); loc = pyscsi.Elem_GetPos(Fnum, 1)
 
 print
-print Cell[loc].Elem.PName, Cell[loc].Elem.Pkind
-print Cell[loc].Elem.deref('C').Pvolt, Cell[loc].Elem.deref('C').Pfreq
+print Cell[loc].Elem.name, Cell[loc].Elem.kind
+print Cell[loc].Elem.deref('C').volt, Cell[loc].Elem.deref('C').freq

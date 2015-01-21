@@ -39,7 +39,7 @@ PartsKind  = c_long
 
 HOMmax     = 21
 mpolArray  = c_double*(2*HOMmax+1)
-pthicktype = c_long
+thicktype  = c_long
 
 class globvalrec(Structure):
     _fields_ = [('dPcommon',    c_double),
@@ -100,39 +100,39 @@ class DriftType(Structure):
     _fields_ = []
 
 class MpoleType(Structure):
-    _fields_ = [('Pmethod', c_int),
-                ('PN',      c_int),
+    _fields_ = [('method',   c_int),
+                ('n',        c_int),
 
-                ('PdSsys',  Vector2),
-                ('PdSrms',  Vector2),
-                ('PdSrnd',  Vector2),
+                ('dSsys',    Vector2),
+                ('dSrms',    Vector2),
+                ('dSrnd',    Vector2),
 
-                ('PdTpar',  c_double),
-                ('PdTsys',  c_double),
-                ('PdTrms',  c_double),
-                ('PdTrnd',  c_double),
+                ('rollpar',  c_double),
+                ('rollsys',  c_double),
+                ('rollrms',  c_double),
+                ('rollrnd',  c_double),
 
-                ('PBpar',    mpolArray),
-                ('PBsys',    mpolArray),
-                ('PBrms',    mpolArray),
-                ('PBrnd',    mpolArray),
-                ('PB',       mpolArray),
-                ('Porder',   c_int),
+                ('bnpar',    mpolArray),
+                ('bnsys',    mpolArray),
+                ('bnrms',    mpolArray),
+                ('bnrnd',    mpolArray),
+                ('bn',       mpolArray),
+                ('order',    c_int),
                 ('n_design', c_int),
-                ('Pthick',   pthicktype),
-                ('PTx1',     c_double),
-                ('PTx2',     c_double),
-                ('Pgap',     c_double),
-                ('Pirho',    c_double),
-                ('Pc0',      c_double),
-                ('Pc1',      c_double),
-                ('Ps1',      c_double)]
+                ('thick',    thicktype),
+                ('tx1',      c_double),
+                ('tx2',      c_double),
+                ('gap',      c_double),
+                ('irho',     c_double),
+                ('c0',       c_double),
+                ('c1',       c_double),
+                ('s1',       c_double)]
 
 class CavityType (Structure):
-    _fields_ = [('Pvolt', c_double),
-                ('Pfreq', c_double),
+    _fields_ = [('volt', c_double),
+                ('freq', c_double),
                 ('phi',   c_double),
-                ('Ph',    c_int)]
+                ('h',    c_int)]
 
 class elemtype(Structure):
     def deref(self, type):
@@ -146,9 +146,9 @@ class elemtype(Structure):
             print "deref: undef. type:", type
             exit(1)
 
-    _fields_ = [('PName', partsName),
-                ('PL',    c_double),
-                ('Pkind', PartsKind),
+    _fields_ = [('name',  partsName),
+                ('L',     c_double),
+                ('kind',  PartsKind),
                 ('U',     POINTER(c_void_p))]
 
 class CellType(Structure):
@@ -157,7 +157,7 @@ class CellType(Structure):
                 ('S',        c_double),
                 ('next_ptr', POINTER(c_void_p)),
                 ('dS',       Vector2),
-                ('dT',       Vector2),
+                ('droll',    Vector2),
                 ('Elem',     elemtype),
                 ('Nu',       Vector2),
                 ('Alpha',    Vector2),
