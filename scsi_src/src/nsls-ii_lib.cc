@@ -2063,8 +2063,8 @@ void set_ID_scl(const int Fnum, const int Knum, const double scl)
     // scale the ID field
     W = Cell[Elem_GetPos(Fnum, Knum)].Elem.W;
     for (k = 0; k < W->n_harm; k++) {
-      W->BoBrhoH[k] = scl*ElemFam[Fnum-1].ElemF.W->BoBrhoH[k];
-      W->BoBrhoV[k] = scl*ElemFam[Fnum-1].ElemF.W->BoBrhoV[k];
+      W->BoBrhoH[k] = scl*ElemFam[Fnum-1].Elem.W->BoBrhoH[k];
+      W->BoBrhoV[k] = scl*ElemFam[Fnum-1].Elem.W->BoBrhoV[k];
     }
     break;
   case Insertion:
@@ -2876,16 +2876,16 @@ void get_IDs(void)
   printf("\n");
   n_ID_Fams = 0;
   for (k = 0; k < globval.Elem_nFam; k++)
-    switch (ElemFam[k].ElemF.kind) {
+    switch (ElemFam[k].Elem.kind) {
     case Wigl:
       printf("found ID family:   %s %12.5e\n",
-	     ElemFam[k].ElemF.name, ElemFam[k].ElemF.W->BoBrhoV[0]);
+	     ElemFam[k].Elem.name, ElemFam[k].Elem.W->BoBrhoV[0]);
       n_ID_Fams++; ID_Fams[n_ID_Fams-1] = k + 1;
       break;
     case Insertion:
       printf("found ID family:   %s %12.5e",
-	     ElemFam[k].ElemF.name, ElemFam[k].ElemF.ID->scaling);
-      if (ElemFam[k].ElemF.ID->scaling != 0e0) {
+	     ElemFam[k].Elem.name, ElemFam[k].Elem.ID->scaling);
+      if (ElemFam[k].Elem.ID->scaling != 0e0) {
 	printf("\n");
 	n_ID_Fams++; ID_Fams[n_ID_Fams-1] = k + 1;
       } else
@@ -2893,7 +2893,7 @@ void get_IDs(void)
       break;
     case FieldMap:
       printf("found ID family:   %s %12.5e\n",
-	     ElemFam[k].ElemF.name, ElemFam[k].ElemF.FM->scl);
+	     ElemFam[k].Elem.name, ElemFam[k].Elem.FM->scl);
       n_ID_Fams++; ID_Fams[n_ID_Fams-1] = k + 1;
       break;
     default:
@@ -2908,24 +2908,24 @@ void set_IDs(const double scl)
 
   printf("\n");
   for (k = 0; k < n_ID_Fams; k++) {
-    switch (ElemFam[ID_Fams[k]-1].ElemF.kind) {
+    switch (ElemFam[ID_Fams[k]-1].Elem.kind) {
     case Wigl:
       printf("setting ID family: %s %12.5e\n",
-	     ElemFam[ID_Fams[k]-1].ElemF.name,
-	     scl*ElemFam[ID_Fams[k]-1].ElemF.W->BoBrhoV[0]);
+	     ElemFam[ID_Fams[k]-1].Elem.name,
+	     scl*ElemFam[ID_Fams[k]-1].Elem.W->BoBrhoV[0]);
 
       set_Wiggler_BoBrho(ID_Fams[k],
-			 scl*ElemFam[ID_Fams[k]-1].ElemF.W->BoBrhoV[0]);
+			 scl*ElemFam[ID_Fams[k]-1].Elem.W->BoBrhoV[0]);
       break;
     case Insertion:
       printf("setting ID family: %s %12.5e\n",
-	     ElemFam[ID_Fams[k]-1].ElemF.name, scl);
+	     ElemFam[ID_Fams[k]-1].Elem.name, scl);
 
       set_ID_scl(ID_Fams[k], scl);
       break;
     case FieldMap:
       printf("setting ID family: %s %12.5e\n",
-	     ElemFam[ID_Fams[k]-1].ElemF.name, scl);
+	     ElemFam[ID_Fams[k]-1].Elem.name, scl);
 
       set_ID_scl(ID_Fams[k], scl);
       break;
@@ -2950,14 +2950,14 @@ void reset_quads(void)
   for (k = 0; k < N_Fam; k++) {
     // Note, actual values can differ from the original values
 /*    printf("setting quad family: %s %12.5e\n",
-	   ElemFam[Q_Fam[k]-1].ElemF.name,
-	   ElemFam[Q_Fam[k]-1].ElemF.M->bnpar[HOMmax+Quad]);
+	   ElemFam[Q_Fam[k]-1].Elem.name,
+	   ElemFam[Q_Fam[k]-1].Elem.M->bnpar[HOMmax+Quad]);
 
     set_bn_design_fam(Q_Fam[k], Quad,
-		       ElemFam[Q_Fam[k]-1].ElemF.M->bnpar[HOMmax+Quad], 0.0);*/
+		       ElemFam[Q_Fam[k]-1].Elem.M->bnpar[HOMmax+Quad], 0.0);*/
 
     printf("setting quad family: %s %12.5e\n",
-	   ElemFam[Q_Fam[k]-1].ElemF.name, b2[k]);
+	   ElemFam[Q_Fam[k]-1].Elem.name, b2[k]);
 
     set_bn_design_fam(Q_Fam[k], Quad, b2[k], 0.0);
   }
@@ -3394,7 +3394,7 @@ bool ID_corr(const int N_calls, const int N_steps, const bool IDs)
 	  get_bnL_design_elem(Fnum, Cell[quad_prms[k-1]].Knum, Quad, b2L, a2L);
 	  fprintf(outf, "%10s %6.2f %3d %8.5f\n",
 		  Cell[quad_prms[k-1]].Elem.name, Cell[quad_prms[k-1]].S, k,
-		  b2L-ElemFam[Fnum-1].ElemF.M->bnpar[HOMmax+Quad]*L);
+		  b2L-ElemFam[Fnum-1].Elem.M->bnpar[HOMmax+Quad]*L);
 	}
       }
 
@@ -5146,7 +5146,7 @@ void bend_cal_Fam(const int Fnum)
   gsl_multimin_fminimizer_set(s, &minex_func, x, step);
 
   cout << endl;
-  cout << "bend_cal: " << ElemFam[Fnum-1].ElemF.name << ":" << endl;
+  cout << "bend_cal: " << ElemFam[Fnum-1].Elem.name << ":" << endl;
 
   Fnum_Cart = Fnum;
 
@@ -5176,9 +5176,9 @@ void bend_cal(void)
   long int  k;
 
   for (k = 1; k <= globval.Elem_nFam; k++)
-    if ((ElemFam[k-1].ElemF.kind == Mpole) &&
-	(ElemFam[k-1].ElemF.M->irho != 0.0) &&
-	(ElemFam[k-1].ElemF.M->bnpar[Quad+HOMmax] != 0.0))
+    if ((ElemFam[k-1].Elem.kind == Mpole) &&
+	(ElemFam[k-1].Elem.M->irho != 0.0) &&
+	(ElemFam[k-1].Elem.M->bnpar[Quad+HOMmax] != 0.0))
       if (ElemFam[k-1].nKid > 0) bend_cal_Fam(k);
 }
 
@@ -5250,7 +5250,7 @@ void set_tune(const char file_name1[], const char file_name2[], const int n)
 
 	fprintf(fp_lat, "%s: Quadrupole, L = %8.6f, K = %10.6f, N = Nquad"
 		", Method = Meth;\n",
-		names[k], ElemFam[Fnum-1].ElemF.L, b2s[k]);
+		names[k], ElemFam[Fnum-1].Elem.L, b2s[k]);
       }
       break;
     }

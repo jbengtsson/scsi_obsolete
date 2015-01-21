@@ -64,19 +64,19 @@ long ElemIndex(const std::string &name)
   i = 1;
   while (i <= globval.Elem_nFam) {
     if (trace) {
-      cout << setw(2) << (name1 == ElemFam[i-1].ElemF.name)
-           << " " << name1 << " " << ElemFam[i-1].ElemF.name << " (";
+      cout << setw(2) << (name1 == ElemFam[i-1].Elem.name)
+           << " " << name1 << " " << ElemFam[i-1].Elem.name << " (";
       for (j = 0; j < SymbolLength; j++)
-        cout << setw(4) << (int)ElemFam[i-1].ElemF.name[j];
+        cout << setw(4) << (int)ElemFam[i-1].Elem.name[j];
       cout  << " )" << endl;
     }
 
-    if (name1 == ElemFam[i-1].ElemF.name) break;
+    if (name1 == ElemFam[i-1].Elem.name) break;
 
     i++;
   }
 
-  if (name1 != ElemFam[i-1].ElemF.name) {
+  if (name1 != ElemFam[i-1].Elem.name) {
     cout << "ElemIndex: undefined element " << name << endl;
     exit_(1);
   }
@@ -207,12 +207,12 @@ bool Lattice_Read(const char *fi_)
 	globval.Elem_nFam++;
 	if (globval.Elem_nFam <= Elem_nFamMax) {
 	  WITH = &ElemFam[globval.Elem_nFam-1];
-	  WITH1 = &WITH->ElemF;
+	  WITH1 = &WITH->Elem;
 	  memset(WITH1->name,0,sizeof(partsName));
 	  memcpy(WITH1->name, (*i).c_str(), (*i).length());
 	  WITH1->L = val;
 	  WITH1->kind = ElemKind(drift);
-	  Drift_Alloc(&WITH->ElemF);
+	  Drift_Alloc(&WITH->Elem);
 	} else {
 	  cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam
 	       << "(" << (long)Elem_nFamMax << ")" << endl;
@@ -269,12 +269,12 @@ bool Lattice_Read(const char *fi_)
 	globval.Elem_nFam++;
 	if (globval.Elem_nFam <= Elem_nFamMax) {
 	  WITH = &ElemFam[globval.Elem_nFam-1];
-	  WITH1 = &WITH->ElemF;
+	  WITH1 = &WITH->Elem;
 	  memset(WITH1->name,0,sizeof(partsName));
 	  memcpy(WITH1->name, (*i).c_str(), (*i).length());
 	  WITH1->L = QL;
 	  WITH1->kind = Mpole;
-	  Mpole_Alloc(&WITH->ElemF);
+	  Mpole_Alloc(&WITH->Elem);
 	  WITH2 = WITH1->M;
 	  WITH2->method = k2;
 	  WITH2->n = k1;
@@ -337,11 +337,11 @@ bool Lattice_Read(const char *fi_)
 	globval.Elem_nFam++;
 	if (globval.Elem_nFam <= Elem_nFamMax) {
 	  WITH = &ElemFam[globval.Elem_nFam-1];
-	  WITH1 = &WITH->ElemF;
+	  WITH1 = &WITH->Elem;
 	  memset(WITH1->name,0,sizeof(partsName));
 	  memcpy(WITH1->name, (*i).c_str(), (*i).length());
 	  WITH1->L = QL; WITH1->kind = Mpole;
-	  Mpole_Alloc(&WITH->ElemF);
+	  Mpole_Alloc(&WITH->Elem);
 	  WITH2 = WITH1->M;
 	  WITH2->method = k2; WITH2->n = k1; WITH2->rollpar = dt;
 	  AssignHOM(globval.Elem_nFam, B,BA);
@@ -392,13 +392,13 @@ bool Lattice_Read(const char *fi_)
 	globval.Elem_nFam++;
 	if (globval.Elem_nFam <= Elem_nFamMax) {
 	  WITH = &ElemFam[globval.Elem_nFam-1];
-	  WITH1 = &WITH->ElemF;
+	  WITH1 = &WITH->Elem;
 	  memset(WITH1->name,0,sizeof(partsName));
 	  memcpy(WITH1->name, (*i).c_str(), (*i).length());
 	  //    memcpy(WITH1->name, ElementName, sizeof(partsName));
 	  WITH1->L = QL;
 	  WITH1->kind = Mpole;
-	  Mpole_Alloc(&WITH->ElemF);
+	  Mpole_Alloc(&WITH->Elem);
 	  WITH2 = WITH1->M;
 	  WITH2->method = k2;
 	  WITH2->n = k1;
@@ -437,12 +437,12 @@ bool Lattice_Read(const char *fi_)
 	globval.Elem_nFam++;
 	if (globval.Elem_nFam <= Elem_nFamMax) {
 	  WITH = &ElemFam[globval.Elem_nFam-1];
-	  WITH1 = &WITH->ElemF;
+	  WITH1 = &WITH->Elem;
 	  memset(WITH1->name,0,sizeof(partsName));
 	  memcpy(WITH1->name, (*i).c_str(), (*i).length());
 	  //    memcpy(WITH1->name, ElementName, sizeof(partsName));
 	  WITH1->kind = Cavity;
-	  Cav_Alloc(&WITH->ElemF);
+	  Cav_Alloc(&WITH->Elem);
 	  WITH3 = WITH1->C;
 	  WITH3->volt = Vrf;   /* Voltage [V] */
 	  WITH3->freq = Frf;   /* Frequency in Hz */
@@ -485,13 +485,13 @@ bool Lattice_Read(const char *fi_)
 	globval.Elem_nFam++;
 	if (globval.Elem_nFam <= Elem_nFamMax) {
 	  WITH = &ElemFam[globval.Elem_nFam-1];
-	  WITH1 = &WITH->ElemF;
+	  WITH1 = &WITH->Elem;
 	  memset(WITH1->name,0,sizeof(partsName));
 	  memcpy(WITH1->name, (*i).c_str(), (*i).length());
 	  //    memcpy(WITH1->name, ElementName, sizeof(partsName));
 	  WITH1->L = QL;
 	  WITH1->kind = Mpole;
-	  Mpole_Alloc(&WITH->ElemF);
+	  Mpole_Alloc(&WITH->Elem);
 	  WITH2 = WITH1->M;
 	  //    SetDBN(&V);
 	  if (WITH1->L != 0.0)
@@ -518,12 +518,12 @@ bool Lattice_Read(const char *fi_)
 	globval.Elem_nFam++;
 	if (globval.Elem_nFam <= Elem_nFamMax) {
 	  WITH = &ElemFam[globval.Elem_nFam-1];
-	  WITH1 = &WITH->ElemF;
+	  WITH1 = &WITH->Elem;
 	  memset(WITH1->name,0,sizeof(partsName));
 	  memcpy(WITH1->name, (*i).c_str(), (*i).length());
 	  //    memcpy(WITH1->name, ElementName, sizeof(partsName));
 	  WITH1->kind = Mpole;
-	  Mpole_Alloc(&WITH->ElemF);
+	  Mpole_Alloc(&WITH->Elem);
 	  WITH2 = WITH1->M;
 	  WITH2->thick = thicktype(thin);
 	  //    SetDBN(&V);
@@ -542,7 +542,7 @@ bool Lattice_Read(const char *fi_)
 	globval.Elem_nFam++;
 	if (globval.Elem_nFam <= Elem_nFamMax) {
 	  WITH = &ElemFam[globval.Elem_nFam-1];
-	  WITH1 = &WITH->ElemF;
+	  WITH1 = &WITH->Elem;
 	  memset(WITH1->name,0,sizeof(partsName));
 	  memcpy(WITH1->name, (*i).c_str(), (*i).length());
 	  //    memcpy(WITH1->name, ElementName, sizeof(partsName));
@@ -604,8 +604,8 @@ bool Lattice_Read(const char *fi_)
 	globval.Elem_nFam++;
 	if (globval.Elem_nFam <= Elem_nFamMax) {
 	  WITH = &ElemFam[globval.Elem_nFam-1];
-	  WITH1 = &WITH->ElemF;
-	  Mpole_Alloc(&WITH->ElemF);
+	  WITH1 = &WITH->Elem;
+	  Mpole_Alloc(&WITH->Elem);
 	  WITH2 = WITH1->M;
 	  memset(WITH1->name,0,sizeof(partsName));
 	  memcpy(WITH1->name, (*i).c_str(), (*i).length());
@@ -677,12 +677,12 @@ bool Lattice_Read(const char *fi_)
 
 	globval.Elem_nFam++;
 	if (globval.Elem_nFam <= Elem_nFamMax) {
-	  WITH = &ElemFam[globval.Elem_nFam-1]; WITH1 = &WITH->ElemF;
+	  WITH = &ElemFam[globval.Elem_nFam-1]; WITH1 = &WITH->Elem;
 	  memset(WITH1->name,0,sizeof(partsName));
 	  memcpy(WITH1->name, (*i).c_str(), (*i).length());
 	  //    memcpy(WITH1->name, ElementName, sizeof(partsName));
 	  WITH1->L = QL; WITH1->kind = Wigl;
-	  Wiggler_Alloc(&WITH->ElemF); WITH4 = WITH1->W;
+	  Wiggler_Alloc(&WITH->Elem); WITH4 = WITH1->W;
 	  WITH4->method = k2; WITH4->n = k1;
 	  WITH4->rollpar = dt;
 	  //    SetDBN(&V);
@@ -691,7 +691,7 @@ bool Lattice_Read(const char *fi_)
 	  WITH4->kxH[0] = QKxH; WITH4->BoBrhoH[0] = QKH;
 	  WITH4->phi[0] = QPhi;
 	  //                    AssignHarm(globval.Elem_nFam, &V);
-	  //   W = ElemFam[elem-1].ElemF.W;
+	  //   W = ElemFam[elem-1].Elem.W;
 	  WITH4->n_harm += n_harm;
 	  // the fundamental is stored in harm[0], etc.
 	  for (int k = 1; k < WITH4->n_harm; k++) {
@@ -721,7 +721,7 @@ bool Lattice_Read(const char *fi_)
 	if (GLPS_SUCCESS==glps_read(*i,"scaling",val)) scaling = val;
 	globval.Elem_nFam++;
 	if (globval.Elem_nFam <= Elem_nFamMax) {
-	  WITH = &ElemFam[globval.Elem_nFam-1]; WITH1 = &WITH->ElemF;
+	  WITH = &ElemFam[globval.Elem_nFam-1]; WITH1 = &WITH->Elem;
 	  memset(WITH1->name,0,sizeof(partsName));
 	  memcpy(WITH1->name, (*i).c_str(), (*i).length());
 	  //    memcpy(WITH1->name, ElementName, sizeof(partsName));
@@ -768,12 +768,12 @@ bool Lattice_Read(const char *fi_)
 	/* Fills up the ID */
 	if (globval.Elem_nFam <= Elem_nFamMax) {
 	  WITH  = &ElemFam[globval.Elem_nFam-1];
-	  WITH1 = &WITH->ElemF;
+	  WITH1 = &WITH->Elem;
 	  memset(WITH1->name,0,sizeof(partsName));
 	  memcpy(WITH1->name, (*i).c_str(), (*i).length());
 	  //    memcpy(WITH1->name, ElementName, sizeof(partsName));
 	  WITH1->kind = Insertion;
-	  Insertion_Alloc(&WITH->ElemF);
+	  Insertion_Alloc(&WITH->Elem);
 	  WITH5 = WITH1->ID;
 	  WITH5->method = k2;
 	  WITH5->n = k1;
@@ -870,14 +870,14 @@ bool Lattice_Read(const char *fi_)
 	globval.Elem_nFam++;
 	if (globval.Elem_nFam <= Elem_nFamMax) {
 	  WITH = &ElemFam[globval.Elem_nFam-1];
-	  WITH1 = &WITH->ElemF;
+	  WITH1 = &WITH->Elem;
 	  memset(WITH1->name,0,sizeof(partsName));
 	  memcpy(WITH1->name, (*i).c_str(), (*i).length());
 	  //    memcpy(WITH1->name, ElementName, sizeof(partsName));
 	  if (GLPS_SUCCESS==glps_read(*i,"l",val))  WITH1->L = val;
 	  //    WITH1->L = *V.rnum;
 	  WITH1->kind = ElemKind(Spreader);
-	  Spreader_Alloc(&WITH->ElemF);
+	  Spreader_Alloc(&WITH->Elem);
 	} else {
 	  cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam
 	       << "(" << (long)Elem_nFamMax << ")" << endl;
@@ -891,13 +891,13 @@ bool Lattice_Read(const char *fi_)
 	globval.Elem_nFam++;
 	if (globval.Elem_nFam <= Elem_nFamMax) {
 	  WITH = &ElemFam[globval.Elem_nFam-1];
-	  WITH1 = &WITH->ElemF;
+	  WITH1 = &WITH->Elem;
 	  memset(WITH1->name,0,sizeof(partsName));
 	  memcpy(WITH1->name, (*i).c_str(), (*i).length());
 	  if (GLPS_SUCCESS==glps_read(*i,"l",val))  WITH1->L = val;
 	  //    WITH1->L = *V.rnum;
 	  WITH1->kind = ElemKind(Recombiner);
-	  Recombiner_Alloc(&WITH->ElemF);
+	  Recombiner_Alloc(&WITH->Elem);
 	} else {
 	  cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam
 	       << "(" << (long)Elem_nFamMax << ")" << endl;
@@ -915,8 +915,8 @@ bool Lattice_Read(const char *fi_)
 	globval.Elem_nFam++;
 	if (globval.Elem_nFam <= Elem_nFamMax) {
 	  WITH = &ElemFam[globval.Elem_nFam-1];
-	  WITH1 = &WITH->ElemF;
-	  Solenoid_Alloc(&WITH->ElemF);
+	  WITH1 = &WITH->Elem;
+	  Solenoid_Alloc(&WITH->Elem);
 	  WITH7 = WITH1->Sol;
 	  memset(WITH1->name,0,sizeof(partsName));
 	  memcpy(WITH1->name, (*i).c_str(), (*i).length());
@@ -1007,7 +1007,7 @@ void AssignHOM(long elem,  double *B, bool * BA )
   long       i;
   MpoleType  *M;
 
-  M = ElemFam[elem-1].ElemF.M;
+  M = ElemFam[elem-1].Elem.M;
   for (i = -HOMmax; i <= HOMmax; i++) {
     if (BA[i+HOMmax]) {
       M->bnpar[i+HOMmax] = B[i+HOMmax];
@@ -1022,7 +1022,7 @@ void AssignHOM(long elem,  double *B, bool * BA )
   long         i;
   WigglerType  *W;
 
-  W = ElemFam[elem-1].ElemF.W; W->n_harm += LINK->n_harm;
+  W = ElemFam[elem-1].Elem.W; W->n_harm += LINK->n_harm;
   // the fundamental is stored in harm[0], etc.
   for (i = 1; i < W->n_harm; i++) {
   W->harm[i] = LINK->harm[i-1];
@@ -1043,7 +1043,7 @@ bool CheckWiggler( long i)
   WigglerType  *WITH2;
 
   Result = false;
-  WITH = &ElemFam[i-1]; WITH1 = &WITH->ElemF; WITH2 = WITH1->W;
+  WITH = &ElemFam[i-1]; WITH1 = &WITH->Elem; WITH2 = WITH1->W;
   Lambda = WITH2->lambda;
   L = WITH1->L; a = L/Lambda;
   NN = (long)floor(a+0.01+0.5);
@@ -1080,8 +1080,8 @@ long CheckElementtable(const string name)
 
   FORLIM = globval.Elem_nFam;
   for (i = 1; i <= FORLIM; i++) {
-    //  if (!strncmp(ElemFam[i-1].ElemF.name, name.c_str(), name.length()))
-    if (!strcmp(ElemFam[i-1].ElemF.name, name.c_str()))
+    //  if (!strncmp(ElemFam[i-1].Elem.name, name.c_str(), name.length()))
+    if (!strcmp(ElemFam[i-1].Elem.name, name.c_str()))
       j = i;
   }
   return j;
@@ -1148,7 +1148,7 @@ double Circumference()
   S = 0.0;
   FORLIM = globval.Cell_nLoc;
   for (i = 1; i <= FORLIM; i++)
-    S += ElemFam[Cell[i].Fnum - 1].ElemF.L;
+    S += ElemFam[Cell[i].Fnum - 1].Elem.L;
   return S;
 }
 

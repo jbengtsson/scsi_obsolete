@@ -237,7 +237,7 @@ class ElemType {
 
 class ElemFamType {
  public:
-  ElemType    ElemF;            // Structure (name, type)
+  ElemType    Elem;             // Structure (name, type)
   int         nKid;             // Kid number
   int         KidList[nKidMax];
   int         NoDBN;

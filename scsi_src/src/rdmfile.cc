@@ -152,7 +152,7 @@ void rdmfile(const char *mfile_dat)
       Cell[i].Elem.name[j] = ' ';
 
     if (Cell[i].Knum == 1) {
-      strcpy(ElemFam[Cell[i].Fnum-1].ElemF.name, Cell[i].Elem.name);
+      strcpy(ElemFam[Cell[i].Fnum-1].Elem.name, Cell[i].Elem.name);
       globval.Elem_nFam = max(Cell[i].Fnum, globval.Elem_nFam);
     }
 
@@ -167,7 +167,7 @@ void rdmfile(const char *mfile_dat)
     sscanf(line, "%d %d %d", &kind, &method, &n);
     get_kind(kind, Cell[i].Elem);
     if (i > 0)
-      ElemFam[Cell[i].Fnum-1].ElemF.kind = Cell[i].Elem.kind;
+      ElemFam[Cell[i].Fnum-1].Elem.kind = Cell[i].Elem.kind;
 
     inf.getline(line, max_str);
     if (prt) printf("%s\n", line);
@@ -261,7 +261,7 @@ void rdmfile(const char *mfile_dat)
       if (prt) printf("%s\n", line);
       sscanf(line, "%d", &Cell[i].Elem.W->n_harm);
 
-      if (Cell[i].Knum == 1) Wiggler_Alloc(&ElemFam[Cell[i].Fnum-1].ElemF);
+      if (Cell[i].Knum == 1) Wiggler_Alloc(&ElemFam[Cell[i].Fnum-1].Elem);
       for (j = 0; j < Cell[i].Elem.W->n_harm; j++) {
 	inf.getline(line, max_str);
 	if (prt) printf("%s\n", line);
@@ -269,9 +269,9 @@ void rdmfile(const char *mfile_dat)
 	       &Cell[i].Elem.W->kxV[j], &Cell[i].Elem.W->BoBrhoV[j],
 	       &Cell[i].Elem.W->kxH[j], &Cell[i].Elem.W->BoBrhoH[j],
 	       &Cell[i].Elem.W->phi[j]);
-	ElemFam[Cell[i].Fnum-1].ElemF.W->BoBrhoV[j]
+	ElemFam[Cell[i].Fnum-1].Elem.W->BoBrhoV[j]
 	  = Cell[i].Elem.W->BoBrhoV[j];
-	ElemFam[Cell[i].Fnum-1].ElemF.W->BoBrhoH[j]
+	ElemFam[Cell[i].Fnum-1].Elem.W->BoBrhoH[j]
 	  = Cell[i].Elem.W->BoBrhoH[j];
       }
       break;
