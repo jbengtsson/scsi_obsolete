@@ -3302,7 +3302,7 @@ void Solenoid_Init(int Fnum1)
 }
 
 
-void Mpole_SetPB(int Fnum1, int Knum1, int Order)
+void Mpole_Setbn(int Fnum1, int Knum1, int Order)
 {
   /*  called by Cell_SetdP
        Compute full multipole composent as sum of design, systematic
@@ -3431,7 +3431,7 @@ void Mpole_DefdTsys(int Fnum1, int Knum1, double PdTsys)
 }
 
 
-void Wiggler_SetPB(int Fnum1, int Knum1, int Order)
+void Wiggler_Setbn(int Fnum1, int Knum1, int Order)
 {
   CellType     *cellp;
   elemtype     *elemp;

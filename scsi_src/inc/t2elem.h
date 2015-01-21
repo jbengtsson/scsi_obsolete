@@ -98,9 +98,9 @@ template<typename T>
 void Solenoid_Pass(CellType &Cell, ss_vect<T> &x);
 
 
-void Mpole_SetPB(int Fnum1, int Knum1, int Order);
+void Mpole_Setbn(int Fnum1, int Knum1, int Order);
 
-void Wiggler_SetPB(int Fnum1, int Knum1, int Order);
+void Wiggler_Setbn(int Fnum1, int Knum1, int Order);
 
 
 void MulLsMat(Matrix &A, Matrix &B);
@@ -156,4 +156,4 @@ double Elem_GetKval(int Fnum1, int Knum1, int Order);
 
 void Mpole_SetdS(int Fnum1, int Knum1);
 
-void Mpole_SetdT(int Fnum1, int Knum1);
+void Mpole_Setdroll(int Fnum1, int Knum1);

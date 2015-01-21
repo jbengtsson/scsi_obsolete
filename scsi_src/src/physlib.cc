@@ -102,17 +102,17 @@ void prt_sigma(void)
   fprintf(outf, "#\n");
 
   for (i = 0; i <= globval.Cell_nLoc; i++) {
-    switch (Cell[i].Elem.Kind) {
+    switch (Cell[i].Elem.kind) {
     case drift:
       code = 0.0;
       break;
     case Mpole:
-      if (Cell[i].Elem.M->Pirho != 0)
+      if (Cell[i].Elem.M->irho != 0)
 	code = 0.5;
-      else if (Cell[i].Elem.M->PBpar[Quad+HOMmax] != 0)
-	code = sgn(Cell[i].Elem.M->PBpar[Quad+HOMmax]);
-      else if (Cell[i].Elem.M->PBpar[Sext+HOMmax] != 0)
-	code = 1.5*sgn(Cell[i].Elem.M->PBpar[Sext+HOMmax]);
+      else if (Cell[i].Elem.M->bnpar[Quad+HOMmax] != 0)
+	code = sgn(Cell[i].Elem.M->bnpar[Quad+HOMmax]);
+      else if (Cell[i].Elem.M->bnpar[Sext+HOMmax] != 0)
+	code = 1.5*sgn(Cell[i].Elem.M->bnpar[Sext+HOMmax]);
       else if (Cell[i].Fnum == globval.bpm)
 	code = 2.0;
       else
@@ -123,7 +123,7 @@ void prt_sigma(void)
       break;
     }
     fprintf(outf, "%4ld %.*s %6.2f %4.1f %9.3e %9.3e %9.3e %9.3e\n",
-            i, SymbolLength, Cell[i].Elem.PName, Cell[i].S, code,
+            i, SymbolLength, Cell[i].Elem.name, Cell[i].S, code,
             1e3*sqrt(Cell[i].sigma[x_][x_]),
 	    1e3*sqrt(fabs(Cell[i].sigma[x_][px_])),
 	    1e3*sqrt(Cell[i].sigma[y_][y_]),
@@ -141,7 +141,7 @@ void recalc_S(void)
 
   S_tot = 0.0;
   for (k = 0; k <= globval.Cell_nLoc; k++) {
-    S_tot += Cell[k].Elem.PL; Cell[k].S = S_tot;
+    S_tot += Cell[k].Elem.L; Cell[k].S = S_tot;
   }
 }
 
@@ -1393,13 +1393,13 @@ void SetTol(int Fnum, double dxrms, double dyrms, double drrms)
 
   for (i = 1; i <= GetnKid(Fnum); i++) {
     k = Elem_GetPos(Fnum, i);
-    Cell[k].Elem.M->PdSrms[X_] = dxrms;
-    Cell[k].Elem.M->PdSrnd[X_] = normranf();
-    Cell[k].Elem.M->PdSrms[Y_] = dyrms;
-    Cell[k].Elem.M->PdSrnd[Y_] = normranf();
-    Cell[k].Elem.M->PdTrms = drrms;
-    Cell[k].Elem.M->PdTrnd = normranf();
-    Mpole_SetdS(Fnum, i); Mpole_SetdT(Fnum, i);
+    Cell[k].Elem.M->dSrms[X_] = dxrms;
+    Cell[k].Elem.M->dSrnd[X_] = normranf();
+    Cell[k].Elem.M->dSrms[Y_] = dyrms;
+    Cell[k].Elem.M->dSrnd[Y_] = normranf();
+    Cell[k].Elem.M->rollrms = drrms;
+    Cell[k].Elem.M->rollrnd = normranf();
+    Mpole_SetdS(Fnum, i); Mpole_Setdroll(Fnum, i);
   }
 }
 
@@ -1411,9 +1411,9 @@ void Scale_Tol(int Fnum, double dxrms, double dyrms, double drrms)
 
   for (Knum = 1; Knum <= GetnKid(Fnum); Knum++) {
     loc = Elem_GetPos(Fnum, Knum);
-    Cell[loc].Elem.M->PdSrms[X_] = dxrms; Cell[loc].Elem.M->PdSrms[Y_] = dyrms;
-    Cell[loc].Elem.M->PdTrms    = drrms;
-    Mpole_SetdS(Fnum, Knum); Mpole_SetdT(Fnum, Knum);
+    Cell[loc].Elem.M->dSrms[X_] = dxrms; Cell[loc].Elem.M->dSrms[Y_] = dyrms;
+    Cell[loc].Elem.M->rollrms    = drrms;
+    Mpole_SetdS(Fnum, Knum); Mpole_Setdroll(Fnum, Knum);
   }
 }
 
@@ -1448,10 +1448,10 @@ void SetaTol(int Fnum, int Knum, double dx, double dy, double dr)
   long int  loc;
 
   loc = Elem_GetPos(Fnum, Knum);
-  Cell[loc].Elem.M->PdSrms[0] = dx; Cell[loc].Elem.M->PdSrnd[0] = 1e0;
-  Cell[loc].Elem.M->PdSrms[1] = dy; Cell[loc].Elem.M->PdSrnd[1] = 1e0;
-  Cell[loc].Elem.M->PdTrms    = dr; Cell[loc].Elem.M->PdTrnd    = 1e0;
-  Mpole_SetdS(Fnum, Knum); Mpole_SetdT(Fnum, Knum);
+  Cell[loc].Elem.M->dSrms[0] = dx; Cell[loc].Elem.M->dSrnd[0] = 1e0;
+  Cell[loc].Elem.M->dSrms[1] = dy; Cell[loc].Elem.M->dSrnd[1] = 1e0;
+  Cell[loc].Elem.M->rollrms    = dr; Cell[loc].Elem.M->rollrnd    = 1e0;
+  Mpole_SetdS(Fnum, Knum); Mpole_Setdroll(Fnum, Knum);
 }
 
 
@@ -1506,7 +1506,7 @@ void LoadApertures(const char *ChamberFileName)
 void SetL(int Fnum, int Knum, double L)
 {
 
-  Cell[Elem_GetPos(Fnum, Knum)].Elem.PL = L;
+  Cell[Elem_GetPos(Fnum, Knum)].Elem.L = L;
 }
 
 
@@ -1515,13 +1515,13 @@ void SetL(int Fnum, double L)
   int  i;
 
   for (i = 1; i <= GetnKid(Fnum); i++)
-    Cell[Elem_GetPos(Fnum, i)].Elem.PL = L;
+    Cell[Elem_GetPos(Fnum, i)].Elem.L = L;
 }
 
 
 double GetL(int Fnum, int Knum)
 {
-  return (Cell[Elem_GetPos(Fnum, Knum)].Elem.PL);
+  return (Cell[Elem_GetPos(Fnum, Knum)].Elem.L);
 }
 
 
@@ -1884,7 +1884,7 @@ void PrintCh(void)
 
   for (i = 0; i <= globval.Cell_nLoc; i++)
     fprintf(f, "%4ld %15s  %6.2f  %7.3f  %7.3f  %7.3f\n",
-	    i, Cell[i].Elem.PName, Cell[i].S,
+	    i, Cell[i].Elem.name, Cell[i].S,
 	    Cell[i].maxampl[X_][0]*1E3, Cell[i].maxampl[X_][1]*1E3,
 	    Cell[i].maxampl[Y_][1]*1E3);
 

@@ -13,11 +13,11 @@ void get_bn(const string type, const int Fnum, const int Knum,
   elem = Cell[Elem_GetPos(Fnum, Knum)].Elem;
 
   if (type.compare("dsgn") == 0) {
-    bn = elem.M->PBpar[HOMmax+n]; an = elem.M->PBpar[HOMmax-n];
+    bn = elem.M->bnpar[HOMmax+n]; an = elem.M->bnpar[HOMmax-n];
   } else if (type.compare("sys") == 0) {
-    bn = elem.M->PBsys[HOMmax+n]; an = elem.M->PBsys[HOMmax-n];
+    bn = elem.M->bnsys[HOMmax+n]; an = elem.M->bnsys[HOMmax-n];
   } else if (type.compare("rms") == 0) {
-    bn = elem.M->PBrms[HOMmax+n]; an = elem.M->PBrms[HOMmax-n];
+    bn = elem.M->bnrms[HOMmax+n]; an = elem.M->bnrms[HOMmax-n];
   } else {
     cout << "get_bn: undef. type" << type << endl;
     exit(1);
@@ -38,17 +38,17 @@ void set_bn(const string type, const int Fnum, const int Knum,
   elem = Cell[Elem_GetPos(Fnum, Knum)].Elem;
 
   if (type.compare("dsgn") == 0) {
-    elem.M->PBpar[HOMmax+n] = bn; elem.M->PBpar[HOMmax-n] = an;
+    elem.M->bnpar[HOMmax+n] = bn; elem.M->bnpar[HOMmax-n] = an;
   } else if (type.compare("sys") == 0) {
-    elem.M->PBsys[HOMmax+n] = bn; elem.M->PBsys[HOMmax-n] = an;
+    elem.M->bnsys[HOMmax+n] = bn; elem.M->bnsys[HOMmax-n] = an;
   } else if (type.compare("rms") == 0) {
-    elem.M->PBrms[HOMmax+n] = bn; elem.M->PBrms[HOMmax-n] = an;
+    elem.M->bnrms[HOMmax+n] = bn; elem.M->bnrms[HOMmax-n] = an;
   } else {
     cout << "get_bn: undef. type" << type << endl;
     exit(1);
   }
 
-  Mpole_SetPB(Fnum, Knum, n); Mpole_SetPB(Fnum, Knum, -n);
+  Mpole_Setbn(Fnum, Knum, n); Mpole_Setbn(Fnum, Knum, -n);
 }
 
 

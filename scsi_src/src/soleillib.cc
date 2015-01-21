@@ -1504,8 +1504,8 @@ void MomentumAcceptance(long deb, long fin, double ep_min, double ep_max,
     getelem(lastpos,&Clost);
     getelem(pos,&Cell);
     fprintf(stdout,"pos=%4ld z0 =% 10.5f  pz0 =% 10.5f  \n", pos, tabz0[i-1L][pos-1L], tabpz0[i-1L][pos-1L]);
-    fprintf(stdout,"%4ld %10.5f %10.5f %10.5f %*s\n", pos,Cell.S,dp1,Clost.S,5,Clost.Elem.PName);
-    fprintf(outf2,"%4ld %10.5f %10.5f %10.5f %*s\n", pos,Cell.S,dp1,Clost.S,5,Clost.Elem.PName);
+    fprintf(stdout,"%4ld %10.5f %10.5f %10.5f %*s\n", pos,Cell.S,dp1,Clost.S,5,Clost.Elem.name);
+    fprintf(outf2,"%4ld %10.5f %10.5f %10.5f %*s\n", pos,Cell.S,dp1,Clost.S,5,Clost.Elem.name);
     pos++;
   }
   while(pos != fin);
@@ -1654,8 +1654,8 @@ void MomentumAcceptance(long deb, long fin, double ep_min, double ep_max,
     getelem(pos,&Cell);
     if (!trace)  printf("i=%4ld pos=%4ld dp=%6.4g\n",i,pos,dp2);
     fprintf(stdout,"pos=%4ld z0 =% 10.5f  pz0 =% 10.5f  \n", pos, tabz0[i-1L][pos-1L], tabpz0[i-1L][pos-1L]);
-    fprintf(stdout,"%4ld %10.5f %10.5f %10.5f %*s\n", pos,Cell.S,dp1,Clost.S, 5, Clost.Elem.PName);
-    fprintf(outf2,"%4ld %10.5f %10.5f %10.5f %*s\n", pos,Cell.S,dp1,Clost.S, 5, Clost.Elem.PName);
+    fprintf(stdout,"%4ld %10.5f %10.5f %10.5f %*s\n", pos,Cell.S,dp1,Clost.S, 5, Clost.Elem.name);
+    fprintf(outf2,"%4ld %10.5f %10.5f %10.5f %*s\n", pos,Cell.S,dp1,Clost.S, 5, Clost.Elem.name);
     pos++;
   }
   while(pos != fin);
@@ -1987,13 +1987,13 @@ void getA4antidamping()
   {
     getelem(i, &Cell); /* get element */
 
-    if (Cell.Elem.Kind == Mpole)
+    if (Cell.Elem.kind == Mpole)
     {
-      if (fabs(Cell.Elem.M->PBpar[2L + HOMmax]) > 0.0)
+      if (fabs(Cell.Elem.M->bnpar[2L + HOMmax]) > 0.0)
       {
         qlist[nquad] = i;
         nquad++;
-        if (!trace) printf("%s % f\n",Cell.Elem.PName, Cell.Elem.M->PBpar[2L + HOMmax]);
+        if (!trace) printf("%s % f\n",Cell.Elem.name, Cell.Elem.M->bnpar[2L + HOMmax]);
       }
     }
   }
@@ -2003,9 +2003,9 @@ void getA4antidamping()
   for (i = 0; i < nquad; i++)
   {
     getelem(qlist[i],&Cell);
-    fprintf(stdout,"%d Name = %s L=%g A= %g etax=%g \n", i, Cell.Elem.PName, Cell.Elem.PL, A,Cell.Eta[0]);
-    A += Cell.Elem.PL*2.0*(Cell.Elem.M->PBpar[2L + HOMmax]*Cell.Eta[0])*
-                       (Cell.Elem.M->PBpar[2L + HOMmax]*Cell.Eta[0]);
+    fprintf(stdout,"%d Name = %s L=%g A= %g etax=%g \n", i, Cell.Elem.name, Cell.Elem.L, A,Cell.Eta[0]);
+    A += Cell.Elem.L*2.0*(Cell.Elem.M->bnpar[2L + HOMmax]*Cell.Eta[0])*
+                       (Cell.Elem.M->bnpar[2L + HOMmax]*Cell.Eta[0]);
     i++;
   }
   fprintf(stdout,"A= %g\n", A*1.706);
