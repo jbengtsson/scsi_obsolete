@@ -57,7 +57,6 @@ typedef struct globvalrec {
 struct DriftType {
 };
 
-
 struct MpoleType {
   int        method;     // Integration Method
   int        n;          // Number of integration steps
@@ -243,6 +242,8 @@ class ElemFamType {
   int         NoDBN;
   DBNameType  DBNlist[nKidMax];
 };
+
+//class DriftType : public ElemType { };
 
 // LEGO block structure for each element of the lattice
 struct CellType {
