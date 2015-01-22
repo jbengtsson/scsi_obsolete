@@ -64,19 +64,19 @@ long ElemIndex(const std::string &name)
   i = 1;
   while (i <= globval.Elem_nFam) {
     if (trace) {
-      cout << setw(2) << (name1 == ElemFam[i-1].Elem.name)
-           << " " << name1 << " " << ElemFam[i-1].Elem.name << " (";
+      cout << setw(2) << (name1 == ElemFam[i-1].ElemPtr->name)
+           << " " << name1 << " " << ElemFam[i-1].ElemPtr->name << " (";
       for (j = 0; j < SymbolLength; j++)
-        cout << setw(4) << (int)ElemFam[i-1].Elem.name[j];
+        cout << setw(4) << (int)ElemFam[i-1].ElemPtr->name[j];
       cout  << " )" << endl;
     }
 
-    if (name1 == ElemFam[i-1].Elem.name) break;
+    if (name1 == ElemFam[i-1].ElemPtr->name) break;
 
     i++;
   }
 
-  if (name1 != ElemFam[i-1].Elem.name) {
+  if (name1 != ElemFam[i-1].ElemPtr->name) {
     cout << "ElemIndex: undefined element " << name << endl;
     exit_(1);
   }
@@ -157,101 +157,155 @@ bool Lattice_Read(const char *fi_)
       }
     }
 
-    mpolArray B;
-    bool BA[2*HOMmax+1];
-
-    double val;
+    mpolArray           B;
+    bool                BA[2*HOMmax+1];
+    double              val;
     std::vector<double> vec;
+    double              t, t1, t2, gap, QL = 0e0, QK;
+    double              QKV, QKH, QKxV, QKxH, QPhi, QKS;
+    double              dt, Frf, Vrf;
+    long                k1, k2, harnum;
+    ElemFamType         *ElemFam;
+    ElemType            *Elem;
+    DriftType           *D;
+    MpoleType           *M;
+    CavityType          *C;
+    WigglerType         *W;
+    InsertionType       *ID;
+    FieldMapType        *FM;
+    SpreaderType        *Spr;
+    RecombinerType      *Rec;
+    SolenoidType        *Sol;
+    bool                firstflag  = true; // flag for first kick input
+    bool                secondflag = true; // flag for second kick input
+    int                 kx, kz;
+    double              scaling;
+    int                 harm[n_harm_max];
+    double              kxV[n_harm_max],kxH[n_harm_max];
+    double              BoBrhoV[n_harm_max],BoBrhoH[n_harm_max];
+    double              phi[n_harm_max];
+    int                 n_harm=0;
+    string              str1="";
+    string              str2="";
 
-    double         t, t1, t2, gap, QL = 0.0, QK;
-    double         QKV, QKH, QKxV, QKxH, QPhi, QKS;
-    double         dt, Frf, Vrf;
-    long           k1, k2, harnum;
-    //      Lat_symbol     sym1;
-    //      symset         mysys, SET;
-    //      long           SET1[(long)lsym / 32 + 2];
-    ElemFamType    *WITH;
-    ElemType       *WITH1;
-    MpoleType      *WITH2;
-    //      symset         SET2;
-    CavityType     *WITH3;
-    //      long           SET3[(long)possym / 32 + 2];
-    //      long           SET4[(long)dbnsym / 32 + 2];
-    WigglerType    *WITH4;
-    FieldMapType   *WITH6;
-    /* ID Laurent */
-    InsertionType  *WITH5;
-    SolenoidType   *WITH7;
-    //      char str1[100] = "";
-    //      char str2[100] = "";
-    bool firstflag  = true; // flag for first kick input
-    bool secondflag = true; // flag for second kick input
-    //      long           i;
-    int            kx, kz;
-    double         scaling;
+    switch(pos) {
+    case 0: //drift
+      glps_read(*i, "l", val);
 
-    int harm[n_harm_max];
-    double kxV[n_harm_max],kxH[n_harm_max];
-    double BoBrhoV[n_harm_max],BoBrhoH[n_harm_max];
-    double phi[n_harm_max];
-    int n_harm=0;
-    string str1="";
-    string str2="";
+      globval.Elem_nFam++;
+      if (globval.Elem_nFam <= Elem_nFamMax) {
+	Elem = ElemFam[globval.Elem_nFam-1].ElemPtr;
+	D = new DriftType::DriftType();
+	Elem = (ElemType*)D;
 
-    switch(pos)
-      {
-      case 0: //drift
+	Elem->kind = ElemKind(drift);
+	memset(Elem->name,0,sizeof(partsName));
+	memcpy(Elem->name, (*i).c_str(), (*i).length());
+	Elem->L = val;
+      } else {
+	cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam
+	     << "(" << (long)Elem_nFamMax << ")" << endl;
+	longjmp(env0, 1);
+      }
+      break;
+    case 1: //bending
+      QL = 0e0;   /* L */
+      QK = 0e0;   /* K */
+      k1 = 0;     /* N */
+      t  = 0e0;   /* T */
+      t1 = 0e0;   /* T1 */
+      t2 = 0e0;   /* T2 */
+      gap = 0e0;  /* gap */
+      k2 = Meth_Linear;   /* method */
+      dt = 0e0;
+      ClearHOM(B, BA);
 
-	glps_read(*i,"l",val);
-
-	globval.Elem_nFam++;
-	if (globval.Elem_nFam <= Elem_nFamMax) {
-	  WITH = &ElemFam[globval.Elem_nFam-1];
-	  WITH1 = &WITH->Elem;
-	  memset(WITH1->name,0,sizeof(partsName));
-	  memcpy(WITH1->name, (*i).c_str(), (*i).length());
-	  WITH1->L = val;
-	  WITH1->kind = ElemKind(drift);
-	  Drift_Alloc(&WITH->Elem);
-	} else {
-	  cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam
-	       << "(" << (long)Elem_nFamMax << ")" << endl;
-	  longjmp(env0, 1);
+      if (GLPS_SUCCESS==glps_read(*i,"l",val)) QL = val;
+      if (GLPS_SUCCESS==glps_read(*i,"k",val)) QK = val;
+      if (GLPS_SUCCESS==glps_read(*i,"n",val)) k1 = (long) floor(val+0.5);
+      if (GLPS_SUCCESS==glps_read(*i,"t",val)) t = val;
+      if (GLPS_SUCCESS==glps_read(*i,"roll",val)) dt = val;
+      if (GLPS_SUCCESS==glps_read(*i,"t1",val)) t1 = val;
+      if (GLPS_SUCCESS==glps_read(*i,"t2",val)) t2 = val;
+      if (GLPS_SUCCESS==glps_read(*i,"gap",val)) gap = val;
+      if (GLPS_SUCCESS==glps_read(*i,"method",val))
+	k2 = (long) floor(val+0.5);
+      if ((unsigned int)k2 >= 32 ||
+	  ((1 << k2) &
+	   ((1 << Meth_Linear) | (1 << Meth_Second) |
+	    (1 << Meth_Fourth))) == 0)
+	longjmp(env0,1);
+      //              +   +
+      if (GLPS_SUCCESS==glps_read(*i,"hom",vec))
+	for (int k=0; k<(int)vec.size()/3;k++) {
+	  long order = (long) floor(vec[3*k] + 0.5);
+	  if (order < 1 || order > HOMmax) {
+	    cerr << "invalide value detected" << endl;
+	    longjmp(env0, 1);
+	  }
+	  BA[order+HOMmax] = true; BA[HOMmax-order] = true;
+	  B[order+HOMmax] = vec[3*k+1]; B[HOMmax-order] = vec[3*k+2];
 	}
 
-	break;
+      //    case dbnsym:
+      //      GetDBN_(&V);
+      //      break;
 
-      case 1: //bending
+      //              +   +
+      globval.Elem_nFam++;
+      if (globval.Elem_nFam <= Elem_nFamMax) {
+	Elem = ElemFam[globval.Elem_nFam-1].ElemPtr;
+	M = new MpoleType::MpoleType();
+	Elem = (ElemType*)M;
 
-	QL = 0.0;   /* L */
-	QK = 0.0;   /* K */
-	k1 = 0;     /* N */
-	t  = 0.0;   /* T */
-	t1 = 0.0;   /* T1 */
-	t2 = 0.0;   /* T2 */
-	gap = 0.0;  /* gap */
-	k2 = Meth_Linear;   /* method */
-	dt = 0.0;
-	ClearHOM(B, BA);
+	Elem->kind = Mpole;
+	memset(Elem->name,0,sizeof(partsName));
+	memcpy(Elem->name, (*i).c_str(), (*i).length());
+	Elem->L = QL;
 
-	if (GLPS_SUCCESS==glps_read(*i,"l",val)) QL = val;
-	if (GLPS_SUCCESS==glps_read(*i,"k",val)) QK = val;
-	if (GLPS_SUCCESS==glps_read(*i,"n",val)) k1 = (long) floor(val+0.5);
-	if (GLPS_SUCCESS==glps_read(*i,"t",val)) t = val;
-	if (GLPS_SUCCESS==glps_read(*i,"roll",val)) dt = val;
-	if (GLPS_SUCCESS==glps_read(*i,"t1",val)) t1 = val;
-	if (GLPS_SUCCESS==glps_read(*i,"t2",val)) t2 = val;
-	if (GLPS_SUCCESS==glps_read(*i,"gap",val)) gap = val;
-	if (GLPS_SUCCESS==glps_read(*i,"method",val))
-	  k2 = (long) floor(val+0.5);
-	if ((unsigned int)k2 >= 32 ||
-	    ((1 << k2) &
-	     ((1 << Meth_Linear) | (1 << Meth_Second) |
-	      (1 << Meth_Fourth))) == 0)
-	  longjmp(env0,1);
-	//              +   +
-	if (GLPS_SUCCESS==glps_read(*i,"hom",vec))
-	  for (int k=0; k<(int)vec.size()/3;k++) {
+
+	M->method = k2;
+	M->n = k1;
+	if (M->L != 0e0)
+	  M->irho = t * M_PI / 180e0 / M->L;
+	else
+	  M->irho = t * M_PI / 180e0;
+	M->tx1 = t1; M->tx2 = t2; M->gap = gap;
+	M->n_design = Dip;
+	AssignHOM(globval.Elem_nFam, B, BA);
+	//      SetDBN(&V);
+	//          +   +   +   +
+	M->bnpar[HOMmax+2] = QK; M->rollpar = dt;
+      } else {
+	cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam
+	     << "(" << (long)Elem_nFamMax << ")" << endl;
+	longjmp(env0, 1);
+      }
+      break;
+    case 2: //quadrupole
+      QL = 0e0;   /* L */
+      QK = 0e0;   /* K */
+      k1 = 0;   /* N */
+      k2 = Meth_Fourth;   /* method */
+      dt = 0e0;
+      ClearHOM(B, BA);
+
+      if (GLPS_SUCCESS==glps_read(*i,"l",val)) QL = val;
+      if (GLPS_SUCCESS==glps_read(*i,"k",val)) QK = val;
+      if (GLPS_SUCCESS==glps_read(*i,"n",val)) k1 = (long) floor(val+0.5);
+      if (GLPS_SUCCESS==glps_read(*i,"t",val)) t = val;
+      if (GLPS_SUCCESS==glps_read(*i,"roll",val)) dt = val;
+      if (GLPS_SUCCESS==glps_read(*i,"method",val))
+	k2 = (long) floor(val+0.5);
+      if ((unsigned int)k2 >= 32 ||
+	  ((1 << k2) &
+	   ((1 << Meth_Linear) | (1 << Meth_First) |
+	    (1 << Meth_Second) | (1 << Meth_Fourth))) == 0)
+	longjmp(env0, 1);
+
+      if (GLPS_SUCCESS==glps_read(*i,"hom",vec))
+	for (int k=0; k<(int)vec.size()/3;k++)
+	  {
 	    long order = (long) floor(vec[3*k] + 0.5);
 	    if (order < 1 || order > HOMmax) {
 	      cerr << "invalide value detected" << endl;
@@ -261,682 +315,601 @@ bool Lattice_Read(const char *fi_)
 	    B[order+HOMmax] = vec[3*k+1]; B[HOMmax-order] = vec[3*k+2];
 	  }
 
-	//    case dbnsym:
-	//      GetDBN_(&V);
-	//      break;
+      //    case dbnsym:
+      //      GetDBN_(&V);
 
-	//              +   +
-	globval.Elem_nFam++;
-	if (globval.Elem_nFam <= Elem_nFamMax) {
-	  WITH = &ElemFam[globval.Elem_nFam-1];
-	  WITH1 = &WITH->Elem;
-	  memset(WITH1->name,0,sizeof(partsName));
-	  memcpy(WITH1->name, (*i).c_str(), (*i).length());
-	  WITH1->L = QL;
-	  WITH1->kind = Mpole;
-	  Mpole_Alloc(&WITH->Elem);
-	  WITH2 = WITH1->M;
-	  WITH2->method = k2;
-	  WITH2->n = k1;
-	  if (WITH1->L != 0.0)
-	    WITH2->irho = t * M_PI / 180.0 / WITH1->L;
-	  else
-	    WITH2->irho = t * M_PI / 180.0;
-	  WITH2->tx1 = t1; WITH2->tx2 = t2; WITH2->gap = gap;
-	  WITH2->n_design = Dip;
-	  AssignHOM(globval.Elem_nFam, B, BA);
-	  //      SetDBN(&V);
-	  //          +   +   +   +
-	  WITH2->bnpar[HOMmax+2] = QK; WITH2->rollpar = dt;
+      globval.Elem_nFam++;
+      if (globval.Elem_nFam <= Elem_nFamMax) {
+	Elem = ElemFam[globval.Elem_nFam-1].ElemPtr;
+	M = new MpoleType::MpoleType();
+	Elem = (ElemType*)M;
+
+	Elem->kind = Mpole;
+	memset(Elem->name,0,sizeof(partsName));
+	memcpy(Elem->name, (*i).c_str(), (*i).length());
+	Elem->L = QL;
+
+	M->method = k2;	M->n = k1; M->rollpar = dt;
+	AssignHOM(globval.Elem_nFam, B,BA);
+	//    SetDBN(&V);
+	M->n_design = Quad; M->bnpar[HOMmax+2] = QK;
+      } else {
+	cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam
+	     << "(" << (long)Elem_nFamMax << ")" << endl;
+	longjmp(env0, 1);
+      }
+      break;
+    case 3: //sextupole
+      QL = 0e0;   /* L */
+      QK = 0e0;   /* K */
+      k1 = 0;   /* N */
+      k2 = Meth_Fourth;   /* method */
+      dt = 0e0;
+      ClearHOM(B,BA);
+
+      if (GLPS_SUCCESS==glps_read(*i,"l",val)) QL = val;
+      if (GLPS_SUCCESS==glps_read(*i,"k",val)) QK = val;
+      if (GLPS_SUCCESS==glps_read(*i,"n",val)) k1 = (long) floor(val+0.5);
+      if (GLPS_SUCCESS==glps_read(*i,"roll",val)) dt = val;
+      if (GLPS_SUCCESS==glps_read(*i,"method",val)) k2 = (long) floor(val+0.5);
+      if ((unsigned int)k2 >= 32 ||
+	  ((1 << k2) &
+	   ((1 << Meth_Linear) | (1 << Meth_Second) |
+	    (1 << Meth_Fourth))) == 0)
+	longjmp(env0, 1);
+
+      if (GLPS_SUCCESS==glps_read(*i,"hom",vec))
+	for (int k=0; k<(int)vec.size()/3;k++)
+	  {
+	    long order = (long) floor(vec[3*k] + 0.5);
+	    if (order < 1 || order > HOMmax) {
+	      cerr << "invalide value detected" << endl;
+	      longjmp(env0, 1);
+	    }
+	    BA[order+HOMmax] = true; BA[HOMmax-order] = true;
+	    B[order+HOMmax] = vec[3*k+1]; B[HOMmax-order] = vec[3*k+2];
+	  }
+
+      //        case dbnsym:
+      //          GetDBN_(&V);
+      //          break;
+
+      globval.Elem_nFam++;
+      if (globval.Elem_nFam <= Elem_nFamMax) {
+	Elem = ElemFam[globval.Elem_nFam-1].ElemPtr;
+	M = new MpoleType::MpoleType();
+	Elem = (ElemType*)M;
+
+	Elem->kind = Mpole;
+	memset(Elem->name,0,sizeof(partsName));
+	memcpy(Elem->name, (*i).c_str(), (*i).length());
+	//    memcpy(Elem->name, ElementName, sizeof(partsName));
+	Elem->L = QL;
+
+	M->method = k2; M->n = k1;
+	if (M->L != 0e0)
+	  M->thick = thicktype(thick);
+	else
+	  M->thick = thicktype(thin);
+	M->rollpar = dt; M->n_design = Sext;
+	AssignHOM(globval.Elem_nFam, B, BA);
+	//    SetDBN(&V);
+	M->bnpar[HOMmax + 3] = QK;
+      } else {
+	cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam
+	     << "(" << (long)Elem_nFamMax << ")" << endl;
+	longjmp(env0, 1);
+      }
+      break;
+    case 4: //Cavity
+      //              ClearHOM(B,BA);
+      Frf = 0e0;   /* Frf */
+      Vrf = 0e0;   /* Vrf */
+      QPhi = 0e0;
+      harnum = 0;   /* Voff */
+
+      if (GLPS_SUCCESS==glps_read(*i,"frequency",val)) Frf = val;
+      if (GLPS_SUCCESS==glps_read(*i,"voltage",val)) Vrf = val;
+      if (GLPS_SUCCESS==glps_read(*i,"phi",val)) QPhi = val;
+      if (GLPS_SUCCESS==glps_read(*i,"harnum",val))
+	harnum = (long) floor(val+0.5);
+
+      //    case dbnsym:
+      //      GetDBN_(&V);
+      //      break;
+
+      globval.Elem_nFam++;
+      if (globval.Elem_nFam <= Elem_nFamMax) {
+	Elem = ElemFam[globval.Elem_nFam-1].ElemPtr;
+	C = new CavityType::CavityType();
+	Elem = (ElemType*)C;
+
+	Elem->kind = Cavity;
+	memset(Elem->name,0,sizeof(partsName));
+	memcpy(Elem->name, (*i).c_str(), (*i).length());
+	//    memcpy(Elem->name, ElementName, sizeof(partsName));
+
+	C->volt = Vrf; C->freq = Frf; C->phi = QPhi*M_PI/180e0;
+	C->h = harnum;
+	//    SetDBN(&V);
+      } else {
+	cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam
+	     << "(" << (long)Elem_nFamMax << ")" << endl;
+	longjmp(env0, 1);
+      }
+      break;
+    case  5:  //Corrector
+      QL = 0e0;   /* L */
+      QK = 1.0;   /* K */
+      k1 = 0;     /* N */
+      k2 = Meth_Linear;   /* method */
+      dt = 0e0;
+      //              ClearHOMandDBN(&V);
+      if (GLPS_SUCCESS==glps_read(*i,"l",val)) QL = val;
+      if (GLPS_SUCCESS==glps_read(*i,"n",val)) k1 = (long) floor(val+0.5);
+      if (GLPS_SUCCESS==glps_read(*i,"method",val))
+	k2 = (long) floor(val+0.5);
+      if (GLPS_SUCCESS==glps_read(*i,"plane",val)) QK = val;
+      if (GLPS_SUCCESS==glps_read(*i,"roll",val)) dt = val;
+      if ((unsigned int)k2 >= 32 ||
+	  ((1 << k2) &
+	   ((1 << Meth_Linear) | (1 << Meth_Second) |
+	    (1 << Meth_Fourth))) == 0)
+	longjmp(env0, 1);
+
+
+      //            case dbnsym:
+      //              GetDBN_(&V);
+      //              break;
+
+      globval.Elem_nFam++;
+      if (globval.Elem_nFam <= Elem_nFamMax) {
+	Elem = ElemFam[globval.Elem_nFam-1].ElemPtr;
+	M = new MpoleType::MpoleType();
+	Elem = (ElemType*)M;
+
+	Elem->kind = Mpole;
+	memset(Elem->name,0,sizeof(partsName));
+	memcpy(Elem->name, (*i).c_str(), (*i).length());
+	//    memcpy(Elem->name, ElementName, sizeof(partsName));
+	Elem->L = QL;
+
+	//    SetDBN(&V);
+	if (Elem->L != 0e0)
+	  M->thick = thicktype(thick);
+	else
+	  M->thick = thicktype(thin);
+	M->method = k2;
+	M->n = k1;
+	M->rollpar = dt;
+      } else {
+	cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam
+	     << "(" << (long)Elem_nFamMax << ")" << endl;
+	longjmp(env0, 1);
+      }
+      break;
+    case   6: //BPM
+      //  ClearHOMandDBN(&V);
+      //    if (sym1 == dbnsym)
+      //      GetDBN_(&V);
+
+      globval.Elem_nFam++;
+      if (globval.Elem_nFam <= Elem_nFamMax) {
+	Elem = ElemFam[globval.Elem_nFam-1].ElemPtr;
+	M = new MpoleType::MpoleType();
+	Elem = (ElemType*)M;
+
+	Elem->kind = Mpole;
+	memset(Elem->name,0,sizeof(partsName));
+	memcpy(Elem->name, (*i).c_str(), (*i).length());
+	//    memcpy(Elem->name, ElementName, sizeof(partsName));
+
+	M->thick = thicktype(thin);
+	//    SetDBN(&V);
+      } else {
+	cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam
+	     << "(" << (long)Elem_nFamMax << ")" << endl;
+	longjmp(env0, 1);
+      }
+      break;
+    case    7: //Marker
+      //  ClearHOMandDBN(&V);
+      //      GetDBN_(&V);
+
+      globval.Elem_nFam++;
+      if (globval.Elem_nFam <= Elem_nFamMax) {
+	Elem = ElemFam[globval.Elem_nFam-1].ElemPtr;
+	M = new MpoleType::MpoleType();
+	Elem = (ElemType*)M;
+
+	memset(Elem->name,0,sizeof(partsName));
+	memcpy(Elem->name, (*i).c_str(), (*i).length());
+	//    memcpy(Elem->name, ElementName, sizeof(partsName));
+	Elem->L = 0e0;
+	Elem->kind = ElemKind(marker);
+	//    SetDBN(&V);
+      } else {
+	cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam
+	     << "(" << (long)Elem_nFamMax << ")" << endl;
+	longjmp(env0, 1);
+      }
+      break;
+    case    8 : // Multipole
+      QL = 0e0;   /* L */
+      QK = 0e0;   /* K */
+      k1 = 0;   /* N */
+      t = 0e0;   /* T */
+      t1 = 0e0;   /* T1 */
+      t2 = 0e0;   /* T2 */
+      gap = 0e0;   /* gap */
+      k2 = Meth_Linear;   /* method */
+      dt = 0e0;
+      ClearHOM(B, BA);
+
+      if (GLPS_SUCCESS==glps_read(*i,"l",val)) QL = val;
+      if (GLPS_SUCCESS==glps_read(*i,"n",val)) k1 = (long) floor(val+0.5);
+      if (GLPS_SUCCESS==glps_read(*i,"t",val)) t = val;
+      if (GLPS_SUCCESS==glps_read(*i,"t1",val)) t1 = val;
+      if (GLPS_SUCCESS==glps_read(*i,"t2",val)) t2 = val;
+      if (GLPS_SUCCESS==glps_read(*i,"gap",val)) gap = val;
+      if (GLPS_SUCCESS==glps_read(*i,"roll",val)) dt = val;
+      if (GLPS_SUCCESS==glps_read(*i,"method",val))
+	k2 = (long) floor(val+0.5);
+      if ((unsigned int)k2 >= 32 ||
+	  ((1 << k2) &
+	   ((1 << Meth_Linear) | (1 << Meth_Second) |
+	    (1 << Meth_Fourth))) == 0)
+	longjmp(env0, 1);
+
+      if (GLPS_SUCCESS==glps_read(*i,"hom",vec))
+	for (int k=0; k<(int)vec.size()/3;k++)
+	  {
+	    long order = (long) floor(vec[3*k] + 0.5);
+	    if (order < 1 || order > HOMmax) {
+	      cerr << "invalide value detected" << endl;
+	      longjmp(env0, 1);
+	    }
+	    BA[order+HOMmax] = true; BA[HOMmax-order] = true;
+	    B[order+HOMmax] = vec[3*k+1]; B[HOMmax-order] = vec[3*k+2];
+	  }
+
+
+      //    case dbnsym:
+      //      GetDBN_(&V);
+      //      break;
+
+      globval.Elem_nFam++;
+      if (globval.Elem_nFam <= Elem_nFamMax) {
+	Elem = ElemFam[globval.Elem_nFam-1].ElemPtr;
+	M = new MpoleType::MpoleType();
+	Elem = (ElemType*)M;
+
+	Elem->kind = Mpole;
+	memset(Elem->name,0,sizeof(partsName));
+	memcpy(Elem->name, (*i).c_str(), (*i).length());
+	//    memcpy(Elem->name, ElementName, sizeof(partsName));
+	Elem->L = QL;
+
+	if (Elem->L != 0e0) {
+	  M->thick = thicktype(thick);
+	  M->irho = t * M_PI / 180e0 / Elem->L;
 	} else {
-	  cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam
-	       << "(" << (long)Elem_nFamMax << ")" << endl;
-	  longjmp(env0, 1);
+	  M->thick = thicktype(thin);
+	  M->irho = t * M_PI / 180e0;
 	}
-	break;
+	M->n = k1; M->method = k2; M->tx1 = t1; M->tx2 = t2; M->gap = gap;
+	M->rollpar = dt; M->n_design = M->order;
+	AssignHOM(globval.Elem_nFam, B,BA);
+	//    SetDBN(&V);
+      } else {
+	cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam
+	     << "(" << (long)Elem_nFamMax << ")" << endl;
+	longjmp(env0, 1);
+      }
+      break;
+    case  9 :// Wiggler
+      QL = 0e0; QK = 0e0; QKV = 0e0; QKH = 0e0; QKxV = 0e0; QKxH = 0e0;
+      QPhi = 0e0; QKS = 0e0; k1 = 0; k2 = Meth_Linear; dt = 0e0;
+      //                    ClearHOMandDBN(&V);
 
-      case 2: //quadrupole
-
-	QL = 0.0;   /* L */
-	QK = 0.0;   /* K */
-	k1 = 0;   /* N */
-	k2 = Meth_Fourth;   /* method */
-	dt = 0.0;
-	ClearHOM(B, BA);
-
-	if (GLPS_SUCCESS==glps_read(*i,"l",val)) QL = val;
-	if (GLPS_SUCCESS==glps_read(*i,"k",val)) QK = val;
-	if (GLPS_SUCCESS==glps_read(*i,"n",val)) k1 = (long) floor(val+0.5);
-	if (GLPS_SUCCESS==glps_read(*i,"t",val)) t = val;
-	if (GLPS_SUCCESS==glps_read(*i,"roll",val)) dt = val;
-	if (GLPS_SUCCESS==glps_read(*i,"method",val))
-	  k2 = (long) floor(val+0.5);
-	if ((unsigned int)k2 >= 32 ||
-	    ((1 << k2) &
-	     ((1 << Meth_Linear) | (1 << Meth_First) |
-	      (1 << Meth_Second) | (1 << Meth_Fourth))) == 0)
-	  longjmp(env0, 1);
-
-	if (GLPS_SUCCESS==glps_read(*i,"hom",vec))
-	  for (int k=0; k<(int)vec.size()/3;k++)
-	    {
-	      long order = (long) floor(vec[3*k] + 0.5);
-	      if (order < 1 || order > HOMmax) {
-		cerr << "invalide value detected" << endl;
+      if (GLPS_SUCCESS==glps_read(*i,"l",val)) QL = val;
+      if (GLPS_SUCCESS==glps_read(*i,"bobrhov",val)) QKV = val;
+      if (GLPS_SUCCESS==glps_read(*i,"bobrhoh",val)) QKH = val;
+      if (GLPS_SUCCESS==glps_read(*i,"kxv",val)) QKxV = val;
+      if (GLPS_SUCCESS==glps_read(*i,"kxh",val)) QKxH = val;
+      if (GLPS_SUCCESS==glps_read(*i,"phi",val)) QPhi = val;
+      if (GLPS_SUCCESS==glps_read(*i,"n",val)) k1 = (long) floor(val+0.5);
+      if (GLPS_SUCCESS==glps_read(*i,"lambda",val)) QKS = val;
+      if (GLPS_SUCCESS==glps_read(*i,"roll",val)) dt = val;
+      if (GLPS_SUCCESS==glps_read(*i,"method",val)) k2 = (long) floor(val+0.5);
+      if ((unsigned int)k2 >= 32 ||
+	  ((1 << k2) &
+	   ((1 << Meth_Linear) | (1 << Meth_First) | (1 << Meth_Second) |
+	    (1 << Meth_Fourth) | (1 << Meth_genfun))) == 0)
+	longjmp(env0, 1);
+      if (GLPS_SUCCESS==glps_read(*i,"harm",vec))
+	for(int n=0; n<(int)(vec.size())/6;++n)
+	  {
+	    n_harm++;harm[n] = (long) floor(vec[6*n] + 0.5);
+	    if (harm[n] < 1 || n_harm_max < n + 2)
+	      {
+		cerr << "invalid value detected" << endl;
 		longjmp(env0, 1);
 	      }
-	      BA[order+HOMmax] = true; BA[HOMmax-order] = true;
-	      B[order+HOMmax] = vec[3*k+1]; B[HOMmax-order] = vec[3*k+2];
+	    kxV[n] = vec[6*n+1];
+	    BoBrhoV[n] = vec[6*n+2];
+	    kxH[n] = vec[6*n+3];
+	    BoBrhoH[n] = vec[6*n+4];
+	    phi[n] = vec[6*n+5];
+	  }
+
+
+
+      //   case dbnsym:
+      //     GetDBN_(&V);
+      //     break;
+
+      globval.Elem_nFam++;
+      if (globval.Elem_nFam <= Elem_nFamMax) {
+	Elem = ElemFam[globval.Elem_nFam-1].ElemPtr;
+	W = new WigglerType::WigglerType();
+	Elem = (ElemType*)W;
+
+	ElemFam = &ElemFam[globval.Elem_nFam-1];
+	Elem = ElemFam->ElemPtr;
+	memset(Elem->name,0,sizeof(partsName));
+	memcpy(Elem->name, (*i).c_str(), (*i).length());
+	//    memcpy(Elem->name, ElementName, sizeof(partsName));
+	Elem->L = QL; Elem->kind = Wigl;
+
+	W->method = k2; W->n = k1; W->rollpar = dt;
+	//    SetDBN(&V);
+	W->lambda = QKS; W->n_harm = 1; W->harm[0] = 1;
+	W->kxV[0] = QKxV; W->BoBrhoV[0] = QKV;
+	W->kxH[0] = QKxH; W->BoBrhoH[0] = QKH;
+	W->phi[0] = QPhi;
+	//                    AssignHarm(globval.Elem_nFam, &V);
+	//   W = ElemFam[elem-1].Elem.W;
+	W->n_harm += n_harm;
+	// the fundamental is stored in harm[0], etc.
+	for (int k = 1; k < W->n_harm; k++) {
+	  W->harm[k] = harm[k-1];
+	  W->kxV[k] = kxV[k-1]; W->BoBrhoV[k] = BoBrhoV[k-1];
+	  W->kxH[k] = kxH[k-1]; W->BoBrhoH[k] = BoBrhoH[k-1];
+	  W->phi[k] = phi[k-1];
+	}
+
+	/* Equivalent vertically focusing gradient */
+	W->bn[HOMmax+2] = -QK*QK/2e0;
+	if (!CheckWiggler(globval.Elem_nFam))
+	  longjmp(env0, 1); //Always returns true????
+      } else {
+	cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam
+	     << "(" << (long)Elem_nFamMax << ")" << endl;
+	longjmp(env0, 1);
+      }
+      break;
+    case  10: //Fieldmap
+      QL = 0e0; k1 = 0;
+      if (GLPS_SUCCESS==glps_read(*i,"l",val)) QL = val;
+      if (GLPS_SUCCESS==glps_read(*i,"t",val)) t = val;
+      if (GLPS_SUCCESS==glps_read(*i,"n",val)) k1 = (long) floor(val+0.5);
+      if (GLPS_SUCCESS!=glps_read(*i,"file1",str1)) str1="";
+      if (GLPS_SUCCESS==glps_read(*i,"scaling",val)) scaling = val;
+      globval.Elem_nFam++;
+      if (globval.Elem_nFam <= Elem_nFamMax) {
+	Elem = ElemFam[globval.Elem_nFam-1].ElemPtr;
+	FM = new FieldMapType::FieldMapType();
+	Elem = (FieldMapType*)FM;
+
+	Elem->kind = FieldMap;
+	memset(Elem->name,0,sizeof(partsName));
+	memcpy(Elem->name, (*i).c_str(), (*i).length());
+	//    memcpy(Elem->name, ElementName, sizeof(partsName));
+	Elem->L = QL;
+
+	FM->phi = t*M_PI/180e0;FM->n_step = k1; FM->scl = scaling;
+
+	if (glps_read("energy",val)==GLPS_SUCCESS) {
+	  globval.Energy=val;
+	  if (str1.length() > 0) get_B(str1.c_str(), FM);
+	} else {
+	  cerr << "Fieldmap: energy not defined" << endl;
+	  longjmp(env0, 1);
+	}
+      } else {
+	cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam
+	     << "(" << (long)Elem_nFamMax << ")" << endl;
+	longjmp(env0, 1);
+      }
+      break;
+
+    case   11: // insertion
+      QK  = 0e0; QKxV = 0e0; QKS = 0e0;
+      k1  = 1;
+      k2  = 1;       // linear interpolation by default
+      dt  = 0e0;
+      scaling = 1.0; // scaling factor
+      //                 string str1,str2;
+      //     bool firstflag=true, secondflag=true;
+      if (GLPS_SUCCESS==glps_read(*i,"n",val)) k1 = (long) floor(val+0.5);
+      if (GLPS_SUCCESS!=glps_read(*i,"file1",str1))
+	{str1=""; firstflag=false; }
+      if (GLPS_SUCCESS!=glps_read(*i,"file2",str2))
+	{str2=""; secondflag=false; }
+      if (GLPS_SUCCESS==glps_read(*i,"scaling",val))
+	scaling = abs((long)floor(val));
+      if (GLPS_SUCCESS==glps_read(*i,"method",val))
+	// method for interpolation: 1 means linear 2 spline
+	k2 = (long) floor(val+0.5);
+
+      globval.Elem_nFam++;
+      /* Fills up the ID */
+      if (globval.Elem_nFam <= Elem_nFamMax) {
+	Elem = ElemFam[globval.Elem_nFam-1].ElemPtr;
+	ID = new InsertionType::InsertionType();
+	Elem = (ElemType*)ID;
+
+	Elem->kind = Insertion;
+	memset(Elem->name,0,sizeof(partsName));
+	memcpy(Elem->name, (*i).c_str(), (*i).length());
+	//    memcpy(Elem->name, ElementName, sizeof(partsName));
+
+	ID->method = k2; ID->n = k1; ID->scaling = scaling;
+
+	// if (glps_read("energy",val)==GLPS_SUCCESS) {
+	//   globval.Energy=val;
+	//   if (str1.length() > 0) get_B(str1.c_str(), FM);
+	// } else {
+	//   cerr << "Insertion_Alloc: energy not defined" << endl;
+	//   longjmp(env0, 1);
+	// }
+
+	// Check if filename given for first order kicks
+	//    if (firstflag)
+	if (str1.length() > 0) {
+	  strcpy(ID->fname1,str1.c_str());
+	  ID->firstorder = true;
+	  Read_IDfile(ID->fname1, Elem->L, ID->nx, ID->nz,
+		      ID->tabx, ID->tabz, ID->thetax1,
+		      ID->thetaz1, ID->long_comp, ID->B2);
+	  // scale factor from Radia: Tmm to get Tm.
+	  for (kx = 0; kx < ID->nx; kx++) {
+	    for (kz = 0; kz < ID->nz; kz++) {
+	      ID->thetax1[kz][kx] = 1e-3*ID->thetax1[kz][kx];
+	      ID->thetaz1[kz][kx] = 1e-3*ID->thetaz1[kz][kx];
 	    }
-
-
-	//    case dbnsym:
-	//      GetDBN_(&V);
-
-
-	globval.Elem_nFam++;
-	if (globval.Elem_nFam <= Elem_nFamMax) {
-	  WITH = &ElemFam[globval.Elem_nFam-1];
-	  WITH1 = &WITH->Elem;
-	  memset(WITH1->name,0,sizeof(partsName));
-	  memcpy(WITH1->name, (*i).c_str(), (*i).length());
-	  WITH1->L = QL; WITH1->kind = Mpole;
-	  Mpole_Alloc(&WITH->Elem);
-	  WITH2 = WITH1->M;
-	  WITH2->method = k2; WITH2->n = k1; WITH2->rollpar = dt;
-	  AssignHOM(globval.Elem_nFam, B,BA);
-	  //    SetDBN(&V);
-	  WITH2->n_design = Quad; WITH2->bnpar[HOMmax+2] = QK;
-	} else {
-	  cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam
-	       << "(" << (long)Elem_nFamMax << ")" << endl;
-	  longjmp(env0, 1);
-	}
-	break;
-
-      case 3: //sextupole
-	QL = 0.0;   /* L */
-	QK = 0.0;   /* K */
-	k1 = 0;   /* N */
-	k2 = Meth_Fourth;   /* method */
-	dt = 0.0;
-	ClearHOM(B,BA);
-
-	if (GLPS_SUCCESS==glps_read(*i,"l",val)) QL = val;
-	if (GLPS_SUCCESS==glps_read(*i,"k",val)) QK = val;
-	if (GLPS_SUCCESS==glps_read(*i,"n",val)) k1 = (long) floor(val+0.5);
-	if (GLPS_SUCCESS==glps_read(*i,"roll",val)) dt = val;
-	if (GLPS_SUCCESS==glps_read(*i,"method",val)) k2 = (long) floor(val+0.5);
-	if ((unsigned int)k2 >= 32 ||
-	    ((1 << k2) &
-	     ((1 << Meth_Linear) | (1 << Meth_Second) |
-	      (1 << Meth_Fourth))) == 0)
-	  longjmp(env0, 1);
-
-	if (GLPS_SUCCESS==glps_read(*i,"hom",vec))
-	  for (int k=0; k<(int)vec.size()/3;k++)
-	    {
-	      long order = (long) floor(vec[3*k] + 0.5);
-	      if (order < 1 || order > HOMmax) {
-		cerr << "invalide value detected" << endl;
-		longjmp(env0, 1);
-	      }
-	      BA[order+HOMmax] = true; BA[HOMmax-order] = true;
-	      B[order+HOMmax] = vec[3*k+1]; B[HOMmax-order] = vec[3*k+2];
-	    }
-
-	//        case dbnsym:
-	//          GetDBN_(&V);
-	//          break;
-
-	globval.Elem_nFam++;
-	if (globval.Elem_nFam <= Elem_nFamMax) {
-	  WITH = &ElemFam[globval.Elem_nFam-1];
-	  WITH1 = &WITH->Elem;
-	  memset(WITH1->name,0,sizeof(partsName));
-	  memcpy(WITH1->name, (*i).c_str(), (*i).length());
-	  //    memcpy(WITH1->name, ElementName, sizeof(partsName));
-	  WITH1->L = QL;
-	  WITH1->kind = Mpole;
-	  Mpole_Alloc(&WITH->Elem);
-	  WITH2 = WITH1->M;
-	  WITH2->method = k2;
-	  WITH2->n = k1;
-	  if (WITH1->L != 0.0)
-	    WITH2->thick = thicktype(thick);
-	  else
-	    WITH2->thick = thicktype(thin);
-	  WITH2->rollpar = dt; WITH2->n_design = Sext;
-	  AssignHOM(globval.Elem_nFam, B, BA);
-	  //    SetDBN(&V);
-	  WITH2->bnpar[HOMmax + 3] = QK;
-	} else {
-	  cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam
-	       << "(" << (long)Elem_nFamMax << ")" << endl;
-	  longjmp(env0, 1);
-	}
-	break;
-
-      case 4: //Cavity
-	//              ClearHOM(B,BA);
-	Frf = 0.0;   /* Frf */
-	Vrf = 0.0;   /* Vrf */
-	QPhi = 0.0;
-	harnum = 0;   /* Voff */
-
-	if (GLPS_SUCCESS==glps_read(*i,"frequency",val)) Frf = val;
-	if (GLPS_SUCCESS==glps_read(*i,"voltage",val)) Vrf = val;
-	if (GLPS_SUCCESS==glps_read(*i,"phi",val)) QPhi = val;
-	if (GLPS_SUCCESS==glps_read(*i,"harnum",val))
-	  harnum = (long) floor(val+0.5);
-
-	//    case dbnsym:
-	//      GetDBN_(&V);
-	//      break;
-
-	globval.Elem_nFam++;
-	if (globval.Elem_nFam <= Elem_nFamMax) {
-	  WITH = &ElemFam[globval.Elem_nFam-1];
-	  WITH1 = &WITH->Elem;
-	  memset(WITH1->name,0,sizeof(partsName));
-	  memcpy(WITH1->name, (*i).c_str(), (*i).length());
-	  //    memcpy(WITH1->name, ElementName, sizeof(partsName));
-	  WITH1->kind = Cavity;
-	  Cav_Alloc(&WITH->Elem);
-	  WITH3 = WITH1->C;
-	  WITH3->volt = Vrf;   /* Voltage [V] */
-	  WITH3->freq = Frf;   /* Frequency in Hz */
-	  WITH3->phi = QPhi*M_PI/180.0;
-	  WITH3->h = harnum;
-	  //    SetDBN(&V);
-	} else {
-	  cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam
-	       << "(" << (long)Elem_nFamMax << ")" << endl;
-	  longjmp(env0, 1);
-	}
-	break;
-
-
-      case  5:  //Corrector
-
-	QL = 0.0;   /* L */
-	QK = 1.0;   /* K */
-	k1 = 0;     /* N */
-	k2 = Meth_Linear;   /* method */
-	dt = 0.0;
-	//              ClearHOMandDBN(&V);
-	if (GLPS_SUCCESS==glps_read(*i,"l",val)) QL = val;
-	if (GLPS_SUCCESS==glps_read(*i,"n",val)) k1 = (long) floor(val+0.5);
-	if (GLPS_SUCCESS==glps_read(*i,"method",val))
-	  k2 = (long) floor(val+0.5);
-	if (GLPS_SUCCESS==glps_read(*i,"plane",val)) QK = val;
-	if (GLPS_SUCCESS==glps_read(*i,"roll",val)) dt = val;
-	if ((unsigned int)k2 >= 32 ||
-	    ((1 << k2) &
-	     ((1 << Meth_Linear) | (1 << Meth_Second) |
-	      (1 << Meth_Fourth))) == 0)
-	  longjmp(env0, 1);
-
-
-	//            case dbnsym:
-	//              GetDBN_(&V);
-	//              break;
-
-	globval.Elem_nFam++;
-	if (globval.Elem_nFam <= Elem_nFamMax) {
-	  WITH = &ElemFam[globval.Elem_nFam-1];
-	  WITH1 = &WITH->Elem;
-	  memset(WITH1->name,0,sizeof(partsName));
-	  memcpy(WITH1->name, (*i).c_str(), (*i).length());
-	  //    memcpy(WITH1->name, ElementName, sizeof(partsName));
-	  WITH1->L = QL;
-	  WITH1->kind = Mpole;
-	  Mpole_Alloc(&WITH->Elem);
-	  WITH2 = WITH1->M;
-	  //    SetDBN(&V);
-	  if (WITH1->L != 0.0)
-	    WITH2->thick = thicktype(thick);
-	  else
-	    WITH2->thick = thicktype(thin);
-	  WITH2->method = k2;
-	  WITH2->n = k1;
-	  WITH2->rollpar = dt;
-	} else {
-	  cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam
-	       << "(" << (long)Elem_nFamMax << ")" << endl;
-	  longjmp(env0, 1);
-	}
-	break;
-
-      case   6: //BPM
-
-
-	//  ClearHOMandDBN(&V);
-	//    if (sym1 == dbnsym)
-	//      GetDBN_(&V);
-
-	globval.Elem_nFam++;
-	if (globval.Elem_nFam <= Elem_nFamMax) {
-	  WITH = &ElemFam[globval.Elem_nFam-1];
-	  WITH1 = &WITH->Elem;
-	  memset(WITH1->name,0,sizeof(partsName));
-	  memcpy(WITH1->name, (*i).c_str(), (*i).length());
-	  //    memcpy(WITH1->name, ElementName, sizeof(partsName));
-	  WITH1->kind = Mpole;
-	  Mpole_Alloc(&WITH->Elem);
-	  WITH2 = WITH1->M;
-	  WITH2->thick = thicktype(thin);
-	  //    SetDBN(&V);
-	} else {
-	  cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam
-	       << "(" << (long)Elem_nFamMax << ")" << endl;
-	  longjmp(env0, 1);
-	}
-	break;
-
-      case    7: //Marker
-
-	//  ClearHOMandDBN(&V);
-	//      GetDBN_(&V);
-
-	globval.Elem_nFam++;
-	if (globval.Elem_nFam <= Elem_nFamMax) {
-	  WITH = &ElemFam[globval.Elem_nFam-1];
-	  WITH1 = &WITH->Elem;
-	  memset(WITH1->name,0,sizeof(partsName));
-	  memcpy(WITH1->name, (*i).c_str(), (*i).length());
-	  //    memcpy(WITH1->name, ElementName, sizeof(partsName));
-	  WITH1->L = 0.0;
-	  WITH1->kind = ElemKind(marker);
-	  //    SetDBN(&V);
-	} else {
-	  cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam
-	       << "(" << (long)Elem_nFamMax << ")" << endl;
-	  longjmp(env0, 1);
-	}
-	break;
-
-      case    8 : // Multipole
-
-	QL = 0.0;   /* L */
-	QK = 0.0;   /* K */
-	k1 = 0;   /* N */
-	t = 0.0;   /* T */
-	t1 = 0.0;   /* T1 */
-	t2 = 0.0;   /* T2 */
-	gap = 0.0;   /* gap */
-	k2 = Meth_Linear;   /* method */
-	dt = 0.0;
-	ClearHOM(B, BA);
-
-	if (GLPS_SUCCESS==glps_read(*i,"l",val)) QL = val;
-	if (GLPS_SUCCESS==glps_read(*i,"n",val)) k1 = (long) floor(val+0.5);
-	if (GLPS_SUCCESS==glps_read(*i,"t",val)) t = val;
-	if (GLPS_SUCCESS==glps_read(*i,"t1",val)) t1 = val;
-	if (GLPS_SUCCESS==glps_read(*i,"t2",val)) t2 = val;
-	if (GLPS_SUCCESS==glps_read(*i,"gap",val)) gap = val;
-	if (GLPS_SUCCESS==glps_read(*i,"roll",val)) dt = val;
-	if (GLPS_SUCCESS==glps_read(*i,"method",val))
-	  k2 = (long) floor(val+0.5);
-	if ((unsigned int)k2 >= 32 ||
-	    ((1 << k2) &
-	     ((1 << Meth_Linear) | (1 << Meth_Second) |
-	      (1 << Meth_Fourth))) == 0)
-	  longjmp(env0, 1);
-
-	if (GLPS_SUCCESS==glps_read(*i,"hom",vec))
-	  for (int k=0; k<(int)vec.size()/3;k++)
-	    {
-	      long order = (long) floor(vec[3*k] + 0.5);
-	      if (order < 1 || order > HOMmax) {
-		cerr << "invalide value detected" << endl;
-		longjmp(env0, 1);
-	      }
-	      BA[order+HOMmax] = true; BA[HOMmax-order] = true;
-	      B[order+HOMmax] = vec[3*k+1]; B[HOMmax-order] = vec[3*k+2];
-	    }
-
-
-	//    case dbnsym:
-	//      GetDBN_(&V);
-	//      break;
-
-	globval.Elem_nFam++;
-	if (globval.Elem_nFam <= Elem_nFamMax) {
-	  WITH = &ElemFam[globval.Elem_nFam-1];
-	  WITH1 = &WITH->Elem;
-	  Mpole_Alloc(&WITH->Elem);
-	  WITH2 = WITH1->M;
-	  memset(WITH1->name,0,sizeof(partsName));
-	  memcpy(WITH1->name, (*i).c_str(), (*i).length());
-	  //    memcpy(WITH1->name, ElementName, sizeof(partsName));
-	  WITH1->kind = Mpole;
-	  WITH1->L = QL;
-	  if (WITH1->L != 0e0) {
-	    WITH2->thick = thicktype(thick);
-	    WITH2->irho = t * M_PI / 180.0 / WITH1->L;
-	  } else {
-	    WITH2->thick = thicktype(thin);
-	    WITH2->irho = t * M_PI / 180.0;
-	  }
-	  WITH2->n = k1; WITH2->method = k2;
-	  WITH2->tx1 = t1; WITH2->tx2 = t2; WITH2->gap = gap;
-	  WITH2->rollpar = dt;
-	  AssignHOM(globval.Elem_nFam, B,BA);
-	  WITH2->n_design = WITH2->order;
-	  //    SetDBN(&V);
-	} else {
-	  cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam
-	       << "(" << (long)Elem_nFamMax << ")" << endl;
-	  longjmp(env0, 1);
-	}
-	break;
-
-      case  9 :// Wiggler
-
-	QL = 0e0; QK = 0e0; QKV = 0e0; QKH = 0e0; QKxV = 0e0; QKxH = 0e0;
-	QPhi = 0e0; QKS = 0e0; k1 = 0; k2 = Meth_Linear; dt = 0e0;
-	//                    ClearHOMandDBN(&V);
-
-	if (GLPS_SUCCESS==glps_read(*i,"l",val)) QL = val;
-	if (GLPS_SUCCESS==glps_read(*i,"bobrhov",val)) QKV = val;
-	if (GLPS_SUCCESS==glps_read(*i,"bobrhoh",val)) QKH = val;
-	if (GLPS_SUCCESS==glps_read(*i,"kxv",val)) QKxV = val;
-	if (GLPS_SUCCESS==glps_read(*i,"kxh",val)) QKxH = val;
-	if (GLPS_SUCCESS==glps_read(*i,"phi",val)) QPhi = val;
-	if (GLPS_SUCCESS==glps_read(*i,"n",val)) k1 = (long) floor(val+0.5);
-	if (GLPS_SUCCESS==glps_read(*i,"lambda",val)) QKS = val;
-	if (GLPS_SUCCESS==glps_read(*i,"roll",val)) dt = val;
-	if (GLPS_SUCCESS==glps_read(*i,"method",val)) k2 = (long) floor(val+0.5);
-	if ((unsigned int)k2 >= 32 ||
-	    ((1 << k2) &
-	     ((1 << Meth_Linear) | (1 << Meth_First) | (1 << Meth_Second) |
-	      (1 << Meth_Fourth) | (1 << Meth_genfun))) == 0)
-	  longjmp(env0, 1);
-	if (GLPS_SUCCESS==glps_read(*i,"harm",vec))
-	  for(int n=0; n<(int)(vec.size())/6;++n)
-	    {
-	      n_harm++;harm[n] = (long) floor(vec[6*n] + 0.5);
-	      if (harm[n] < 1 || n_harm_max < n + 2)
-		{
-		  cerr << "invalid value detected" << endl;
-		  longjmp(env0, 1);
-		}
-	      kxV[n] = vec[6*n+1];
-	      BoBrhoV[n] = vec[6*n+2];
-	      kxH[n] = vec[6*n+3];
-	      BoBrhoH[n] = vec[6*n+4];
-	      phi[n] = vec[6*n+5];
-	    }
-
-
-
-	//   case dbnsym:
-	//     GetDBN_(&V);
-	//     break;
-
-	globval.Elem_nFam++;
-	if (globval.Elem_nFam <= Elem_nFamMax) {
-	  WITH = &ElemFam[globval.Elem_nFam-1]; WITH1 = &WITH->Elem;
-	  memset(WITH1->name,0,sizeof(partsName));
-	  memcpy(WITH1->name, (*i).c_str(), (*i).length());
-	  //    memcpy(WITH1->name, ElementName, sizeof(partsName));
-	  WITH1->L = QL; WITH1->kind = Wigl;
-	  Wiggler_Alloc(&WITH->Elem); WITH4 = WITH1->W;
-	  WITH4->method = k2; WITH4->n = k1;
-	  WITH4->rollpar = dt;
-	  //    SetDBN(&V);
-	  WITH4->lambda = QKS; WITH4->n_harm = 1; WITH4->harm[0] = 1;
-	  WITH4->kxV[0] = QKxV; WITH4->BoBrhoV[0] = QKV;
-	  WITH4->kxH[0] = QKxH; WITH4->BoBrhoH[0] = QKH;
-	  WITH4->phi[0] = QPhi;
-	  //                    AssignHarm(globval.Elem_nFam, &V);
-	  //   W = ElemFam[elem-1].Elem.W;
-	  WITH4->n_harm += n_harm;
-	  // the fundamental is stored in harm[0], etc.
-	  for (int k = 1; k < WITH4->n_harm; k++) {
-	    WITH4->harm[k] = harm[k-1];
-	    WITH4->kxV[k] = kxV[k-1]; WITH4->BoBrhoV[k] = BoBrhoV[k-1];
-	    WITH4->kxH[k] = kxH[k-1]; WITH4->BoBrhoH[k] = BoBrhoH[k-1];
-	    WITH4->phi[k] = phi[k-1];
-	  }
-
-	  /* Equivalent vertically focusing gradient */
-	  WITH4->bn[HOMmax+2] = -QK*QK/2e0;
-	  if (!CheckWiggler(globval.Elem_nFam))
-	    longjmp(env0, 1); //Always returns true????
-	} else {
-	  cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam
-	       << "(" << (long)Elem_nFamMax << ")" << endl;
-	  longjmp(env0, 1);
-	}
-	break;
-
-      case  10: //Fieldmap
-	QL = 0.0; k1 = 0;
-	if (GLPS_SUCCESS==glps_read(*i,"l",val)) QL = val;
-	if (GLPS_SUCCESS==glps_read(*i,"t",val)) t = val;
-	if (GLPS_SUCCESS==glps_read(*i,"n",val)) k1 = (long) floor(val+0.5);
-	if (GLPS_SUCCESS!=glps_read(*i,"file1",str1)) str1="";
-	if (GLPS_SUCCESS==glps_read(*i,"scaling",val)) scaling = val;
-	globval.Elem_nFam++;
-	if (globval.Elem_nFam <= Elem_nFamMax) {
-	  WITH = &ElemFam[globval.Elem_nFam-1]; WITH1 = &WITH->Elem;
-	  memset(WITH1->name,0,sizeof(partsName));
-	  memcpy(WITH1->name, (*i).c_str(), (*i).length());
-	  //    memcpy(WITH1->name, ElementName, sizeof(partsName));
-	  WITH1->L = QL; WITH1->kind = FieldMap;
-	  FieldMap_Alloc(WITH1);
-	  //,true);
-	  WITH6 = WITH1->FM;
-	  WITH6->phi = t*M_PI/180.0;WITH6->n_step = k1; WITH6->scl = scaling;
-
-	  if (glps_read("energy",val)==GLPS_SUCCESS) {
-	    globval.Energy=val;
-	    if (str1.length() > 0) get_B(str1.c_str(), WITH6);
-	  } else {
-	    cerr << "Fieldmap: energy not defined" << endl;
-	    longjmp(env0, 1);
 	  }
 	} else {
-	  cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam
-	       << "(" << (long)Elem_nFamMax << ")" << endl;
-	  longjmp(env0, 1);
+	  strcpy(ID->fname1,"/*No_Filename1_Given*/");
 	}
-	break;
 
-      case   11: // insertion
-	QK  = 0e0; QKxV = 0e0; QKS = 0e0;
-	k1  = 1;
-	k2  = 1;       // linear interpolation by default
-	dt  = 0e0;
-	scaling = 1.0; // scaling factor
-	//                 string str1,str2;
-	//     bool firstflag=true, secondflag=true;
-	if (GLPS_SUCCESS==glps_read(*i,"n",val)) k1 = (long) floor(val+0.5);
-	if (GLPS_SUCCESS!=glps_read(*i,"file1",str1))
-	  {str1=""; firstflag=false; }
-	if (GLPS_SUCCESS!=glps_read(*i,"file2",str2))
-	  {str2=""; secondflag=false; }
-	if (GLPS_SUCCESS==glps_read(*i,"scaling",val))
-	  scaling = abs((long)floor(val));
-	if (GLPS_SUCCESS==glps_read(*i,"method",val))
-	  // method for interpolation: 1 means linear 2 spline
-	  k2 = (long) floor(val+0.5);
-
-	globval.Elem_nFam++;
-	/* Fills up the ID */
-	if (globval.Elem_nFam <= Elem_nFamMax) {
-	  WITH  = &ElemFam[globval.Elem_nFam-1];
-	  WITH1 = &WITH->Elem;
-	  memset(WITH1->name,0,sizeof(partsName));
-	  memcpy(WITH1->name, (*i).c_str(), (*i).length());
-	  //    memcpy(WITH1->name, ElementName, sizeof(partsName));
-	  WITH1->kind = Insertion;
-	  Insertion_Alloc(&WITH->Elem);
-	  WITH5 = WITH1->ID;
-	  WITH5->method = k2;
-	  WITH5->n = k1;
-	  WITH5->scaling = scaling;
-
-	  // if (glps_read("energy",val)==GLPS_SUCCESS) {
-	  //   globval.Energy=val;
-	  //   if (str1.length() > 0) get_B(str1.c_str(), WITH6);
-	  // } else {
-	  //   cerr << "Insertion_Alloc: energy not defined" << endl;
-	  //   longjmp(env0, 1);
-	  // }
-
-	  // Check if filename given for first order kicks
-	  //    if (firstflag)
-	  if (str1.length() > 0) {
-	    strcpy(WITH5->fname1,str1.c_str());
-	    WITH5->firstorder = true;
-	    Read_IDfile(WITH5->fname1, WITH1->L, WITH5->nx, WITH5->nz,
-			WITH5->tabx, WITH5->tabz, WITH5->thetax1,
-			WITH5->thetaz1, WITH5->long_comp, WITH5->B2);
-	    // scale factor from Radia: Tmm to get Tm.
-	    for (kx = 0; kx < WITH5->nx; kx++) {
-	      for (kz = 0; kz < WITH5->nz; kz++) {
-		WITH5->thetax1[kz][kx] = 1e-3*WITH5->thetax1[kz][kx];
-		WITH5->thetaz1[kz][kx] = 1e-3*WITH5->thetaz1[kz][kx];
-	      }
-	    }
-	  } else {
-	    strcpy(WITH5->fname1,"/*No_Filename1_Given*/");
-	  }
-
-	  // Check if filename given for Second order kicks
-	  //    if (secondflag)
-	  if (str2.length() >0) {
-	    //        strcpy(WITH5->fname2,"/*No_Filename2_Given*/");
-	    strcpy(WITH5->fname2,str2.c_str());
-	    WITH5->secondorder = true;;
-	    // Read Id file for second order kicks
-	    Read_IDfile(WITH5->fname2, WITH1->L, WITH5->nx, WITH5->nz,
-			WITH5->tabx, WITH5->tabz, WITH5->thetax, WITH5->thetaz,
-			WITH5->long_comp, WITH5->B2);
-	  } else {
-	    strcpy(WITH5->fname2,"/*No_Filename2_Given*/");
-	  }
-
-	  // check whether no Radia filename read: something is wrong
-	  //    if (!firstflag && !secondflag)
-	  if (str1.length()<1 && str2.length()<1) {
-	    cerr << "Error: no Insertion filename found as"
-		 << " an input in lattice file" << endl;
-	    longjmp(env0, 1);
-	  }
-
-	  if (k2 != 1) { // linear interpolation
-	    WITH5->linear = false;
-	  } else { // cubic interpolation
-	    WITH5->linear = true;
-	  }
-	  // stuff for spline interpolation
-	  if (!WITH5->linear) {
-	    WITH5->mtx = gsl_matrix_alloc(WITH5->nz,WITH5->nx);
-	    GSL2NRDM2(pmtx,WITH5->mtx,WITH5->tx,0);
-	    WITH5->mtz = gsl_matrix_alloc(WITH5->nz,WITH5->nx);
-	    GSL2NRDM2(pmtz,WITH5->mtz,WITH5->tz,0);
-	    WITH5->tab1 = (double *)malloc((WITH5->nx)*sizeof(double));
-	    WITH5->tab2 = (double *)malloc((WITH5->nz)*sizeof(double));
-	    WITH5->mf2x = gsl_matrix_alloc(WITH5->nz,WITH5->nx);
-	    GSL2NRDM2(pmf2x,WITH5->mf2x,WITH5->f2x,0);
-	    WITH5->mf2z = gsl_matrix_alloc(WITH5->nz,WITH5->nx);
-	    GSL2NRDM2(pmf2z,WITH5->mf2z,WITH5->f2z,0);
-	    Matrices4Spline(WITH5);
-	  }
-
-	  // to put somewhere
-	  //      /** Free memory **/
-	  //      free(tab1);
-	  //      free(tab2);
-	  //
-	  //      free_matrix(tx,1,nz,1,nx);
-	  //      free_matrix(tz,1,nz,1,nx);
-	  //      free_matrix(f2x,1,nz,1,nx);
-	  //      free_matrix(f2z,1,nz,1,nx);
+	// Check if filename given for Second order kicks
+	//    if (secondflag)
+	if (str2.length() >0) {
+	  //        strcpy(ID->fname2,"/*No_Filename2_Given*/");
+	  strcpy(ID->fname2,str2.c_str());
+	  ID->secondorder = true;;
+	  // Read Id file for second order kicks
+	  Read_IDfile(ID->fname2, Elem->L, ID->nx, ID->nz,
+		      ID->tabx, ID->tabz, ID->thetax, ID->thetaz,
+		      ID->long_comp, ID->B2);
 	} else {
-	  cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam
-	       << "(" << (long)Elem_nFamMax << ")" << endl;
+	  strcpy(ID->fname2,"/*No_Filename2_Given*/");
+	}
+
+	// check whether no Radia filename read: something is wrong
+	//    if (!firstflag && !secondflag)
+	if (str1.length()<1 && str2.length()<1) {
+	  cerr << "Error: no Insertion filename found as"
+	       << " an input in lattice file" << endl;
 	  longjmp(env0, 1);
 	}
-	break;
 
-      case   12: //Spreader
-	//    if (sym1 == dbnsym)
-	//        GetDBN_(&V);
-	globval.Elem_nFam++;
-	if (globval.Elem_nFam <= Elem_nFamMax) {
-	  WITH = &ElemFam[globval.Elem_nFam-1];
-	  WITH1 = &WITH->Elem;
-	  memset(WITH1->name,0,sizeof(partsName));
-	  memcpy(WITH1->name, (*i).c_str(), (*i).length());
-	  //    memcpy(WITH1->name, ElementName, sizeof(partsName));
-	  if (GLPS_SUCCESS==glps_read(*i,"l",val))  WITH1->L = val;
-	  //    WITH1->L = *V.rnum;
-	  WITH1->kind = ElemKind(Spreader);
-	  Spreader_Alloc(&WITH->Elem);
-	} else {
-	  cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam
-	       << "(" << (long)Elem_nFamMax << ")" << endl;
-	  longjmp(env0, 1);
+	if (k2 != 1) { // linear interpolation
+	  ID->linear = false;
+	} else { // cubic interpolation
+	  ID->linear = true;
 	}
-	break;
-
-      case   13: // recombiner
-
-	//      GetDBN_(&V);
-	globval.Elem_nFam++;
-	if (globval.Elem_nFam <= Elem_nFamMax) {
-	  WITH = &ElemFam[globval.Elem_nFam-1];
-	  WITH1 = &WITH->Elem;
-	  memset(WITH1->name,0,sizeof(partsName));
-	  memcpy(WITH1->name, (*i).c_str(), (*i).length());
-	  if (GLPS_SUCCESS==glps_read(*i,"l",val))  WITH1->L = val;
-	  //    WITH1->L = *V.rnum;
-	  WITH1->kind = ElemKind(Recombiner);
-	  Recombiner_Alloc(&WITH->Elem);
-	} else {
-	  cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam
-	       << "(" << (long)Elem_nFamMax << ")" << endl;
-	  longjmp(env0, 1);
+	// stuff for spline interpolation
+	if (!ID->linear) {
+	  ID->mtx = gsl_matrix_alloc(ID->nz,ID->nx);
+	  GSL2NRDM2(pmtx,ID->mtx,ID->tx,0);
+	  ID->mtz = gsl_matrix_alloc(ID->nz,ID->nx);
+	  GSL2NRDM2(pmtz,ID->mtz,ID->tz,0);
+	  ID->tab1 = (double *)malloc((ID->nx)*sizeof(double));
+	  ID->tab2 = (double *)malloc((ID->nz)*sizeof(double));
+	  ID->mf2x = gsl_matrix_alloc(ID->nz,ID->nx);
+	  GSL2NRDM2(pmf2x,ID->mf2x,ID->f2x,0);
+	  ID->mf2z = gsl_matrix_alloc(ID->nz,ID->nx);
+	  GSL2NRDM2(pmf2z,ID->mf2z,ID->f2z,0);
+	  Matrices4Spline(ID);
 	}
-	break;
 
-      case    14: // Solenoid
-	QL = 0.0; /* L */
-	QK = 0.0; /* K */
-	k1 = 0;   /* N */
-	if (GLPS_SUCCESS==glps_read(*i,"l",val)) QL = val;
-	if (GLPS_SUCCESS==glps_read(*i,"bobrho",val)) QK = val;
-	if (GLPS_SUCCESS==glps_read(*i,"n",val)) k1 = (long) floor(val+0.5);
-	globval.Elem_nFam++;
-	if (globval.Elem_nFam <= Elem_nFamMax) {
-	  WITH = &ElemFam[globval.Elem_nFam-1];
-	  WITH1 = &WITH->Elem;
-	  Solenoid_Alloc(&WITH->Elem);
-	  WITH7 = WITH1->Sol;
-	  memset(WITH1->name,0,sizeof(partsName));
-	  memcpy(WITH1->name, (*i).c_str(), (*i).length());
-	  WITH1->kind = Solenoid;
-	  WITH1->L = QL; WITH7->n = k1; WITH7->BoBrho = QK;
-	} else {
-	  cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam
-	       << "(" << (long)Elem_nFamMax << ")" << endl;
-	  longjmp(env0, 1);
-	}
-	break;
+	// to put somewhere
+	//      /** Free memory **/
+	//      free(tab1);
+	//      free(tab2);
+	//
+	//      free_matrix(tx,1,nz,1,nx);
+	//      free_matrix(tz,1,nz,1,nx);
+	//      free_matrix(f2x,1,nz,1,nx);
+	//      free_matrix(f2z,1,nz,1,nx);
+      } else {
+	cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam
+	     << "(" << (long)Elem_nFamMax << ")" << endl;
+	longjmp(env0, 1);
+      }
+      break;
+    case   12: //Spreader
+      //    if (sym1 == dbnsym)
+      //        GetDBN_(&V);
+      globval.Elem_nFam++;
+      if (globval.Elem_nFam <= Elem_nFamMax) {
+	Elem = ElemFam[globval.Elem_nFam-1].ElemPtr;
+	Spr = new SpreaderType::SpreaderType();
+	Elem = (ElemType*)Spr;
 
-      default:
+	Elem->kind = ElemKind(Spreader);
+	memset(Elem->name,0,sizeof(partsName));
+	memcpy(Elem->name, (*i).c_str(), (*i).length());
+	//    memcpy(Elem->name, ElementName, sizeof(partsName));
+	if (GLPS_SUCCESS==glps_read(*i,"l",val))  Elem->L = val;
+	//    Elem->L = *V.rnum;
+      } else {
+	cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam
+	     << "(" << (long)Elem_nFamMax << ")" << endl;
+	longjmp(env0, 1);
+      }
+      break;
+    case   13: // recombiner
+      //      GetDBN_(&V);
+      globval.Elem_nFam++;
+      if (globval.Elem_nFam <= Elem_nFamMax) {
+	Elem = ElemFam[globval.Elem_nFam-1].ElemPtr;
+	Rec = new RecombinerType::RecombinerType();
+	Elem = (ElemType*)Rec;
 
-	cout << " Not Defined " << str << endl;
-      }  //switch
+	Elem->kind = ElemKind(Recombiner);
+	memset(Elem->name,0,sizeof(partsName));
+	memcpy(Elem->name, (*i).c_str(), (*i).length());
+	if (GLPS_SUCCESS==glps_read(*i,"l",val))  Elem->L = val;
+	//    Elem->L = *V.rnum;
+      } else {
+	cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam
+	     << "(" << (long)Elem_nFamMax << ")" << endl;
+	longjmp(env0, 1);
+      }
+      break;
+    case    14: // Solenoid
+      QL = 0e0; /* L */
+      QK = 0e0; /* K */
+      k1 = 0;   /* N */
+      if (GLPS_SUCCESS==glps_read(*i,"l",val)) QL = val;
+      if (GLPS_SUCCESS==glps_read(*i,"bobrho",val)) QK = val;
+      if (GLPS_SUCCESS==glps_read(*i,"n",val)) k1 = (long) floor(val+0.5);
+      globval.Elem_nFam++;
+      if (globval.Elem_nFam <= Elem_nFamMax) {
+	Elem = ElemFam[globval.Elem_nFam-1].ElemPtr;
+	Sol = new SolenoidType::SolenoidType();
+	Elem = (ElemType*)Sol;
 
+	Elem->kind = Solenoid;
+	memset(Elem->name,0,sizeof(partsName));
+	memcpy(Elem->name, (*i).c_str(), (*i).length());
+	Elem->L = QL;
 
+	Sol->n = k1; Sol->BoBrho = QK;
+      } else {
+	cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam
+	     << "(" << (long)Elem_nFamMax << ")" << endl;
+	longjmp(env0, 1);
+      }
+      break;
+    default:
+      cout << " Not Defined " << str << endl;
+    }  //switch
   }   // elem
-
 
   cout << "Beamline <" << use << "> will be used" << endl;
   //    return 0;
@@ -995,7 +968,7 @@ void ClearHOM(double *B, bool *BA)
   long i;
 
   for (i = -HOMmax; i <= HOMmax; i++) {
-    B[i + HOMmax] = 0.0;
+    B[i + HOMmax] = 0e0;
     BA[i + HOMmax] = false;
   }
   //  LINK->DBNsavemax = 0;
@@ -1007,7 +980,7 @@ void AssignHOM(long elem,  double *B, bool * BA )
   long       i;
   MpoleType  *M;
 
-  M = ElemFam[elem-1].Elem.M;
+  M = (MpoleType*)ElemFam[elem-1].ElemPtr;
   for (i = -HOMmax; i <= HOMmax; i++) {
     if (BA[i+HOMmax]) {
       M->bnpar[i+HOMmax] = B[i+HOMmax];
@@ -1038,18 +1011,19 @@ bool CheckWiggler( long i)
   bool         Result;
   double       a, Lambda, L, diff;
   long         NN;
-  ElemFamType  *WITH;
-  ElemType     *WITH1;
-  WigglerType  *WITH2;
+  ElemFamType  *ElemFam;
+  ElemType     *Elem;
+  WigglerType  *M;
 
   Result = false;
-  WITH = &ElemFam[i-1]; WITH1 = &WITH->Elem; WITH2 = WITH1->W;
-  Lambda = WITH2->lambda;
-  L = WITH1->L; a = L/Lambda;
+  ElemFam = &ElemFam[i-1];
+  Elem = ElemFam->ElemPtr;
+  Lambda = M->lambda;
+  L = Elem->L; a = L/Lambda;
   NN = (long)floor(a+0.01+0.5);
   diff = fabs((L-NN*Lambda)/L);
   if (diff < 1e-5) return true;
-  cerr << endl << ">>> Incorrect definition of " << WITH1->name << endl;
+  cerr << endl << ">>> Incorrect definition of " << Elem->name << endl;
   cerr         << "    L      ( total length ) = " << L << endl;           //%20.12f [m]\n", L);
   cerr         << "    Lambda ( wave  length ) = " << Lambda << endl;      //%20.12f [m]\n", L);
   cerr         << "    # of Period = L /Lambda = " << L/Lambda << "?????" << endl;     //
@@ -1080,8 +1054,8 @@ long CheckElementtable(const string name)
 
   FORLIM = globval.Elem_nFam;
   for (i = 1; i <= FORLIM; i++) {
-    //  if (!strncmp(ElemFam[i-1].Elem.name, name.c_str(), name.length()))
-    if (!strcmp(ElemFam[i-1].Elem.name, name.c_str()))
+    //  if (!strncmp(ElemFam[i-1].ElemPtr->name, name.c_str(), name.length()))
+    if (!strcmp(ElemFam[i-1].ElemPtr->name, name.c_str()))
       j = i;
   }
   return j;
@@ -1119,11 +1093,10 @@ void GetDP()
 {
   double val;
 
-  if (glps_read("dp", val)!=GLPS_SUCCESS )
-    {
-      cout << "> dP/P is not defined, default is 1.0e-8." << endl;
-      globval.dPcommon = 1e-8;
-    } else
+  if (glps_read("dp", val)!=GLPS_SUCCESS ) {
+    cout << "> dP/P is not defined, default is 1.0e-8." << endl;
+    globval.dPcommon = 1e-8;
+  } else
     globval.dPcommon = val;
 }
 
@@ -1131,11 +1104,10 @@ void GetCODEPS()
 {
   double val;
 
-  if (glps_read("codeps", val)!=GLPS_SUCCESS )
-    {
-      cout << "> CODEPS is not defined, default is 1.0e-12." << endl;
-      globval.CODeps = 1e-12;
-    } else
+  if (glps_read("codeps", val)!=GLPS_SUCCESS ) {
+    cout << "> CODEPS is not defined, default is 1.0e-12." << endl;
+    globval.CODeps = 1e-12;
+  } else
     globval.CODeps = val;
 }
 
@@ -1145,10 +1117,10 @@ double Circumference()
   double S;
   long FORLIM;
 
-  S = 0.0;
+  S = 0e0;
   FORLIM = globval.Cell_nLoc;
   for (i = 1; i <= FORLIM; i++)
-    S += ElemFam[Cell[i].Fnum - 1].Elem.L;
+    S += ElemFam[Cell[i].Fnum - 1].ElemPtr->L;
   return S;
 }
 
@@ -1157,7 +1129,7 @@ double Circumference()
 void RegisterKids()
 {
   long i, FORLIM;
-  ElemFamType *WITH;
+  ElemFamType *ElemFam;
 
   if (setjmp(env0)) return;
   if (globval.Elem_nFam <= Elem_nFamMax) {
@@ -1172,15 +1144,15 @@ void RegisterKids()
 
   FORLIM = globval.Cell_nLoc;
   for (i = 1; i <= FORLIM; i++) {
-    WITH = &ElemFam[Cell[i].Fnum - 1];
-    WITH->nKid++;
-    if (WITH->nKid <= nKidMax) {
-      WITH->KidList[WITH->nKid - 1] = i;
-      Cell[i].Knum = WITH->nKid;
+    ElemFam = &ElemFam[Cell[i].Fnum - 1];
+    ElemFam->nKid++;
+    if (ElemFam->nKid <= nKidMax) {
+      ElemFam->KidList[ElemFam->nKid - 1] = i;
+      Cell[i].Knum = ElemFam->nKid;
     } else
       {
 	cerr << "Elem_nFamMax exceeded: "
-	     << WITH->nKid << "(" << nKidMax << ")" << endl;
+	     << ElemFam->nKid << "(" << nKidMax << ")" << endl;
 	longjmp(env0, 1);
       }
   }

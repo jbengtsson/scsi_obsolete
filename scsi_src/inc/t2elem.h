@@ -8,6 +8,27 @@ extern bool    sympl;
 extern int     FieldMap_filetype;
 extern double  cl_rad, q_fluct, I2, I4, I5;
 
+void Drift_Init(int Fnum);
+
+void Mpole_Init(int Fnum);
+
+void Wiggler_Init(int Fnum);
+
+void FieldMap_Init(int Fnum);
+
+void Cav_Init(int Fnum);
+
+void Marker_Init(int Fnum);
+
+void Insertion_Init(int Fnum);
+
+void Spreader_Init(int Fnum);
+
+void Recombiner_Init(int Fnum);
+
+void Solenoid_Init(int Fnum);
+
+
 double det_mat(const int n, double **A);
 
 template<typename T>
@@ -18,9 +39,9 @@ void getelem(long i, CellType *cellrec);
 void putelem(long i, CellType *cellrec);
 
 
-int GetnKid(const int Fnum1);
+int GetnKid(const int Fnum);
 
-long Elem_GetPos(const int Fnum1, const int Knum1);
+long Elem_GetPos(const int Fnum, const int Knum);
 
 
 template<typename T>
@@ -98,9 +119,9 @@ template<typename T>
 void Solenoid_Pass(CellType &Cell, ss_vect<T> &x);
 
 
-void Mpole_Setbn(int Fnum1, int Knum1, int Order);
+void Mpole_Setbn(int Fnum, int Knum, int Order);
 
-void Wiggler_Setbn(int Fnum1, int Knum1, int Order);
+void Wiggler_Setbn(int Fnum, int Knum, int Order);
 
 
 void MulLsMat(Matrix &A, Matrix &B);
@@ -108,52 +129,12 @@ void MulLsMat(Matrix &A, Matrix &B);
 void LinsTrans(Matrix &A, Vector &b);
 
 
-void Drift_Alloc(ElemType *Elem);
-
-void Mpole_Alloc(ElemType *Elem);
-
-void Cav_Alloc(ElemType *Elem);
-
-void Wiggler_Alloc(ElemType *Elem);
-
-void FieldMap_Alloc(ElemType *Elem);
-
-void Insertion_Alloc(ElemType *Elem);
-
-void Spreader_Alloc(ElemType *Elem);
-
-void Recombiner_Alloc(ElemType *Elem);
-
-void Solenoid_Alloc(ElemType *Elem);
-
-
 void SI_init(void);
-
-void Drift_Init(int Fnum1);
-
-void Mpole_Init(int Fnum1);
-
-void Wiggler_Init(int Fnum1);
-
-void FieldMap_Init(int Fnum1);
-
-void Cav_Init(int Fnum1);
-
-void Marker_Init(int Fnum1);
-
-void Insertion_Init(int Fnum1);
-
-void Spreader_Init(int Fnum1);
-
-void Recombiner_Init(int Fnum1);
-
-void Solenoid_Init(int Fnum1);
-
 
 void get_B(const char *file_name, FieldMapType *FM);
 
-double Elem_GetKval(int Fnum1, int Knum1, int Order);
+double Elem_GetKval(int Fnum, int Knum, int Order);
 
-void Mpole_SetdS(int Fnum1, int Knum1);
+void Mpole_SetdS(int Fnum, int Knum);
 
-void Mpole_Setdroll(int Fnum1, int Knum1);
+void Mpole_Setdroll(int Fnum, int Knum);
