@@ -44,7 +44,7 @@ class ElemType {
 // Element families.
 struct ElemFamType {
  public:
-  ElemType   *ElemPtr;         // Pointer to the particular element.
+  ElemType   *Elem;         // Pointer to the particular element.
   int        nKid;             // No of kids.
   int        KidList[nKidMax];
   int        NoDBN;

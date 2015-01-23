@@ -64,19 +64,19 @@ long ElemIndex(const std::string &name)
   i = 1;
   while (i <= globval.Elem_nFam) {
     if (trace) {
-      cout << setw(2) << (name1 == ElemFam[i-1].ElemPtr->name)
-           << " " << name1 << " " << ElemFam[i-1].ElemPtr->name << " (";
+      cout << setw(2) << (name1 == ElemFam[i-1].Elem->name)
+           << " " << name1 << " " << ElemFam[i-1].Elem->name << " (";
       for (j = 0; j < SymbolLength; j++)
-        cout << setw(4) << (int)ElemFam[i-1].ElemPtr->name[j];
+        cout << setw(4) << (int)ElemFam[i-1].Elem->name[j];
       cout  << " )" << endl;
     }
 
-    if (name1 == ElemFam[i-1].ElemPtr->name) break;
+    if (name1 == ElemFam[i-1].Elem->name) break;
 
     i++;
   }
 
-  if (name1 != ElemFam[i-1].ElemPtr->name) {
+  if (name1 != ElemFam[i-1].Elem->name) {
     cout << "ElemIndex: undefined element " << name << endl;
     exit_(1);
   }
@@ -194,7 +194,7 @@ bool Lattice_Read(const char *fi_)
 
       globval.Elem_nFam++;
       if (globval.Elem_nFam <= Elem_nFamMax) {
-	Elem = ElemFam[globval.Elem_nFam-1].ElemPtr;
+	Elem = ElemFam[globval.Elem_nFam-1].Elem;
 	D = new DriftType::DriftType();
 	Elem = (ElemType*)D;
 
@@ -254,7 +254,7 @@ bool Lattice_Read(const char *fi_)
       //              +   +
       globval.Elem_nFam++;
       if (globval.Elem_nFam <= Elem_nFamMax) {
-	Elem = ElemFam[globval.Elem_nFam-1].ElemPtr;
+	Elem = ElemFam[globval.Elem_nFam-1].Elem;
 	M = new MpoleType::MpoleType();
 	Elem = (ElemType*)M;
 
@@ -320,7 +320,7 @@ bool Lattice_Read(const char *fi_)
 
       globval.Elem_nFam++;
       if (globval.Elem_nFam <= Elem_nFamMax) {
-	Elem = ElemFam[globval.Elem_nFam-1].ElemPtr;
+	Elem = ElemFam[globval.Elem_nFam-1].Elem;
 	M = new MpoleType::MpoleType();
 	Elem = (ElemType*)M;
 
@@ -376,7 +376,7 @@ bool Lattice_Read(const char *fi_)
 
       globval.Elem_nFam++;
       if (globval.Elem_nFam <= Elem_nFamMax) {
-	Elem = ElemFam[globval.Elem_nFam-1].ElemPtr;
+	Elem = ElemFam[globval.Elem_nFam-1].Elem;
 	M = new MpoleType::MpoleType();
 	Elem = (ElemType*)M;
 
@@ -420,7 +420,7 @@ bool Lattice_Read(const char *fi_)
 
       globval.Elem_nFam++;
       if (globval.Elem_nFam <= Elem_nFamMax) {
-	Elem = ElemFam[globval.Elem_nFam-1].ElemPtr;
+	Elem = ElemFam[globval.Elem_nFam-1].Elem;
 	C = new CavityType::CavityType();
 	Elem = (ElemType*)C;
 
@@ -464,7 +464,7 @@ bool Lattice_Read(const char *fi_)
 
       globval.Elem_nFam++;
       if (globval.Elem_nFam <= Elem_nFamMax) {
-	Elem = ElemFam[globval.Elem_nFam-1].ElemPtr;
+	Elem = ElemFam[globval.Elem_nFam-1].Elem;
 	M = new MpoleType::MpoleType();
 	Elem = (ElemType*)M;
 
@@ -495,7 +495,7 @@ bool Lattice_Read(const char *fi_)
 
       globval.Elem_nFam++;
       if (globval.Elem_nFam <= Elem_nFamMax) {
-	Elem = ElemFam[globval.Elem_nFam-1].ElemPtr;
+	Elem = ElemFam[globval.Elem_nFam-1].Elem;
 	M = new MpoleType::MpoleType();
 	Elem = (ElemType*)M;
 
@@ -518,7 +518,7 @@ bool Lattice_Read(const char *fi_)
 
       globval.Elem_nFam++;
       if (globval.Elem_nFam <= Elem_nFamMax) {
-	Elem = ElemFam[globval.Elem_nFam-1].ElemPtr;
+	Elem = ElemFam[globval.Elem_nFam-1].Elem;
 	M = new MpoleType::MpoleType();
 	Elem = (ElemType*)M;
 
@@ -580,7 +580,7 @@ bool Lattice_Read(const char *fi_)
 
       globval.Elem_nFam++;
       if (globval.Elem_nFam <= Elem_nFamMax) {
-	Elem = ElemFam[globval.Elem_nFam-1].ElemPtr;
+	Elem = ElemFam[globval.Elem_nFam-1].Elem;
 	M = new MpoleType::MpoleType();
 	Elem = (ElemType*)M;
 
@@ -651,12 +651,12 @@ bool Lattice_Read(const char *fi_)
 
       globval.Elem_nFam++;
       if (globval.Elem_nFam <= Elem_nFamMax) {
-	Elem = ElemFam[globval.Elem_nFam-1].ElemPtr;
+	Elem = ElemFam[globval.Elem_nFam-1].Elem;
 	W = new WigglerType::WigglerType();
 	Elem = (ElemType*)W;
 
 	ElemFam = &ElemFam[globval.Elem_nFam-1];
-	Elem = ElemFam->ElemPtr;
+	Elem = ElemFam->Elem;
 	memset(Elem->name,0,sizeof(partsName));
 	memcpy(Elem->name, (*i).c_str(), (*i).length());
 	//    memcpy(Elem->name, ElementName, sizeof(partsName));
@@ -664,7 +664,7 @@ bool Lattice_Read(const char *fi_)
 
 	W->method = k2; W->n = k1; W->rollpar = dt;
 	//    SetDBN(&V);
-	W->lambda = QKS; W->n_harm = 1; W->harm[0] = 1;
+	W->lambda = QKS;  W->n_harm = 1; W->harm[0] = 1;
 	W->kxV[0] = QKxV; W->BoBrhoV[0] = QKV;
 	W->kxH[0] = QKxH; W->BoBrhoH[0] = QKH;
 	W->phi[0] = QPhi;
@@ -679,8 +679,8 @@ bool Lattice_Read(const char *fi_)
 	  W->phi[k] = phi[k-1];
 	}
 
-	/* Equivalent vertically focusing gradient */
-	W->bn[HOMmax+2] = -QK*QK/2e0;
+	// Equivalent vertically focusing gradient.
+	W->order = 2; W->bn[HOMmax+2] = -sqr(QK)/2e0;
 	if (!CheckWiggler(globval.Elem_nFam))
 	  longjmp(env0, 1); //Always returns true????
       } else {
@@ -698,7 +698,7 @@ bool Lattice_Read(const char *fi_)
       if (GLPS_SUCCESS==glps_read(*i,"scaling",val)) scaling = val;
       globval.Elem_nFam++;
       if (globval.Elem_nFam <= Elem_nFamMax) {
-	Elem = ElemFam[globval.Elem_nFam-1].ElemPtr;
+	Elem = ElemFam[globval.Elem_nFam-1].Elem;
 	FM = new FieldMapType::FieldMapType();
 	Elem = (FieldMapType*)FM;
 
@@ -746,7 +746,7 @@ bool Lattice_Read(const char *fi_)
       globval.Elem_nFam++;
       /* Fills up the ID */
       if (globval.Elem_nFam <= Elem_nFamMax) {
-	Elem = ElemFam[globval.Elem_nFam-1].ElemPtr;
+	Elem = ElemFam[globval.Elem_nFam-1].Elem;
 	ID = new InsertionType::InsertionType();
 	Elem = (ElemType*)ID;
 
@@ -789,7 +789,7 @@ bool Lattice_Read(const char *fi_)
 	if (str2.length() >0) {
 	  //        strcpy(ID->fname2,"/*No_Filename2_Given*/");
 	  strcpy(ID->fname2,str2.c_str());
-	  ID->secondorder = true;;
+	  ID->secondorder = true;
 	  // Read Id file for second order kicks
 	  Read_IDfile(ID->fname2, Elem->L, ID->nx, ID->nz,
 		      ID->tabx, ID->tabz, ID->thetax, ID->thetaz,
@@ -846,7 +846,7 @@ bool Lattice_Read(const char *fi_)
       //        GetDBN_(&V);
       globval.Elem_nFam++;
       if (globval.Elem_nFam <= Elem_nFamMax) {
-	Elem = ElemFam[globval.Elem_nFam-1].ElemPtr;
+	Elem = ElemFam[globval.Elem_nFam-1].Elem;
 	Spr = new SpreaderType::SpreaderType();
 	Elem = (ElemType*)Spr;
 
@@ -866,7 +866,7 @@ bool Lattice_Read(const char *fi_)
       //      GetDBN_(&V);
       globval.Elem_nFam++;
       if (globval.Elem_nFam <= Elem_nFamMax) {
-	Elem = ElemFam[globval.Elem_nFam-1].ElemPtr;
+	Elem = ElemFam[globval.Elem_nFam-1].Elem;
 	Rec = new RecombinerType::RecombinerType();
 	Elem = (ElemType*)Rec;
 
@@ -890,7 +890,7 @@ bool Lattice_Read(const char *fi_)
       if (GLPS_SUCCESS==glps_read(*i,"n",val)) k1 = (long) floor(val+0.5);
       globval.Elem_nFam++;
       if (globval.Elem_nFam <= Elem_nFamMax) {
-	Elem = ElemFam[globval.Elem_nFam-1].ElemPtr;
+	Elem = ElemFam[globval.Elem_nFam-1].Elem;
 	Sol = new SolenoidType::SolenoidType();
 	Elem = (ElemType*)Sol;
 
@@ -980,7 +980,7 @@ void AssignHOM(long elem,  double *B, bool * BA )
   long       i;
   MpoleType  *M;
 
-  M = (MpoleType*)ElemFam[elem-1].ElemPtr;
+  M = (MpoleType*)ElemFam[elem-1].Elem;
   for (i = -HOMmax; i <= HOMmax; i++) {
     if (BA[i+HOMmax]) {
       M->bnpar[i+HOMmax] = B[i+HOMmax];
@@ -1017,7 +1017,7 @@ bool CheckWiggler( long i)
 
   Result = false;
   ElemFam = &ElemFam[i-1];
-  Elem = ElemFam->ElemPtr;
+  Elem = ElemFam->Elem;
   Lambda = M->lambda;
   L = Elem->L; a = L/Lambda;
   NN = (long)floor(a+0.01+0.5);
@@ -1054,8 +1054,8 @@ long CheckElementtable(const string name)
 
   FORLIM = globval.Elem_nFam;
   for (i = 1; i <= FORLIM; i++) {
-    //  if (!strncmp(ElemFam[i-1].ElemPtr->name, name.c_str(), name.length()))
-    if (!strcmp(ElemFam[i-1].ElemPtr->name, name.c_str()))
+    //  if (!strncmp(ElemFam[i-1].Elem->name, name.c_str(), name.length()))
+    if (!strcmp(ElemFam[i-1].Elem->name, name.c_str()))
       j = i;
   }
   return j;
@@ -1120,7 +1120,7 @@ double Circumference()
   S = 0e0;
   FORLIM = globval.Cell_nLoc;
   for (i = 1; i <= FORLIM; i++)
-    S += ElemFam[Cell[i].Fnum - 1].ElemPtr->L;
+    S += ElemFam[Cell[i].Fnum - 1].Elem->L;
   return S;
 }
 
