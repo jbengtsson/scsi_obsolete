@@ -700,7 +700,7 @@ bool Lattice_Read(const char *fi_)
       if (globval.Elem_nFam <= Elem_nFamMax) {
 	Elem = ElemFam[globval.Elem_nFam-1].Elem;
 	FM = new FieldMapType::FieldMapType();
-	Elem = (FieldMapType*)FM;
+	Elem = dynamic_cast<ElemType*>(FM);
 
 	Elem->kind = FieldMap;
 	memset(Elem->name,0,sizeof(partsName));
@@ -977,10 +977,10 @@ void ClearHOM(double *B, bool *BA)
 
 void AssignHOM(long elem,  double *B, bool * BA )
 {
-  long       i;
-  MpoleType  *M;
+  long      i;
+  MpoleType *M;
 
-  M = (MpoleType*)ElemFam[elem-1].Elem;
+  M = static_cast<MpoleType*>(ElemFam[elem-1].Elem);
   for (i = -HOMmax; i <= HOMmax; i++) {
     if (BA[i+HOMmax]) {
       M->bnpar[i+HOMmax] = B[i+HOMmax];

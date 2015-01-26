@@ -50,7 +50,7 @@ template<typename T>
 void Elem_Pass(const long i, ss_vect<T> &x)
 {
 
-  switch (Cell[i].Elem.kind) {
+  switch (Cell[i].Elem->kind) {
     case drift:
       Drift_Pass(Cell[i], x);
       break;
@@ -258,8 +258,8 @@ void Cell_Init(void)
 {
   long         i;
   double       Stotal;
-  ElemFamType  *elemfamp;
-  ElemType     *elemp;
+  ElemFamType  *elemfam;
+  ElemType     *elem;
 
   char  first_name[] = "begin          ";
 
@@ -268,15 +268,15 @@ void Cell_Init(void)
 
   SI_init();  /* Initializes the constants for symplectic integrator */
 
-  memcpy(Cell[0].Elem.name, first_name, sizeof(first_name));
+  memcpy(Cell[0].Elem->name, first_name, sizeof(first_name));
 
   for (i = 1; i <= globval.Elem_nFam; i++) {
-    elemfamp  = &ElemFam[i-1]; /* Get 1 of all elements stored in ElemFam
+    elemfam  = &ElemFam[i-1]; /* Get 1 of all elements stored in ElemFam
 				  array */
-    elemp = &elemfamp->Elem; // For switch structure: choice on element type
+    elem = elemfam->Elem; // For switch structure: choice on element type
     if (debug)
-      printf("Cell_Init, i:=%3ld: %*s\n", i, SymbolLength, elemp->name);
-    switch (elemp->kind) {
+      printf("Cell_Init, i:=%3ld: %*s\n", i, SymbolLength, elem->name);
+    switch (elem->kind) {
     case drift:
       Drift_Init(i);
       break;
@@ -326,6 +326,6 @@ void Cell_Init(void)
   /* Computes s-location of each element in the structure */
   Stotal = 0e0;
   for (i = 0; i <= globval.Cell_nLoc; i++) {
-    Stotal += Cell[i].Elem.L; Cell[i].S = Stotal;
+    Stotal += Cell[i].Elem->L; Cell[i].S = Stotal;
   }
 }

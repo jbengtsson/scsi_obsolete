@@ -41,7 +41,6 @@ MpoleType::MpoleType(void)
     bnrnd[j+HOMmax] = 0e0;
   }
   order = 0; n_design = 0; irho = 0e0; tx1 = 0e0; tx2 = 0e0; gap = 0e0;
-
   c0 = 0e0; c1 = 0e0; s1 = 0e0;
 }
 
@@ -170,9 +169,9 @@ void Marker_Init(int Fnum)
 void Drift_Init(int Fnum)
 {
   int         i;
+  CellType    *cell;
   ElemFamType *elemfam;
   ElemType    *elem;
-  CellType    *cell;
 
   elemfam = &ElemFam[Fnum-1];
   for (i = 1; i <= elemfam->nKid; i++) {
@@ -1808,11 +1807,11 @@ void Wiggler_pass_EF(const ElemType *elem, ss_vect<T> &x)
 
   switch (elem->kind) {
   case Wigl:
-    W = (WigglerType*)elem;
+    W = static_cast<WigglerType*>(elem);
     nstep = W->n;
     break;
   case FieldMap:
-    FM = (FieldMapType*)elem;
+    FM = static_cast<FieldMapType*>(elem);
     nstep = FM->n_step;
     break;
   default:
@@ -2034,7 +2033,7 @@ void Wiggler_pass_EF3(const ElemType *elem, ss_vect<T> &x)
   WigglerType *W;
   T           hd, AxoBrho, AyoBrho, dAxoBrho[3], dAyoBrho[3], dpy, dpx, B[3];
 
-  W = (WigglerType*)elem;
+  W = static_cast<WigglerType*>(elem);
 
   h = elem->L/W->n; z = 0e0;
   for (i = 1; i <= W->n; i++) {
@@ -2100,7 +2099,8 @@ void Wiggler_Pass(CellType &Cell, ss_vect<T> &X)
   WigglerType *W;
   ss_vect<T>  X1;
 
-  elem = &Cell.Elem; W = (WigglerType*)elem;
+  elem = &Cell.Elem;
+  W = static_cast<WigglerType*>(elem);
   GtoL(X, Cell.dS, Cell.droll, 0e0, 0e0, 0e0);
   switch (W->method) {
 
@@ -2193,7 +2193,7 @@ void f_FM(const CellType &Cell, const double z, const ss_vect<T> &ps,
   const double  eps = 1e-5;
 
 
-  FM = (FieldMapType*)Cell.Elem;
+  FM = static_cast<FieldMapType*>(Cell.Elem);
 
   kz = 0;
   for (j = 1; j <= FM->n[Z_]; j++)
@@ -2279,7 +2279,7 @@ void FieldMap_pass_RK(CellType &Cell, ss_vect<T> &ps, int k)
 
   const int     n_step = 2; // Each step needs: f(z_n), f(z_n+h), f(z_n+2h)
 
-  FM = Cell.Elem.FM;
+  FM = static_cast<FieldMapType*>(Cell.Elem);
 
   switch (FieldMap_filetype) {
   case 2:
@@ -2374,7 +2374,7 @@ void FieldMap_pass_SI(CellType &Cell, ss_vect<T> &ps, int k)
   const double  d_diff = 1e0;
 
 
-  FM = Cell.Elem.FM;
+  FM = static_cast<FieldMapType*>(Cell.Elem);
 
   switch (FieldMap_filetype) {
   case 2:
@@ -2713,7 +2713,7 @@ void FieldMap_Pass(CellType &Cell, ss_vect<T> &ps)
     first_FM = false;
   }
 
-  FM = Cell.Elem.FM;
+  FM = static_cast<FieldMapType*>(Cell.Elem);
 
 //  GtoL(ps, Cell.dS, Cell.droll, 0e0, 0e0, 0e0);
 
@@ -2774,23 +2774,25 @@ void Insertion_Pass(CellType &Cell, ss_vect<T> &x)
        01/07/03 6D tracking activated
        10/01/05 First order kick part added                                  */
 
-  ElemType  *elem;
-  double    LN = 0e0;
-  T         tx2, tz2;      /* thetax and thetaz retrieved from
-			      interpolation routine */
-  T         d, B2_perp;
-  double    alpha0 = 0e0;  // 1/ brh0
-  double    alpha02= 0e0;  // alpha square
-  int       Nslice = 0;
-  int       i = 0;
-  bool      outoftable = false;
+  ElemType      *elem;
+  InsertionType *ID;
+  double        LN = 0e0;
+  T             tx2, tz2;      // thetax and thetaz retrieved from
+			       // interpolation routine
+  T             d, B2_perp;
+  double        alpha0 = 0e0;  // 1/ brh0
+  double        alpha02= 0e0;  // alpha square
+  int           Nslice = 0;
+  int           i = 0;
+  bool          outoftable = false;
 
-  elem  = &Cell.Elem; Nslice = elem->ID->n;
+  elem = &Cell.Elem; ID = static_cast<InsertionType*>(elem);
+  Nslice = ID->n;
 
-  if (elem->ID->linear) {
-    alpha0 = c0/globval.Energy*1E-9*elem->ID->scaling; alpha02 = alpha0*alpha0;
+  if (ID->linear) {
+    alpha0 = c0/globval.Energy*1E-9*ID->scaling; alpha02 = alpha0*alpha0;
   } else
-    alpha02 = 1e-6*elem->ID->scaling;
+    alpha02 = 1e-6*ID->scaling;
 
 //  /* Global -> Local */
 //  GtoL(X, Cell->dS, Cell->droll, 0e0, 0e0, 0e0);
@@ -2804,8 +2806,8 @@ void Insertion_Pass(CellType &Cell, ss_vect<T> &x)
 
   for (i = 1; i <= Nslice; i++) {
     // Second order kick
-    if (elem->ID->secondorder){
-      // if (!elem->ID->linear)
+    if (ID->secondorder){
+      // if (!ID->linear)
       //   SplineInterpolation2(x[x_], x[y_], tx2, tz2, Cell, outoftable);
       // else {
         LinearInterpolation2(x[x_], x[y_], tx2, tz2, B2_perp, Cell,
@@ -2814,7 +2816,7 @@ void Insertion_Pass(CellType &Cell, ss_vect<T> &x)
 	// Scale locally with (Brho) (as above) instead of when the file
 	// is read; since the beam energy might not be known at that time.
 	if (globval.radiation || globval.emittance)
-	  radiate_ID(x, LN, elem->ID->scaling*B2_perp);
+	  radiate_ID(x, LN, ID->scaling*B2_perp);
       // }
 
       if (outoftable) {
@@ -2839,33 +2841,35 @@ void Insertion_Pass(CellType &Cell, ss_vect<T> &x)
 template<typename T>
 void sol_pass(const ElemType &elem, ss_vect<T> &x)
 {
-  int     i;
-  double  h, z;
-  T       hd, AxoBrho, AyoBrho, dAxoBrho[3], dAyoBrho[3], dpy, dpx, B[3];
+  int          i;
+  double       h, z;
+  SolenoidType *Sol;
+  T            hd, AxoBrho, AyoBrho, dAxoBrho[3], dAyoBrho[3], dpy, dpx, B[3];
 
-  h = elem.L/elem.Sol->n; z = 0e0;
+  Sol = static_cast<SolenoidType*>(elem);
+  h = elem.L/Sol->n; z = 0e0;
 
-  for (i = 1; i <= elem.Sol->n; i++) {
+  for (i = 1; i <= Sol->n; i++) {
     hd = h/(1e0+x[delta_]);
 
     // 1: half step in z
     z += 0.5*h;
 
     // 2: half drift in y
-    AyoBrho = elem.Sol->BoBrho*x[x_]/2.0; dpx = elem.Sol->BoBrho*x[y_]/2.0;
+    AyoBrho = Sol->BoBrho*x[x_]/2.0; dpx = Sol->BoBrho*x[y_]/2.0;
 //    get_Axy_EF3(W, z, x, AyoBrho, dAyoBrho, dpx, false);
 
     x[px_] -= dpx; x[py_] -= AyoBrho;
     x[y_] += 0.5*hd*x[py_];
     x[ct_] += sqr(0.5)*hd*sqr(x[py_])/(1e0+x[delta_]);
 
-    AyoBrho = elem.Sol->BoBrho*x[x_]/2.0; dpx = elem.Sol->BoBrho*x[y_]/2.0;
+    AyoBrho = Sol->BoBrho*x[x_]/2.0; dpx = Sol->BoBrho*x[y_]/2.0;
 //    get_Axy_EF3(W, z, x, AyoBrho, dAyoBrho, dpx, false);
 
     x[px_] += dpx; x[py_] += AyoBrho;
 
     // 3: full drift in x
-    AxoBrho = -elem.Sol->BoBrho*x[y_]/2.0; dpy = -elem.Sol->BoBrho*x[x_]/2.0;
+    AxoBrho = -Sol->BoBrho*x[y_]/2.0; dpy = -Sol->BoBrho*x[x_]/2.0;
 //    get_Axy_EF3(W, z, x, AxoBrho, dAxoBrho, dpy, true);
 
     x[px_] -= AxoBrho; x[py_] -= dpy; x[x_] += hd*x[px_];
@@ -2873,20 +2877,20 @@ void sol_pass(const ElemType &elem, ss_vect<T> &x)
 
     if (globval.pathlength) x[ct_] += h;
 
-    AxoBrho = -elem.Sol->BoBrho*x[y_]/2.0; dpy = -elem.Sol->BoBrho*x[x_]/2.0;
+    AxoBrho = -Sol->BoBrho*x[y_]/2.0; dpy = -Sol->BoBrho*x[x_]/2.0;
 //    get_Axy_EF3(W, z, x, AxoBrho, dAxoBrho, dpy, true);
 
     x[px_] += AxoBrho; x[py_] += dpy;
 
     // 4: a half drift in y
-    AyoBrho = elem.Sol->BoBrho*x[x_]/2.0; dpx = elem.Sol->BoBrho*x[y_]/2.0;
+    AyoBrho = Sol->BoBrho*x[x_]/2.0; dpx = Sol->BoBrho*x[y_]/2.0;
 //    get_Axy_EF3(W, z, x, AyoBrho, dAyoBrho, dpx, false);
 
     x[px_] -= dpx; x[py_] -= AyoBrho;
     x[y_] += 0.5*hd*x[py_];
     x[ct_] += sqr(0.5)*hd*sqr(x[py_])/(1e0+x[delta_]);
 
-    AyoBrho = elem.Sol->BoBrho*x[x_]/2.0; dpx = elem.Sol->BoBrho*x[y_]/2.0;
+    AyoBrho = Sol->BoBrho*x[x_]/2.0; dpx = Sol->BoBrho*x[y_]/2.0;
 //    get_Axy_EF3(W, z, x, AyoBrho, dAyoBrho, dpx, false);
 
     x[px_] += dpx; x[py_] += AyoBrho;
@@ -2896,9 +2900,9 @@ void sol_pass(const ElemType &elem, ss_vect<T> &x)
 
     if (globval.radiation || globval.emittance) {
       dAxoBrho[X_] = 0e0;
-      dAxoBrho[Y_] = -elem.Sol->BoBrho/2.0;
+      dAxoBrho[Y_] = -Sol->BoBrho/2.0;
       dAxoBrho[Z_] = 0e0;
-      dAyoBrho[X_] = elem.Sol->BoBrho/2.0;
+      dAyoBrho[X_] = Sol->BoBrho/2.0;
       dAyoBrho[Y_] = 0e0;
       dAyoBrho[Z_] = 0e0;
 //      get_Axy_EF3(W, z, x, AyoBrho, dAyoBrho, dpx, false);
@@ -2940,7 +2944,7 @@ long Elem_GetPos(const int Fnum1, const int Knum1)
   else {
     loc = -1;
     printf("Elem_GetPos: there are no kids in family %d (%s)\n",
-	   Fnum1, ElemFam[Fnum1-1].Elem.name);
+	   Fnum1, ElemFam[Fnum1-1].Elem->name);
     exit_(0);
   }
 
@@ -2991,12 +2995,25 @@ void SI_init(void)
 }
 
 
+static void Drift_Print(FILE *f, int Fnum1)
+{
+  ElemFamType elamfam;
+  ElemType    *elem;
+
+  elamfam = ElemFam[Fnum1-1]; elem = elamfam.Elem;
+  fprintf(f, "Element[%3d ] \n", Fnum1);
+  fprintf(f, "   Name: %.*s,  kind:   drift,  L=% .8E\n",
+          SymbolLength, elem->name, elem->L);
+  fprintf(f, "   nKid:%3d\n\n", elamfam.nKid);
+}
+
+
 static void Mpole_Print(FILE *f, int Fnum1)
 {
   ElemType  *elem;
   MpoleType *M;
 
-  elem  = &ElemFam[Fnum1-1].Elem; M = elem->M;
+  elem  = ElemFam[Fnum1-1].Elem; M = static_cast<MpoleType*>(elem);
   fprintf(f, "Element[%3d ] \n", Fnum1);
   fprintf(f, "   Name: %.*s,  kind:   mpole,  L=% .8E\n",
           SymbolLength, elem->name, elem->L);
@@ -3004,24 +3021,11 @@ static void Mpole_Print(FILE *f, int Fnum1)
 }
 
 
-static void Drift_Print(FILE *f, int Fnum1)
-{
-  ElemFamType *elamfam;
-  ElemType    *elem;
-
-  elamfam = &ElemFam[Fnum1-1]; elem = &elamfam->Elem;
-  fprintf(f, "Element[%3d ] \n", Fnum1);
-  fprintf(f, "   Name: %.*s,  kind:   drift,  L=% .8E\n",
-          SymbolLength, elem->name, elem->L);
-  fprintf(f, "   nKid:%3d\n\n", elamfam->nKid);
-}
-
-
 static void Wiggler_Print(FILE *f, int Fnum1)
 {
   ElemType *elem;
 
-  elem = &ElemFam[Fnum1-1].Elem;
+  elem = ElemFam[Fnum1-1].Elem;
   fprintf(f, "Element[%3d ] \n", Fnum1);
   fprintf(f, "   Name: %.*s,  kind:   wiggler,  L=% .8E\n\n",
           NameLength, elem->name, elem->L);
@@ -3032,7 +3036,7 @@ static void Insertion_Print(FILE *f, int Fnum1)
 {
   ElemType *elem;
 
-  elem = &ElemFam[Fnum1-1].Elem;
+  elem = ElemFam[Fnum1-1].Elem;
   fprintf(f, "Element[%3d ] \n", Fnum1);
   fprintf(f, "   Name: %.*s,  kind:   wiggler,  L=% .8E\n\n",
           SymbolLength, elem->name, elem->L);
@@ -3050,7 +3054,7 @@ void Elem_Print(FILE *f, int Fnum1)
     return;
   }
 
-  switch (ElemFam[Fnum1-1].Elem.kind) {
+  switch (ElemFam[Fnum1-1].Elem->kind) {
   case drift:
     Drift_Print(f, Fnum1);
     break;
@@ -3087,12 +3091,13 @@ double Mpole_Getbn(int Fnum1, int Knum1, int Order);
 
 double Elem_GetKval(int Fnum1, int Knum1, int Order)
 {
-  double        Result = 0e0;
-  ElemType      *elem;
-  MpoletypeType *M;
+  double      Result = 0e0;
+  ElemType    *elem;
+  MpoleType   *M;
+  WigglerType *W;
 
   if (Fnum1 > 0) {
-    elem = &Cell[ElemFam[Fnum1-1].KidList[Knum1-1]].Elem;
+    elem = Cell[ElemFam[Fnum1-1].KidList[Knum1-1]].Elem;
     switch (elem->kind) {
     case drift:
       Result = 0e0;
@@ -3104,16 +3109,16 @@ double Elem_GetKval(int Fnum1, int Knum1, int Order)
       Result = 0e0;
       break;
     case Mpole: /* KL*/
-      M = (MpoleType*)elem;
-      if (elem->thick == thick)
+      M = static_cast<MpoleType*>(elem);
+      if (M->thick == thick)
 	Result = elem->L*Mpole_Getbn(Fnum1, Knum1, Order);
       else
 	Result = Mpole_Getbn(Fnum1, Knum1, Order);
       break;
     case Wigl:
+      W = static_cast<WigglerType*>(elem);
       Result =
-	elem->L*sqrt(2.0
-	*Cell[ElemFam[Fnum1-1].KidList[Knum1-1]].Elem.W->bn[Order+HOMmax]);
+	elem->L*sqrt(2.0*W->bn[Order+HOMmax]);
       break;
     case FieldMap:
       Result = 0e0;
@@ -3178,16 +3183,14 @@ void MulLsMat(Matrix &A, Matrix &B)
 
 void Mpole_Setbn(int Fnum, int Knum, int Order)
 {
-  /*  called by Cell_SetdP
-       Compute full multipole composent as sum of design, systematic
-       and random part
-       Set multipole order to Order if multipole (Order >2)                  */
+  /* called by Cell_SetdP
+     Compute full multipole composent as sum of design, systematic
+     and random part
+     Set multipole order to Order if multipole (Order >2)                     */
 
-  CellType *cell;  /* pointer on the Cell */
-  ElemType *elem; /* pointer on the Elemetype */
-  MpoleType *M;/* Pointer on the Multipole */
+  MpoleType *M;
 
-  M = (MpoleType*)Cell[ElemFam[Fnum-1].KidList[Knum-1]].Elem;
+  M = static_cast<MpoleType*>(Cell[ElemFam[Fnum-1].KidList[Knum-1]].Elem);
   M->bn[Order+HOMmax] =
     M->bnpar[Order+HOMmax] + M->bnsys[Order+HOMmax] +
     M->bnrms[Order+HOMmax]*M->bnrnd[Order+HOMmax];
@@ -3198,35 +3201,32 @@ void Mpole_Setbn(int Fnum, int Knum, int Order)
 
 double Mpole_Getbn(int Fnum, int Knum, int Order)
 {
-  /*  Return multipole strength (of order Order) for Knum element of
-      family Fnum
-       Order =  2 for normal quadrupole
-             = -2 for skew quadrupole                                        */
+  /* Return multipole strength (of order Order) for Knum element of
+     family Fnum
+     Order =  2 for normal quadrupole
+           = -2 for skew quadrupole                                           */
 
   MpoleType *M; /* Pointer on the multipole */
 
-  M = (MpoleType*)Cell[ElemFam[Fnum-1].KidList[Knum-1]].Elem;
+  M = static_cast<MpoleType*>(Cell[ElemFam[Fnum-1].KidList[Knum-1]].Elem);
   return (M->bn[Order+HOMmax]);
 }
 
 
 void Mpole_Defbnpar(int Fnum, int Knum, int Order, double bnpar)
 {
-  ElemType   *elem;
-  MpoleType  *M;
+  MpoleType *M;
 
-  M = (MpoleType*)Cell[ElemFam[Fnum-1].KidList[Knum-1]].Elem;
+  M = static_cast<MpoleType*>(Cell[ElemFam[Fnum-1].KidList[Knum-1]].Elem);
   M->bnpar[Order+HOMmax]=bnpar;
 }
 
 
 void Mpole_Defbnsys(int Fnum, int Knum, int Order, double bnsys)
 {
-  /*Fnum, Knum, Order : integer*/
-  ElemType *elem;
   MpoleType *M;
 
-  elem = (MpoleType*)Cell[ElemFam[Fnum-1].KidList[Knum-1]].Elem;
+  M = static_cast<MpoleType*>(Cell[ElemFam[Fnum-1].KidList[Knum-1]].Elem);
   M->bnsys[Order+HOMmax]=bnsys;
 }
 
@@ -3235,11 +3235,10 @@ void Mpole_SetdS(int Fnum, int Knum)
 {
   int       j;
   CellType  *cell;
-  ElemType  *elem;
   MpoleType *M;
 
   cell = &Cell[ElemFam[Fnum-1].KidList[Knum-1]];
-  M = (MpoleType*)cell->Elem;
+  M = static_cast<MpoleType*>(cell->Elem);
   for (j = 0; j <= 1; j++)
     cell->dS[j] = M->dSsys[j] + M->dSrms[j]*M->dSrnd[j];
 }
@@ -3247,10 +3246,11 @@ void Mpole_SetdS(int Fnum, int Knum)
 void Mpole_Setdroll(int Fnum, int Knum)
 {
   CellType  *cell;
+  ElemType  *elem;
   MpoleType *M;
 
   cell = &Cell[ElemFam[Fnum-1].KidList[Knum-1]];
-  M = (MpoleType*)cell->Elem;
+  M = static_cast<MpoleType*>(cell->Elem);
   cell->droll[0] =
     cos(dtor(M->rollpar + M->rollsys + M->rollrms*M->rollrnd));
   cell->droll[1] = sin(
@@ -3266,7 +3266,7 @@ double Mpole_Getdroll(int Fnum, int Knum)
 {
   MpoleType *M;
 
-  M = (MpoleType*)Cell[ElemFam[Fnum-1].KidList[Knum-1]].Elem;
+  M = static_cast<MpoleType*>(Cell[ElemFam[Fnum-1].KidList[Knum-1]].Elem);
 
   return(M->rollpar + M->rollsys + M->rollrms*M->rollrnd);
 }
@@ -3276,7 +3276,7 @@ void Mpole_Defdrollpar(int Fnum, int Knum, double rollpar)
 {
   MpoleType *M;
 
-  M = (MpoleType*)Cell[ElemFam[Fnum-1].KidList[Knum-1]].Elem;
+  M = static_cast<MpoleType*>(Cell[ElemFam[Fnum-1].KidList[Knum-1]].Elem);
   M->rollpar = rollpar;
 }
 
@@ -3285,18 +3285,17 @@ void Mpole_Defdrollsys(int Fnum, int Knum, double rollsys)
 {
   MpoleType *M;
 
-  M = (MpoleType*)Cell[ElemFam[Fnum-1].KidList[Knum-1]].Elem; M = elem->M;
+  M = static_cast<MpoleType*>(Cell[ElemFam[Fnum-1].KidList[Knum-1]].Elem);
 
-  M->rollsys=rollsys;
+  M->rollsys = rollsys;
 }
 
 
 void Wiggler_Setbn(int Fnum, int Knum, int Order)
 {
-  CellType     *cell;
-  WigglerType  *W;
+  WigglerType *W;
 
-  W = (WigglerType*)Cell[ElemFam[Fnum-1].KidList[Knum-1]].Elem;
+  W = static_cast<WigglerType*>(Cell[ElemFam[Fnum-1].KidList[Knum-1]].Elem);
   if (abs(Order) > W->order)
     W->order = abs(Order);
 }
@@ -3306,11 +3305,10 @@ void Wiggler_SetdS(int Fnum, int Knum)
 {
   int         j;
   CellType    *cell;
-  ElemType    *elem;
   WigglerType *W;
 
   cell = &Cell[ElemFam[Fnum-1].KidList[Knum-1]];
-  W = (WigglerType*)cell->Elem;
+  W = static_cast<WigglerType*>(cell->Elem);
   for (j = 0; j <= 1; j++)
     cell->dS[j] = W->dSsys[j] + W->dSrms[j]*W->dSrnd[j];
 }
@@ -3321,7 +3319,7 @@ void Wiggler_Setdroll(int Fnum, int Knum)
   WigglerType *W;
 
   cell = &Cell[ElemFam[Fnum-1].KidList[Knum-1]];
-  W = (WigglerType*)cell->Elem;
+  W = static_cast<WigglerType*>(cell->Elem);
   cell->droll[0] = cos(dtor(W->rollpar+W->rollsys+W->rollrms*W->rollrnd));
   cell->droll[1] = sin(dtor(W->rollpar+W->rollsys+W->rollrms*W->rollrnd));
 }
