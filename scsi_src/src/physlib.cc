@@ -92,7 +92,8 @@ void printglob(void)
 void prt_sigma(void)
 {
   long int  i;
-  double    code = 0.0;
+  double    code = 0e0;
+  MpoleType *M;
   FILE      *outf;
 
   outf = file_write("../out/sigma.out");
@@ -102,28 +103,29 @@ void prt_sigma(void)
   fprintf(outf, "#\n");
 
   for (i = 0; i <= globval.Cell_nLoc; i++) {
-    switch (Cell[i].Elem.kind) {
+    switch (Cell[i].Elem->kind) {
     case drift:
-      code = 0.0;
+      code = 0e0;
       break;
     case Mpole:
-      if (Cell[i].Elem.M->irho != 0)
+      M = static_cast<MpoleType*>(Cell[i].Elem);
+      if (M->irho != 0)
 	code = 0.5;
-      else if (Cell[i].Elem.M->bnpar[Quad+HOMmax] != 0)
-	code = sgn(Cell[i].Elem.M->bnpar[Quad+HOMmax]);
-      else if (Cell[i].Elem.M->bnpar[Sext+HOMmax] != 0)
-	code = 1.5*sgn(Cell[i].Elem.M->bnpar[Sext+HOMmax]);
+      else if (M->bnpar[Quad+HOMmax] != 0)
+	code = sgn(M->bnpar[Quad+HOMmax]);
+      else if (M->bnpar[Sext+HOMmax] != 0)
+	code = 1.5*sgn(M->bnpar[Sext+HOMmax]);
       else if (Cell[i].Fnum == globval.bpm)
 	code = 2.0;
       else
-	code = 0.0;
+	code = 0e0;
       break;
     default:
-      code = 0.0;
+      code = 0e0;
       break;
     }
     fprintf(outf, "%4ld %.*s %6.2f %4.1f %9.3e %9.3e %9.3e %9.3e\n",
-            i, SymbolLength, Cell[i].Elem.name, Cell[i].S, code,
+            i, SymbolLength, Cell[i].Elem->name, Cell[i].S, code,
             1e3*sqrt(Cell[i].sigma[x_][x_]),
 	    1e3*sqrt(fabs(Cell[i].sigma[x_][px_])),
 	    1e3*sqrt(Cell[i].sigma[y_][y_]),
@@ -139,9 +141,9 @@ void recalc_S(void)
   long int  k;
   double    S_tot;
 
-  S_tot = 0.0;
+  S_tot = 0e0;
   for (k = 0; k <= globval.Cell_nLoc; k++) {
-    S_tot += Cell[k].Elem.L; Cell[k].S = S_tot;
+    S_tot += Cell[k].Elem->L; Cell[k].S = S_tot;
   }
 }
 
@@ -169,20 +171,20 @@ void TraceABN(long i0, long i1, const Vector2 &alpha, const Vector2 &beta,
   UnitMat(6, globval.Ascr);
   for (i = 1; i <= 2; i++) {
     sb = sqrt(beta[i-1]); j = i*2 - 1;
-    globval.Ascr[j-1][j-1] = sb;               globval.Ascr[j-1][j] = 0.0;
+    globval.Ascr[j-1][j-1] = sb;               globval.Ascr[j-1][j] = 0e0;
     globval.Ascr[j][j - 1] = -(alpha[i-1]/sb); globval.Ascr[j][j] = 1/sb;
   }
   globval.Ascr[0][4] = eta[0]; globval.Ascr[1][4] = etap[0];
   globval.Ascr[2][4] = eta[1]; globval.Ascr[3][4] = etap[1];
 
   for (i = 0; i < 6; i++)
-    globval.CODvect[i] = 0.0;
+    globval.CODvect[i] = 0e0;
   globval.CODvect[4] = dP;
 
   for (i = 0; i <= 5; i++) {
     Ascr[i] = tps(globval.CODvect[i]);
     for (j = 0; j <= 5; j++)
-      Ascr[i] += globval.Ascr[i][j]*tps(0.0, j+1);
+      Ascr[i] += globval.Ascr[i][j]*tps(0e0, j+1);
   }
   Cell_Twiss(i0, i1, Ascr, false, false, dP);
 }
@@ -192,7 +194,7 @@ void FitTune(long qf, long qd, double nux, double nuy)
 {
   long      i;
   iVector2  nq = {0,0};
-  Vector2   nu = {0.0, 0.0};
+  Vector2   nu = {0e0, 0e0};
   fitvect   qfbuf, qdbuf;
 
   /* Get elements for the first quadrupole family */
@@ -217,7 +219,7 @@ void FitChrom(long sf, long sd, double ksix, double ksiy)
   long      i;
   iVector2  ns = {0,0};
   fitvect   sfbuf, sdbuf;
-  Vector2   ksi ={0.0, 0.0};
+  Vector2   ksi ={0e0, 0e0};
 
   /* Get elements for the first sextupole family */
   ns[X_] = GetnKid(sf);
@@ -281,7 +283,7 @@ void track(const char *file_name,
 
   */
   long int   i;
-  double     twoJx, twoJy, phix, phiy, scl_1 = 1.0, scl_2 = 1.0;
+  double     twoJx, twoJy, phix, phiy, scl_1 = 1e0, scl_2 = 1e0;
   Vector     x0, x1, x2, xf;
   FILE       *outf;
 
@@ -291,11 +293,11 @@ void track(const char *file_name,
     scl_1 = 1e3; scl_2 = 1e3;
     x0[x_] = ic1; x0[px_] = ic2; x0[y_] = ic3; x0[py_] = ic4;
   } else if ((floqs == 1)) {
-    scl_1 = 1.0; scl_2 = 1.0;
+    scl_1 = 1e0; scl_2 = 1e0;
     x0[x_] = ic1; x0[px_] = ic2; x0[y_] = ic3; x0[py_] = ic4;
     LinTrans(4, globval.Ascr, x0);
   } else if (floqs == 2) {
-    scl_1 = 1e6; scl_2 = 1.0;
+    scl_1 = 1e6; scl_2 = 1e0;
     x0[x_] = sqrt(ic1)*cos(ic2); x0[px_] = -sqrt(ic1)*sin(ic2);
     x0[y_] = sqrt(ic3)*cos(ic4); x0[py_] = -sqrt(ic3)*sin(ic4);
     LinTrans(4, globval.Ascr, x0);
@@ -333,7 +335,7 @@ void track(const char *file_name,
     fprintf(outf, "#                              "
 	    "                            ");
   }
-  if (f_rf == 0.0){
+  if (f_rf == 0e0){
     fprintf(outf, "         [%%]           [mm]\n");
     fprintf(outf, "#\n");
     fprintf(outf, "%4d %23.16e %23.16e %23.16e %23.16e %23.16e %23.16e\n",
@@ -344,7 +346,7 @@ void track(const char *file_name,
     fprintf(outf, "#\n");
     fprintf(outf, "%4d %23.16e %23.16e %23.16e %23.16e %23.16e %23.16e\n",
 	    0, scl_1*ic1, scl_2*ic2, scl_1*ic3, scl_2*ic4, 1e2*dp,
-	    2.0*f_rf*180.0*globval.CODvect[ct_]/c0);
+	    2.0*f_rf*180e0*globval.CODvect[ct_]/c0);
   }
   x2[x_] = x0[x_] + globval.CODvect[x_];
   x2[px_] = x0[px_] + globval.CODvect[px_];
@@ -353,7 +355,7 @@ void track(const char *file_name,
   if (globval.Cavity_on) {
     x2[delta_] = dp + globval.CODvect[delta_]; x2[ct_] = globval.CODvect[ct_];
   } else {
-    x2[delta_] = dp; x2[ct_] = 0.0;
+    x2[delta_] = dp; x2[ct_] = 0e0;
   }
 
   lastn = 0;
@@ -392,7 +394,7 @@ void track(const char *file_name,
       phiy = atan2(xf[py_], xf[y_]);
       xf[x_] = twoJx; xf[px_] = phix; xf[y_] = twoJy; xf[py_] = phiy;
     }
-    if (f_rf == 0.0)
+    if (f_rf == 0e0)
       fprintf(outf,
 	      "%4ld %23.16le %23.16le %23.16le %23.16le %23.16le %23.16le\n",
 	      lastn, scl_1*xf[0], scl_2*xf[1], scl_1*xf[2], scl_2*xf[3],
@@ -401,7 +403,7 @@ void track(const char *file_name,
       fprintf(outf,
 	      "%4ld %23.16le %23.16le %23.16le %23.16le %23.16le %23.16le\n",
 	      lastn, scl_1*xf[0], scl_2*xf[1], scl_1*xf[2], scl_2*xf[3],
-	      1e2*xf[4], 2.0*f_rf*180.0*xf[5]/c0);
+	      1e2*xf[4], 2.0*f_rf*180e0*xf[5]/c0);
   } while ((lastn != nmax) && (lastpos == globval.Cell_nLoc));
 
   fclose(outf);
@@ -411,8 +413,8 @@ void track(const char *file_name,
 
 
 #define step            0.1
-#define px              0.0
-#define py              0.0
+#define px              0e0
+#define py              0e0
 void track_(double r, struct LOC_getdynap *LINK)
 {
   long i, lastn, lastpos;
@@ -423,7 +425,7 @@ void track_(double r, struct LOC_getdynap *LINK)
   x[2] = r * sin(LINK->phi);
   x[3] = py;
   x[4] = LINK->delta;
-  x[5] = 0.0;
+  x[5] = 0e0;
   /* transform to phase space */
   if (LINK->floqs) {
     LinTrans(5, globval.Ascr, x);
@@ -563,7 +565,7 @@ bool chk_if_lost(double x0, double y0, double delta,
   bool  prt = false;
 
   x[x_] = x0; x[px_] = px_0; x[y_] = y0; x[py_] = py_0;
-  x[delta_] = delta; x[ct_] = 0.0;
+  x[delta_] = delta; x[ct_] = 0e0;
   if (floqs)
     // transform to phase space
     LinTrans(nfloq, globval.Ascr, x);
@@ -621,7 +623,7 @@ void getdynap(double &r, double phi, double delta, double eps,
 	      int nturn, bool floqs)
 {
   /* Determine dynamical aperture by binary search. */
-  double  rmin = 0.0, rmax = r;
+  double  rmin = 0e0, rmax = r;
 
   const bool    prt   = false;
   const double  r_reset = 1e-3, r0 = 10e-3;
@@ -694,7 +696,7 @@ void getcsAscr(void)
   }
   MulRMat(6, globval.Ascr, R);
   for (i = 1; i <= 2; i++) {
-    if (globval.Ascr[i * 2 - 2][i * 2 - 2] < 0.0) {
+    if (globval.Ascr[i * 2 - 2][i * 2 - 2] < 0e0) {
       for (j = 0; j <= 5; j++) {
 	globval.Ascr[j][i * 2 - 2] = -globval.Ascr[j][i * 2 - 2];
 	globval.Ascr[j][i * 2 - 1] = -globval.Ascr[j][i * 2 - 1];
@@ -778,7 +780,7 @@ void dynap(FILE *fp, double r, const double delta,
     fprintf(fp, "#\n");
   }
 
-  x_min = 0.0; x_max = 0.0; y_min = 0.0; y_max = 0.0;
+  x_min = 0e0; x_max = 0e0; y_min = 0e0; y_max = 0e0;
   for (i = 0; i < npoint; i++) {
     phi = i*M_PI/(npoint-1);
     if (i == 0)
@@ -838,7 +840,7 @@ double get_aper(int n, double x[], double y[])
   int     i;
   double  A;
 
-  A = 0.0;
+  A = 0e0;
   for (i = 2; i <= n; i++)
     A += x[i-2]*y[i-1] - x[i-1]*y[i-2];
   A += x[n-1]*y[0] - x[0]*y[n-1];
@@ -942,10 +944,10 @@ double GetArg(double x, double px, double nu)
   double phi, val;
 
   phi = GetAngle(x, px);
-  if (phi < 0.0)
+  if (phi < 0e0)
     phi += 2.0 * M_PI;
   val = phi + Fract(nu) * 2.0 * M_PI;
-  if (val < 0.0)
+  if (val < 0e0)
     val += 2.0 * M_PI;
   return val;
 }
@@ -998,7 +1000,7 @@ void Sinfft(int n, double xr[])
   double  xi[n];
 
   for (i = 0; i < n; i++) {
-    xr[i] = sin((double)i/(double)n*M_PI)*xr[i]; xi[i] = 0.0;
+    xr[i] = sin((double)i/(double)n*M_PI)*xr[i]; xi[i] = 0e0;
   }
   FFT(n, xr, xi);
   for (i = 0; i < n; i++)
@@ -1013,7 +1015,7 @@ void sin_FFT(int n, double xr[])
 
   for (i = 0;i < n;i++) {
     data_xi[2*i] = sin((double)i/n*M_PI)*xr[i];
-    data_xi[2*i+1] = 0.0;
+    data_xi[2*i+1] = 0e0;
   }
 
   gsl_fft_complex_radix2_forward(data_xi, 1, n);
@@ -1082,7 +1084,7 @@ void GetPeak(int n, double *x, int *k)
   int ind1, ind2, ind3;
   double peak;
 
-  peak = 0.0; *k = 1;
+  peak = 0e0; *k = 1;
   for (ind2 = 1; ind2 <= n/2+1; ind2++) {
     GetInd(n, ind2, &ind1, &ind3);
     if (x[ind2-1] > peak && x[ind1-1] < x[ind2-1] &&
@@ -1100,7 +1102,7 @@ void GetPeak1(int n, double *x, int *k)
   int ind1, ind2, ind3;
   double peak;
 
-  peak = 0.0; *k = 1;
+  peak = 0e0; *k = 1;
   for (ind2 = 1; ind2 <= n; ind2++) {
     GetInd1(n, ind2, &ind1, &ind3);
     if (x[ind2-1] > peak && x[ind1-1] < x[ind2-1] &&
@@ -1139,10 +1141,10 @@ double Int2snu(int n, double *x, int k)
       ind = 0;
   }
   /* Avoid division by zero */
-  if (ampl1 + ampl2 != 0.0)
+  if (ampl1 + ampl2 != 0e0)
     return ((ind - 1 + 2 * ampl2 / (ampl1 + ampl2) - 0.5) / n);
   else
-    return 0.0;
+    return 0e0;
 }
 
 
@@ -1173,10 +1175,10 @@ double Int2snu1(int n, double *x, int k)
       ind = 0;
   }
   /* Avoid division by zero */
-  if (ampl1 + ampl2 != 0.0)
+  if (ampl1 + ampl2 != 0e0)
     return ((ind - 1 + 2 * ampl2 / (ampl1 + ampl2) - 0.5) / n);
   else
-    return 0.0;
+    return 0e0;
 }
 
 
@@ -1188,10 +1190,10 @@ double Sinc(double omega)
                         ------------
                            omega
   */
-  if (omega != 0.0)
+  if (omega != 0e0)
     return (sin(omega) / omega);
   else
-    return 1.0;
+    return 1e0;
 }
 
 
@@ -1238,7 +1240,7 @@ double linint(int n, int k, double nu, double *x)
   double  xr[n], xi[n];
 
   for (i = 0; i < n; i++) {
-    xr[i] = x[i]; xi[i] = 0.0;
+    xr[i] = x[i]; xi[i] = 0e0;
   }
   FFT(n, xr, xi);
   phi = GetAngle(xr[k-1], xi[k-1]) - (n*nu-k+1)*M_PI;
@@ -1388,17 +1390,16 @@ void GetPeaks1(int n, double *x, int nf, double *nu, double *A)
 
 void SetTol(int Fnum, double dxrms, double dyrms, double drrms)
 {
-  int   i;
-  long  k;
+  int       i;
+  long      k;
+  MpoleType *M;
 
   for (i = 1; i <= GetnKid(Fnum); i++) {
     k = Elem_GetPos(Fnum, i);
-    Cell[k].Elem.M->dSrms[X_] = dxrms;
-    Cell[k].Elem.M->dSrnd[X_] = normranf();
-    Cell[k].Elem.M->dSrms[Y_] = dyrms;
-    Cell[k].Elem.M->dSrnd[Y_] = normranf();
-    Cell[k].Elem.M->rollrms = drrms;
-    Cell[k].Elem.M->rollrnd = normranf();
+    M = static_cast<MpoleType*>(Cell[k].Elem);
+    M->dSrms[X_] = dxrms; M->dSrnd[X_] = normranf();
+    M->dSrms[Y_] = dyrms; M->dSrnd[Y_] = normranf();
+    M->rollrms = drrms; M->rollrnd = normranf();
     Mpole_SetdS(Fnum, i); Mpole_Setdroll(Fnum, i);
   }
 }
@@ -1408,11 +1409,13 @@ void Scale_Tol(int Fnum, double dxrms, double dyrms, double drrms)
 {
   int       Knum;
   long int  loc;
+  MpoleType *M;
 
   for (Knum = 1; Knum <= GetnKid(Fnum); Knum++) {
     loc = Elem_GetPos(Fnum, Knum);
-    Cell[loc].Elem.M->dSrms[X_] = dxrms; Cell[loc].Elem.M->dSrms[Y_] = dyrms;
-    Cell[loc].Elem.M->rollrms    = drrms;
+    M = static_cast<MpoleType*>(Cell[loc].Elem);
+    M->dSrms[X_] = dxrms; M->dSrms[Y_] = dyrms;
+    M->rollrms    = drrms;
     Mpole_SetdS(Fnum, Knum); Mpole_Setdroll(Fnum, Knum);
   }
 }
@@ -1446,11 +1449,13 @@ void Scale_Tol(int Fnum, double dxrms, double dyrms, double drrms)
 void SetaTol(int Fnum, int Knum, double dx, double dy, double dr)
 {
   long int  loc;
+  MpoleType *M;
 
   loc = Elem_GetPos(Fnum, Knum);
-  Cell[loc].Elem.M->dSrms[0] = dx; Cell[loc].Elem.M->dSrnd[0] = 1e0;
-  Cell[loc].Elem.M->dSrms[1] = dy; Cell[loc].Elem.M->dSrnd[1] = 1e0;
-  Cell[loc].Elem.M->rollrms    = dr; Cell[loc].Elem.M->rollrnd    = 1e0;
+  M = static_cast<MpoleType*>(Cell[loc].Elem);
+  M->dSrms[0] = dx; M->dSrnd[0] = 1e0;
+  M->dSrms[1] = dy; M->dSrnd[1] = 1e0;
+  M->rollrms  = dr; M->rollrnd  = 1e0;
   Mpole_SetdS(Fnum, Knum); Mpole_Setdroll(Fnum, Knum);
 }
 
@@ -1506,7 +1511,7 @@ void LoadApertures(const char *ChamberFileName)
 void SetL(int Fnum, int Knum, double L)
 {
 
-  Cell[Elem_GetPos(Fnum, Knum)].Elem.L = L;
+  Cell[Elem_GetPos(Fnum, Knum)].Elem->L = L;
 }
 
 
@@ -1515,13 +1520,13 @@ void SetL(int Fnum, double L)
   int  i;
 
   for (i = 1; i <= GetnKid(Fnum); i++)
-    Cell[Elem_GetPos(Fnum, i)].Elem.L = L;
+    Cell[Elem_GetPos(Fnum, i)].Elem->L = L;
 }
 
 
 double GetL(int Fnum, int Knum)
 {
-  return (Cell[Elem_GetPos(Fnum, Knum)].Elem.L);
+  return (Cell[Elem_GetPos(Fnum, Knum)].Elem->L);
 }
 
 
@@ -1538,7 +1543,7 @@ void codstat(double *mean, double *sigma, double *xmax, long lastpos, bool all)
   Vector2  sum, sum2;
 
   for (j = 0; j <= 1; j++) {
-    sum[j] = 0.0; sum2[j] = 0.0; xmax[j] = 0.0;
+    sum[j] = 0e0; sum2[j] = 0e0; xmax[j] = 0e0;
   }
 
   n = 0;
@@ -1567,15 +1572,15 @@ void codstat(double *mean, double *sigma, double *xmax, long lastpos, bool all)
     if (n != 0)
       mean[j] = sum[j] / n;
     else
-      mean[j] = 0.0;
+      mean[j] = 0e0;
     if (n != 0 && n != 1) {
-      sigma[j] = (n*sum2[j]-sqr(sum[j]))/(n*(n-1.0));
+      sigma[j] = (n*sum2[j]-sqr(sum[j]))/(n*(n-1e0));
     } else
-      sigma[j] = 0.0;
-    if (sigma[j] >= 0.0)
+      sigma[j] = 0e0;
+    if (sigma[j] >= 0e0)
       sigma[j] = sqrt(sigma[j]);
     else
-      sigma[j] = 0.0;
+      sigma[j] = 0e0;
   }
 }
 
@@ -1614,7 +1619,7 @@ void CodStatBpm(double *mean, double *sigma, double *xmax, long lastpos,
 
   m= n= 0;
   for (j = 0; j <= 1; j++) {
-    sum[j] = 0.0; sum2[j] = 0.0; xmax[j] = 0.0;
+    sum[j] = 0e0; sum2[j] = 0e0; xmax[j] = 0e0;
   }
 
   for (i = 0; i <= lastpos; i++) {
@@ -1635,16 +1640,16 @@ void CodStatBpm(double *mean, double *sigma, double *xmax, long lastpos,
     if (n != 0)
       mean[j] = sum[j] / n;
     else
-      mean[j] = 0.0;
+      mean[j] = 0e0;
     if (n != 0 && n != 1) {
       TEMP = sum[j];
-      sigma[j] = (n * sum2[j] - TEMP * TEMP) / (n * (n - 1.0));
+      sigma[j] = (n * sum2[j] - TEMP * TEMP) / (n * (n - 1e0));
     } else
-      sigma[j] = 0.0;
-    if (sigma[j] >= 0.0)
+      sigma[j] = 0e0;
+    if (sigma[j] >= 0e0)
       sigma[j] = sqrt(sigma[j]);
     else
-      sigma[j] = 0.0;
+      sigma[j] = 0e0;
   }
 }
 
@@ -1850,7 +1855,7 @@ double Fract(double x)
 ****************************************************************************/
 double Sgn (double x)
 {
-  return (x == 0.0 ? 0.0 : (x > 0.0 ? 1.0 : -1.0));
+  return (x == 0e0 ? 0e0 : (x > 0e0 ? 1e0 : -1e0));
 }
 
 
@@ -1884,7 +1889,7 @@ void PrintCh(void)
 
   for (i = 0; i <= globval.Cell_nLoc; i++)
     fprintf(f, "%4ld %15s  %6.2f  %7.3f  %7.3f  %7.3f\n",
-	    i, Cell[i].Elem.name, Cell[i].S,
+	    i, Cell[i].Elem->name, Cell[i].S,
 	    Cell[i].maxampl[X_][0]*1E3, Cell[i].maxampl[X_][1]*1E3,
 	    Cell[i].maxampl[Y_][1]*1E3);
 
@@ -1899,7 +1904,7 @@ void Read_Lattice(char *fic)
   bool     status;
   char     fic_maille[S_SIZE+4] = "", fic_erreur[S_SIZE+4] = "";
   int      i;
-  double   dP = 0.0;
+  double   dP = 0e0;
   Vector2  beta, alpha, eta, etap;
   Vector   codvect;
 
@@ -1965,11 +1970,11 @@ void Read_Lattice(char *fic)
   } else {
     // for transfer lines
     /* Initial settings : */
-    beta[X_] = 8.1; alpha[X_] = 0.0; beta[Y_] = 8.1; alpha[Y_] = 0.0;
-    eta[X_] = 0.0; etap[X_] = 0.0; eta[Y_] = 0.0; etap[Y_] = 0.0;
+    beta[X_] = 8.1; alpha[X_] = 0e0; beta[Y_] = 8.1; alpha[Y_] = 0e0;
+    eta[X_] = 0e0; etap[X_] = 0e0; eta[Y_] = 0e0; etap[Y_] = 0e0;
 
     for (i = 0; i < ss_dim; i++) {
-      codvect[i] = 0.0; globval.CODvect[i] = codvect[i];
+      codvect[i] = 0e0; globval.CODvect[i] = codvect[i];
     }
     dP = codvect[delta_];
 
@@ -2028,19 +2033,19 @@ void GetChromTrac(long Nb, long Nbtour, double emax, double *xix, double *xiz)
   int     i = 0;
   double  Tab[6][NTURN], fx[nterm], fz[nterm], nux1, nux2, nuz1, nuz2;
 
-  double  x = 1e-6, xp = 0.0, z = 1e-6, zp = 0.0;
-  double  x0 = 1e-6, xp0 = 0.0, z0 = 1e-6, zp0 = 0.0;
+  double  x = 1e-6, xp = 0e0, z = 1e-6, zp = 0e0;
+  double  x0 = 1e-6, xp0 = 0e0, z0 = 1e-6, zp0 = 0e0;
 
   /* initializations */
   for (i = 0; i < nterm; i++) {
-    fx[i] = 0.0; fz[i] = 0.0;
+    fx[i] = 0e0; fz[i] = 0e0;
   }
   /* end init */
 
   /* Tracking for delta = emax and computing tunes */
   x = x0; xp = xp0; z = z0; zp = zp0;
 
-  Trac_Simple(x, xp, z, zp, emax, 0.0, Nbtour, Tab, &status);
+  Trac_Simple(x, xp, z, zp, emax, 0e0, Nbtour, Tab, &status);
   Get_NAFF(nterm, Nbtour, Tab, fx, fz, nb_freq);
 
   nux1 = (fabs (fx[0]) > 1e-8 ? fx[0] : fx[1]); nuz1 = fz[0];
@@ -2055,7 +2060,7 @@ void GetChromTrac(long Nb, long Nbtour, double emax, double *xix, double *xiz)
   /* Tracking for delta = -emax and computing tunes */
   x = x0; xp = xp0; z = z0; zp = zp0;
 
-  Trac_Simple(x, xp, z, zp, -emax, 0.0, Nbtour, Tab, &status);
+  Trac_Simple(x, xp, z, zp, -emax, 0e0, Nbtour, Tab, &status);
   Get_NAFF(nterm, Nbtour, Tab, fx, fz, nb_freq);
 
   if (trace)
@@ -2114,9 +2119,9 @@ void GetTuneTrac(long Nbtour, double emax, double *nux, double *nuz)
   int nb_freq[2];
   bool status;
 
-  double x = 1e-6, xp = 0.0, z = 1e-6, zp = 0.0;
+  double x = 1e-6, xp = 0e0, z = 1e-6, zp = 0e0;
 
-  Trac_Simple(x, xp, z, zp, emax, 0.0, Nbtour, Tab, &status);
+  Trac_Simple(x, xp, z, zp, emax, 0e0, Nbtour, Tab, &status);
   Get_NAFF(nterm, Nbtour, Tab, fx, fz, nb_freq);
 
   *nux = (fabs (fx[0]) > 1e-8 ? fx[0] : fx[1]);
@@ -2200,7 +2205,7 @@ void findcodS(double dP)
 
  // starting point
   for (k = 1; k <= 6; k++)
-    vcod[k] = 0.0;
+    vcod[k] = 0e0;
 
   vcod[5] = dP;  // energy offset
 
@@ -2280,7 +2285,7 @@ void findcod(double dP)
 
   // initializations
   for (k = 0; k <= 5; k++)
-    vcod[k] = 0.0;
+    vcod[k] = 0e0;
 
   if (globval.Cavity_on){
     fprintf(stdout,"warning looking for cod in 6D\n");
@@ -2374,7 +2379,7 @@ void computeFandJS(double *x, int n, double **fjac, double *fvect)
 
     for (i = 1; i <= 6; i++)
       x0[i - 1] = x[i];
-    x0[5] = 0.0;
+    x0[5] = 0e0;
     x0[k] -= deps;  // differential step in coordinate k
 
     Cell_Pass(0, globval.Cell_nLoc, x0, lastpos);  // tracking along the ring
@@ -2510,7 +2515,7 @@ void Newton_RaphsonS(int ntrial, double x[], int n, double tolx)
   gsl_vector *vx;
   gsl_matrix *malpha;
 
-  errx = 0.0;
+  errx = 0e0;
 
   vbet = gsl_vector_alloc(n);
   GSL2NRDV2(vbet,bet);
@@ -2529,7 +2534,7 @@ void Newton_RaphsonS(int ntrial, double x[], int n, double tolx)
 
     // Jacobian -Id
     for (i = 1; i <= n; i++)
-      alpha[i][i] -= 1.0;
+      alpha[i][i] -= 1e0;
     for (i = 1; i <= n; i++)
       bet[i] = x[i] - fvect[i];  // right side of linear equation
     // solve linear equations using LU decomposition using NR routines
@@ -2543,7 +2548,7 @@ void Newton_RaphsonS(int ntrial, double x[], int n, double tolx)
 
     gsl_permutation_free(p);
 
-    errx = 0.0;  // check root convergence
+    errx = 0e0;  // check root convergence
     for (i = 1; i <= n; i++) {    // update solution
       errx += fabs(bet[i]);
       x[i] += bet[i];
@@ -2624,7 +2629,7 @@ int Newton_Raphson (int n, Vector &x, int ntrial, double tolx)
   Vector  bet, fvect;
   Matrix  alpha;
 
-  errx = 0.0;
+  errx = 0e0;
 
   for (k = 1; k <= ntrial; k++) {  // loop over number of iterations
     // supply function values at x in fvect and Jacobian matrix in fjac
@@ -2632,14 +2637,14 @@ int Newton_Raphson (int n, Vector &x, int ntrial, double tolx)
 
     // Jacobian - Id
     for (i = 0; i < n; i++)
-      alpha[i][i] -= 1.0;
+      alpha[i][i] -= 1e0;
     for (i = 0; i < n; i++)
       bet[i] = x[i] - fvect[i];  // right side of linear equation
     // inverse matrix using gauss jordan method from Tracy (from NR)
     if (!InvMat((long) n,alpha))
       fprintf(stdout,"Matrix non inversible ...\n");
     LinTrans((long) n, alpha, bet); // bet = alpha*bet
-        errx = 0.0;  // check root convergence
+        errx = 0e0;  // check root convergence
     for (i = 0; i < n; i++)
     {    // update solution
       errx += fabs(bet[i]);
@@ -2672,7 +2677,7 @@ void rm_mean(long int n, double x[])
   long int  i;
   double    mean;
 
-  mean = 0.0;
+  mean = 0e0;
   for (i = 0; i < n; i++)
     mean += x[i];
   mean /= n;
