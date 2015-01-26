@@ -92,10 +92,10 @@ void prtHOM(FILE *fp, const int n_design, const mpolArray bn, const int Order)
 
   nmpole = 0;
   for (i = 1; i <= Order; i++)
-    if ((bn[HOMmax-i] != 0.0) || (bn[HOMmax+i] != 0.0)) nmpole++;
+    if ((bn[HOMmax-i] != 0e0) || (bn[HOMmax+i] != 0e0)) nmpole++;
   fprintf(fp, "  %2d %2d\n", nmpole, n_design);
   for (i = 1; i <= Order; i++) {
-    if ((bn[HOMmax-i] != 0.0) || (bn[HOMmax+i] != 0.0))
+    if ((bn[HOMmax-i] != 0e0) || (bn[HOMmax+i] != 0e0))
       fprintf(fp, "%3d %23.16e %23.16e\n", i, bn[HOMmax+i], bn[HOMmax-i]);
   }
 }
@@ -121,7 +121,7 @@ void prtmfile(const char mfile_dat[])
       fprintf(mfile, " %23.16e\n", Cell[i].Elem->L);
       break;
     case Mpole:
-      if (Cell[i].Elem->L != 0.0) {
+      if (Cell[i].Elem->L != 0e0) {
 	M = static_cast<MpoleType*>(Cell[i].Elem);
 	prtName(mfile, i, mpole_, M->method, M->n);
 	fprintf(mfile, " %23.16e %23.16e %23.16e %23.16e\n",
