@@ -93,7 +93,7 @@ template<typename T>
 void Cav_Pass(CellType &Cell, ss_vect<T> &X);
 
 template<typename T>
-void Wiggler_pass_EF(const ElemType &elem, ss_vect<T> &x);
+void Wiggler_pass_EF(const ElemType *elem, ss_vect<T> &x);
 
 template<typename T>
 void Wiggler_pass_EF2(int nstep, double L, double kxV, double kxH, double kz,
@@ -101,7 +101,7 @@ void Wiggler_pass_EF2(int nstep, double L, double kxV, double kxH, double kz,
 		      ss_vect<T> &x);
 
 template<typename T>
-void Wiggler_pass_EF3(const ElemType &elem, ss_vect<T> &x);
+void Wiggler_pass_EF3(const ElemType *elem, ss_vect<T> &x);
 
 template<typename T>
 void Wiggler_Pass(CellType &Cell, ss_vect<T> &X);

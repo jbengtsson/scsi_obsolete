@@ -157,7 +157,7 @@ void Marker_Init(int Fnum)
   elamfam = &ElemFam[Fnum-1];
   for (i = 0; i < elamfam->nKid; i++) {
     cell = &Cell[elamfam->KidList[i]];
-    elem = (ElemType*)new MarkerType::MarkerType();
+    elem = dynamic_cast<ElemType*>(new MarkerType::MarkerType());
     // Copying of struct/class is provided by compiler.
     cell->Elem = elamfam->Elem;
     // Initialize Galilean misalignment group.
@@ -177,7 +177,7 @@ void Drift_Init(int Fnum)
   elemfam = &ElemFam[Fnum-1];
   for (i = 1; i <= elemfam->nKid; i++) {
     cell = &Cell[elemfam->KidList[i-1]];
-    elem = (ElemType*)new DriftType::DriftType();
+    elem = dynamic_cast<ElemType*>(new DriftType::DriftType());
     // Copying of struct/class is provided by compiler.
     *elem = *elemfam->Elem;
     // Initialize Galilean misalignment group.
@@ -212,7 +212,7 @@ void Mpole_Init(int Fnum)
   elemfam = &ElemFam[Fnum-1];
   for (i = 1; i <= elemfam->nKid; i++) {
     cell = &Cell[elemfam->KidList[i-1]];
-    elem = (ElemType*)new MpoleType::MpoleType();
+    elem = dynamic_cast<ElemType*>(new MpoleType::MpoleType());
     // Copying of struct/class is provided by compiler.
     *elem = *elemfam->Elem;
     // Initialize Galilean misalignment group.
@@ -232,7 +232,7 @@ void Cav_Init(int Fnum)
   elemfam = &ElemFam[Fnum-1];
   for (i = 1; i <= elemfam->nKid; i++) {
     cell = &Cell[elemfam->KidList[i-1]];
-    elem = (ElemType*)new CavityType::CavityType();
+    elem = dynamic_cast<ElemType*>(new CavityType::CavityType());
     // Copying of struct/class is provided by compiler.
     *elem = *elemfam->Elem;
     // Initialize Galilean misalignment group.
@@ -252,7 +252,7 @@ void Wiggler_Init(int Fnum)
   elemfam = &ElemFam[Fnum-1];
   for (i = 1; i <= elemfam->nKid; i++) {
     cell = &Cell[elemfam->KidList[i-1]];
-    elem = (ElemType*)new WigglerType::WigglerType();
+    elem = dynamic_cast<ElemType*>(new WigglerType::WigglerType());
     // Copying of struct/class is provided by compiler.
     *elem = *elemfam->Elem;
     // Initialize Galilean misalignment group.
@@ -272,7 +272,7 @@ void Insertion_Init(int Fnum)
   elemfam = &ElemFam[Fnum-1];
   for (i = 1; i <= elemfam->nKid; i++) {
     cell = &Cell[elemfam->KidList[i-1]];
-    elem = (ElemType*)new InsertionType::InsertionType();
+    elem = dynamic_cast<ElemType*>(new InsertionType::InsertionType());
     // Copying of struct/class is provided by compiler.
     *elem = *elemfam->Elem;
     // Initialize Galilean misalignment group.
@@ -292,7 +292,7 @@ void FieldMap_Init(int Fnum)
   elemfam = &ElemFam[Fnum-1];
   for (i = 1; i <= elemfam->nKid; i++) {
     cell = &Cell[elemfam->KidList[i-1]];
-    elem = (ElemType*)new FieldMapType::FieldMapType();
+    elem = dynamic_cast<ElemType*>(new FieldMapType::FieldMapType());
     // Copying of struct/class is provided by compiler.
     *elem = *elemfam->Elem;
     // Initialize Galilean misalignment group.
@@ -312,7 +312,7 @@ void Spreader_Init(int Fnum)
   elemfam = &ElemFam[Fnum-1];
   for (i = 1; i <= elemfam->nKid; i++) {
     cell = &Cell[elemfam->KidList[i-1]];
-    elem = (ElemType*)new SpreaderType::SpreaderType();
+    elem = dynamic_cast<ElemType*>(new SpreaderType::SpreaderType());
     // Copying of struct/class is provided by compiler.
     *elem = *elemfam->Elem;
     // Initialize Galilean misalignment group.
@@ -332,7 +332,7 @@ void Recombiner_Init(int Fnum)
   elemfam = &ElemFam[Fnum-1];
   for (i = 1; i <= elemfam->nKid; i++) {
     cell = &Cell[elemfam->KidList[i-1]];
-    elem = (ElemType*)new RecombinerType::RecombinerType();
+    elem = dynamic_cast<ElemType*>(new RecombinerType::RecombinerType());
     // Copying of struct/class is provided by compiler.
     *elem = *elemfam->Elem;
     // Initialize Galilean misalignment group.
@@ -352,7 +352,7 @@ void Solenoid_Init(int Fnum)
   elemfam = &ElemFam[Fnum-1];
   for (i = 1; i <= elemfam->nKid; i++) {
     cell = &Cell[elemfam->KidList[i-1]];
-    elem = (ElemType*)new SolenoidType::SolenoidType();
+    elem = dynamic_cast<ElemType*>(new SolenoidType::SolenoidType());
     // Copying of struct/class is provided by compiler.
     *elem = *elemfam->Elem;
     // Initialize Galilean misalignment group.
@@ -1668,7 +1668,7 @@ void Cav_Pass(CellType &Cell, ss_vect<T> &X)
   CavityType  *C;
   T           delta;
 
-  elem = &Cell.Elem; C = elem->C;
+  C = &Cell.Elem;
   if (globval.Cavity_on && C->volt != 0e0) {
     delta = -C->volt/(globval.Energy*1e9)
             *sin(2.0*M_PI*C->freq/c0*X[ct_]+C->phi);
@@ -1795,21 +1795,25 @@ inline void get_Axy_map(const FieldMapType *FM, const double z,
 */
 
 template<typename T>
-void Wiggler_pass_EF(const ElemType &elem, ss_vect<T> &x)
+void Wiggler_pass_EF(const ElemType *elem, ss_vect<T> &x)
 {
   // First order symplectic integrator for wiggler using expanded Hamiltonian
 
-  int     i, nstep = 0;
-  double  h, z;
-  T       AxoBrho[4], AyoBrho[4], psi, hodp, a12, a21, a22, det;
-  T       d1, d2, a11, c11, c12, c21, c22, x2, B[3];
+  int          i, nstep = 0;
+  double       h, z;
+  WigglerType  *W;
+  FieldMapType *FM;
+  T            AxoBrho[4], AyoBrho[4], psi, hodp, a12, a21, a22, det;
+  T            d1, d2, a11, c11, c12, c21, c22, x2, B[3];
 
-  switch (elem.kind) {
+  switch (elem->kind) {
   case Wigl:
-    nstep = elem.W->n;
+    W = (WigglerType*)elem;
+    nstep = W->n;
     break;
   case FieldMap:
-    nstep = elem.FM->n_step;
+    FM = (FieldMapType*)elem;
+    nstep = FM->n_step;
     break;
   default:
     cout << "Wiggler_pass_EF: unknown element type" << endl;
@@ -1817,14 +1821,14 @@ void Wiggler_pass_EF(const ElemType &elem, ss_vect<T> &x)
     break;
   }
 
-  h = elem.L/nstep; z = 0e0;
+  h = elem->L/nstep; z = 0e0;
   for (i = 1; i <= nstep; ++i) {
-    switch (elem.kind) {
+    switch (elem->kind) {
     case Wigl:
-      get_Axy(elem.W, z, x, AxoBrho, AyoBrho);
+      get_Axy(W, z, x, AxoBrho, AyoBrho);
       break;
     case FieldMap:
-//      get_Axy_map(elem.FM, z, x, AxoBrho, AyoBrho);
+//      get_Axy_map(FM, z, x, AxoBrho, AyoBrho);
       break;
     default:
       cout << "Wiggler_pass_EF: unknown element type" << endl;
@@ -2018,56 +2022,58 @@ inline void get_Axy_EF3(const WigglerType *W, const double z,
 
 
 template<typename T>
-void Wiggler_pass_EF3(const ElemType &elem, ss_vect<T> &x)
+void Wiggler_pass_EF3(const ElemType *elem, ss_vect<T> &x)
 {
   /* Second order symplectic integrator for insertion devices based on:
 
        E. Forest, et al "Explicit Symplectic Integrator for s-dependent
        Static Magnetic Field"                                                */
 
-  int     i;
-  double  h, z;
-  T       hd, AxoBrho, AyoBrho, dAxoBrho[3], dAyoBrho[3], dpy, dpx, B[3];
+  int         i;
+  double      h, z;
+  WigglerType *W;
+  T           hd, AxoBrho, AyoBrho, dAxoBrho[3], dAyoBrho[3], dpy, dpx, B[3];
 
-  h = elem.L/elem.W->n; z = 0e0;
+  W = (WigglerType*)elem;
 
-  for (i = 1; i <= elem.W->n; i++) {
+  h = elem->L/W->n; z = 0e0;
+  for (i = 1; i <= W->n; i++) {
     hd = h/(1e0+x[delta_]);
 
     // 1: half step in z
     z += 0.5*h;
 
     // 2: half drift in y
-    get_Axy_EF3(elem.W, z, x, AyoBrho, dAyoBrho, dpx, false);
+    get_Axy_EF3(W, z, x, AyoBrho, dAyoBrho, dpx, false);
 
     x[px_] -= dpx; x[py_] -= AyoBrho;
     x[y_] += 0.5*hd*x[py_];
     x[ct_] += sqr(0.5)*hd*sqr(x[py_])/(1e0+x[delta_]);
 
-    get_Axy_EF3(elem.W, z, x, AyoBrho, dAyoBrho, dpx, false);
+    get_Axy_EF3(W, z, x, AyoBrho, dAyoBrho, dpx, false);
 
     x[px_] += dpx; x[py_] += AyoBrho;
 
     // 3: full drift in x
-    get_Axy_EF3(elem.W, z, x, AxoBrho, dAxoBrho, dpy, true);
+    get_Axy_EF3(W, z, x, AxoBrho, dAxoBrho, dpy, true);
 
     x[px_] -= AxoBrho; x[py_] -= dpy; x[x_] += hd*x[px_];
     x[ct_] += 0.5*hd*sqr(x[px_])/(1e0+x[delta_]);
 
     if (globval.pathlength) x[ct_] += h;
 
-    get_Axy_EF3(elem.W, z, x, AxoBrho, dAxoBrho, dpy, true);
+    get_Axy_EF3(W, z, x, AxoBrho, dAxoBrho, dpy, true);
 
     x[px_] += AxoBrho; x[py_] += dpy;
 
     // 4: a half drift in y
-    get_Axy_EF3(elem.W, z, x, AyoBrho, dAyoBrho, dpx, false);
+    get_Axy_EF3(W, z, x, AyoBrho, dAyoBrho, dpx, false);
 
     x[px_] -= dpx; x[py_] -= AyoBrho;
     x[y_] += 0.5*hd*x[py_];
     x[ct_] += sqr(0.5)*hd*sqr(x[py_])/(1e0+x[delta_]);
 
-    get_Axy_EF3(elem.W, z, x, AyoBrho, dAyoBrho, dpx, false);
+    get_Axy_EF3(W, z, x, AyoBrho, dAyoBrho, dpx, false);
 
     x[px_] += dpx; x[py_] += AyoBrho;
 
@@ -2075,8 +2081,8 @@ void Wiggler_pass_EF3(const ElemType &elem, ss_vect<T> &x)
     z += 0.5*h;
 
     if (globval.radiation || globval.emittance) {
-      get_Axy_EF3(elem.W, z, x, AyoBrho, dAyoBrho, dpx, false);
-      get_Axy_EF3(elem.W, z, x, AxoBrho, dAxoBrho, dpy, true);
+      get_Axy_EF3(W, z, x, AyoBrho, dAyoBrho, dpx, false);
+      get_Axy_EF3(W, z, x, AxoBrho, dAxoBrho, dpy, true);
       B[X_] = -dAyoBrho[Z_]; B[Y_] = dAxoBrho[Z_];
       B[Z_] = dAyoBrho[X_] - dAxoBrho[Y_];
       radiate(x, h, 0e0, B);
@@ -2088,14 +2094,13 @@ void Wiggler_pass_EF3(const ElemType &elem, ss_vect<T> &x)
 template<typename T>
 void Wiggler_Pass(CellType &Cell, ss_vect<T> &X)
 {
-  int          seg;
-  double       L, L1, L2, K1, K2;
-  ElemType     *elem;
-  WigglerType  *W;
-  ss_vect<T>   X1;
+  int         seg;
+  double      L, L1, L2, K1, K2;
+  ElemType    *elem;
+  WigglerType *W;
+  ss_vect<T>  X1;
 
-  elem = &Cell.Elem; W = elem->W;
-  // Global -> Local
+  elem = &Cell.Elem; W = (WigglerType*)elem;
   GtoL(X, Cell.dS, Cell.droll, 0e0, 0e0, 0e0);
   switch (W->method) {
 
@@ -2188,7 +2193,7 @@ void f_FM(const CellType &Cell, const double z, const ss_vect<T> &ps,
   const double  eps = 1e-5;
 
 
-  FM = Cell.Elem.FM;
+  FM = (FieldMapType*)Cell.Elem;
 
   kz = 0;
   for (j = 1; j <= FM->n[Z_]; j++)
@@ -2848,20 +2853,20 @@ void sol_pass(const ElemType &elem, ss_vect<T> &x)
 
     // 2: half drift in y
     AyoBrho = elem.Sol->BoBrho*x[x_]/2.0; dpx = elem.Sol->BoBrho*x[y_]/2.0;
-//    get_Axy_EF3(elem.W, z, x, AyoBrho, dAyoBrho, dpx, false);
+//    get_Axy_EF3(W, z, x, AyoBrho, dAyoBrho, dpx, false);
 
     x[px_] -= dpx; x[py_] -= AyoBrho;
     x[y_] += 0.5*hd*x[py_];
     x[ct_] += sqr(0.5)*hd*sqr(x[py_])/(1e0+x[delta_]);
 
     AyoBrho = elem.Sol->BoBrho*x[x_]/2.0; dpx = elem.Sol->BoBrho*x[y_]/2.0;
-//    get_Axy_EF3(elem.W, z, x, AyoBrho, dAyoBrho, dpx, false);
+//    get_Axy_EF3(W, z, x, AyoBrho, dAyoBrho, dpx, false);
 
     x[px_] += dpx; x[py_] += AyoBrho;
 
     // 3: full drift in x
     AxoBrho = -elem.Sol->BoBrho*x[y_]/2.0; dpy = -elem.Sol->BoBrho*x[x_]/2.0;
-//    get_Axy_EF3(elem.W, z, x, AxoBrho, dAxoBrho, dpy, true);
+//    get_Axy_EF3(W, z, x, AxoBrho, dAxoBrho, dpy, true);
 
     x[px_] -= AxoBrho; x[py_] -= dpy; x[x_] += hd*x[px_];
     x[ct_] += 0.5*hd*sqr(x[px_])/(1e0+x[delta_]);
@@ -2869,20 +2874,20 @@ void sol_pass(const ElemType &elem, ss_vect<T> &x)
     if (globval.pathlength) x[ct_] += h;
 
     AxoBrho = -elem.Sol->BoBrho*x[y_]/2.0; dpy = -elem.Sol->BoBrho*x[x_]/2.0;
-//    get_Axy_EF3(elem.W, z, x, AxoBrho, dAxoBrho, dpy, true);
+//    get_Axy_EF3(W, z, x, AxoBrho, dAxoBrho, dpy, true);
 
     x[px_] += AxoBrho; x[py_] += dpy;
 
     // 4: a half drift in y
     AyoBrho = elem.Sol->BoBrho*x[x_]/2.0; dpx = elem.Sol->BoBrho*x[y_]/2.0;
-//    get_Axy_EF3(elem.W, z, x, AyoBrho, dAyoBrho, dpx, false);
+//    get_Axy_EF3(W, z, x, AyoBrho, dAyoBrho, dpx, false);
 
     x[px_] -= dpx; x[py_] -= AyoBrho;
     x[y_] += 0.5*hd*x[py_];
     x[ct_] += sqr(0.5)*hd*sqr(x[py_])/(1e0+x[delta_]);
 
     AyoBrho = elem.Sol->BoBrho*x[x_]/2.0; dpx = elem.Sol->BoBrho*x[y_]/2.0;
-//    get_Axy_EF3(elem.W, z, x, AyoBrho, dAyoBrho, dpx, false);
+//    get_Axy_EF3(W, z, x, AyoBrho, dAyoBrho, dpx, false);
 
     x[px_] += dpx; x[py_] += AyoBrho;
 
@@ -2896,8 +2901,8 @@ void sol_pass(const ElemType &elem, ss_vect<T> &x)
       dAyoBrho[X_] = elem.Sol->BoBrho/2.0;
       dAyoBrho[Y_] = 0e0;
       dAyoBrho[Z_] = 0e0;
-//      get_Axy_EF3(elem.W, z, x, AyoBrho, dAyoBrho, dpx, false);
-//      get_Axy_EF3(elem.W, z, x, AxoBrho, dAxoBrho, dpy, true);
+//      get_Axy_EF3(W, z, x, AyoBrho, dAyoBrho, dpx, false);
+//      get_Axy_EF3(W, z, x, AxoBrho, dAxoBrho, dpy, true);
       B[X_] = -dAyoBrho[Z_]; B[Y_] = dAxoBrho[Z_];
       B[Z_] = dAyoBrho[X_] - dAxoBrho[Y_];
       radiate(x, h, 0e0, B);
@@ -3082,8 +3087,9 @@ double Mpole_Getbn(int Fnum1, int Knum1, int Order);
 
 double Elem_GetKval(int Fnum1, int Knum1, int Order)
 {
-  double   Result = 0e0;
-  ElemType *elem;
+  double        Result = 0e0;
+  ElemType      *elem;
+  MpoletypeType *M;
 
   if (Fnum1 > 0) {
     elem = &Cell[ElemFam[Fnum1-1].KidList[Knum1-1]].Elem;
@@ -3098,7 +3104,8 @@ double Elem_GetKval(int Fnum1, int Knum1, int Order)
       Result = 0e0;
       break;
     case Mpole: /* KL*/
-      if (elem->M->thick == thick)
+      M = (MpoleType*)elem;
+      if (elem->thick == thick)
 	Result = elem->L*Mpole_Getbn(Fnum1, Knum1, Order);
       else
 	Result = Mpole_Getbn(Fnum1, Knum1, Order);
@@ -3133,7 +3140,7 @@ double Elem_GetKval(int Fnum1, int Knum1, int Order)
 }
 
 
-#define n               4
+#define n 4
 void LinsTrans(Matrix &A, Vector &b)
 {
   int    j;
@@ -3148,7 +3155,7 @@ void LinsTrans(Matrix &A, Vector &b)
 #undef n
 
 
-#define n               4
+#define n 4
 void MulLsMat(Matrix &A, Matrix &B)
 {
   int    i, k;
@@ -3180,8 +3187,7 @@ void Mpole_Setbn(int Fnum, int Knum, int Order)
   ElemType *elem; /* pointer on the Elemetype */
   MpoleType *M;/* Pointer on the Multipole */
 
-  cell  = &Cell[ElemFam[Fnum-1].KidList[Knum-1]];
-  elem = &cell->Elem; M = elem->M;
+  M = (MpoleType*)Cell[ElemFam[Fnum-1].KidList[Knum-1]].Elem;
   M->bn[Order+HOMmax] =
     M->bnpar[Order+HOMmax] + M->bnsys[Order+HOMmax] +
     M->bnrms[Order+HOMmax]*M->bnrnd[Order+HOMmax];
@@ -3199,7 +3205,7 @@ double Mpole_Getbn(int Fnum, int Knum, int Order)
 
   MpoleType *M; /* Pointer on the multipole */
 
-  M = Cell[ElemFam[Fnum-1].KidList[Knum-1]].Elem.M;
+  M = (MpoleType*)Cell[ElemFam[Fnum-1].KidList[Knum-1]].Elem;
   return (M->bn[Order+HOMmax]);
 }
 
@@ -3209,9 +3215,7 @@ void Mpole_Defbnpar(int Fnum, int Knum, int Order, double bnpar)
   ElemType   *elem;
   MpoleType  *M;
 
-  elem = &Cell[ElemFam[Fnum-1].KidList[Knum-1]].Elem;
-  M = elem->M;
-
+  M = (MpoleType*)Cell[ElemFam[Fnum-1].KidList[Knum-1]].Elem;
   M->bnpar[Order+HOMmax]=bnpar;
 }
 
@@ -3222,9 +3226,7 @@ void Mpole_Defbnsys(int Fnum, int Knum, int Order, double bnsys)
   ElemType *elem;
   MpoleType *M;
 
-  elem = &Cell[ElemFam[Fnum-1].KidList[Knum-1]].Elem;
-  M = elem->M;
-
+  elem = (MpoleType*)Cell[ElemFam[Fnum-1].KidList[Knum-1]].Elem;
   M->bnsys[Order+HOMmax]=bnsys;
 }
 
@@ -3237,7 +3239,7 @@ void Mpole_SetdS(int Fnum, int Knum)
   MpoleType *M;
 
   cell = &Cell[ElemFam[Fnum-1].KidList[Knum-1]];
-  elem = &cell->Elem; M = elem->M;
+  M = (MpoleType*)cell->Elem;
   for (j = 0; j <= 1; j++)
     cell->dS[j] = M->dSsys[j] + M->dSrms[j]*M->dSrnd[j];
 }
@@ -3245,11 +3247,10 @@ void Mpole_SetdS(int Fnum, int Knum)
 void Mpole_Setdroll(int Fnum, int Knum)
 {
   CellType  *cell;
-  ElemType  *elem;
   MpoleType *M;
 
   cell = &Cell[ElemFam[Fnum-1].KidList[Knum-1]];
-  elem = &cell->Elem; M = elem->M;
+  M = (MpoleType*)cell->Elem;
   cell->droll[0] =
     cos(dtor(M->rollpar + M->rollsys + M->rollrms*M->rollrnd));
   cell->droll[1] = sin(
@@ -3263,11 +3264,9 @@ void Mpole_Setdroll(int Fnum, int Knum)
 
 double Mpole_Getdroll(int Fnum, int Knum)
 {
-  ElemType  *elem;
   MpoleType *M;
 
-  elem = &Cell[ElemFam[Fnum-1].KidList[Knum-1]].Elem;
-  M = elem->M;
+  M = (MpoleType*)Cell[ElemFam[Fnum-1].KidList[Knum-1]].Elem;
 
   return(M->rollpar + M->rollsys + M->rollrms*M->rollrnd);
 }
@@ -3275,21 +3274,18 @@ double Mpole_Getdroll(int Fnum, int Knum)
 
 void Mpole_Defdrollpar(int Fnum, int Knum, double rollpar)
 {
-  ElemType  *elem;
   MpoleType *M;
 
-  elem = &Cell[ElemFam[Fnum-1].KidList[Knum-1]].Elem; M = elem->M;
-
+  M = (MpoleType*)Cell[ElemFam[Fnum-1].KidList[Knum-1]].Elem;
   M->rollpar = rollpar;
 }
 
 
 void Mpole_Defdrollsys(int Fnum, int Knum, double rollsys)
 {
-  ElemType  *elem;
   MpoleType *M;
 
-  elem = &Cell[ElemFam[Fnum-1].KidList[Knum-1]].Elem; M = elem->M;
+  M = (MpoleType*)Cell[ElemFam[Fnum-1].KidList[Knum-1]].Elem; M = elem->M;
 
   M->rollsys=rollsys;
 }
@@ -3298,11 +3294,9 @@ void Mpole_Defdrollsys(int Fnum, int Knum, double rollsys)
 void Wiggler_Setbn(int Fnum, int Knum, int Order)
 {
   CellType     *cell;
-  ElemType     *elem;
   WigglerType  *W;
 
-  cell = &Cell[ElemFam[Fnum-1].KidList[Knum-1]]; elem = &cell->Elem;
-  W = elem->W;
+  W = (WigglerType*)Cell[ElemFam[Fnum-1].KidList[Knum-1]].Elem;
   if (abs(Order) > W->order)
     W->order = abs(Order);
 }
@@ -3316,20 +3310,18 @@ void Wiggler_SetdS(int Fnum, int Knum)
   WigglerType *W;
 
   cell = &Cell[ElemFam[Fnum-1].KidList[Knum-1]];
-  elem = &cell->Elem; W = elem->W;
+  W = (WigglerType*)cell->Elem;
   for (j = 0; j <= 1; j++)
-    cell->dS[j] = W->dSsys[j]
-                   + W->dSrms[j]*W->dSrnd[j];
+    cell->dS[j] = W->dSsys[j] + W->dSrms[j]*W->dSrnd[j];
 }
 
 void Wiggler_Setdroll(int Fnum, int Knum)
 {
   CellType    *cell;
-  ElemType    *elem;
   WigglerType *W;
 
   cell = &Cell[ElemFam[Fnum-1].KidList[Knum-1]];
-  elem = &cell->Elem; W = elem->W;
+  W = (WigglerType*)cell->Elem;
   cell->droll[0] = cos(dtor(W->rollpar+W->rollsys+W->rollrms*W->rollrnd));
   cell->droll[1] = sin(dtor(W->rollpar+W->rollsys+W->rollrms*W->rollrnd));
 }

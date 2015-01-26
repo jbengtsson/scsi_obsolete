@@ -15,7 +15,7 @@ struct CellType {
   int       Knum;            // Element Kid no.
   double    S;               // Ring location.
   CellType  *next_ptr;       // Pointer to next cell (for ERLs, etc.)
-  ElemType  *Elem;        // Pointer to the particular element.
+  ElemType  *Elem;           // Pointer to the particular element.
   // Place holder for global properties.
   Vector2   dS,              // Transverse displacement
             droll;           // droll = (cos(roll), sin(roll))
