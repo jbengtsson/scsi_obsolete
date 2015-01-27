@@ -165,8 +165,7 @@ bool Lattice_Read(const char *fi_)
     double              QKV, QKH, QKxV, QKxH, QPhi, QKS;
     double              dt, Frf, Vrf;
     long                k1, k2, harnum;
-    ElemFamType         *ElemFam;
-    ElemType            *Elem;
+    ElemType            *elem;
     DriftType           *D;
     MpoleType           *M;
     CavityType          *C;
@@ -194,14 +193,14 @@ bool Lattice_Read(const char *fi_)
 
       globval.Elem_nFam++;
       if (globval.Elem_nFam <= Elem_nFamMax) {
-	Elem = ElemFam[globval.Elem_nFam-1].Elem;
 	D = new DriftType::DriftType();
-	Elem = dynamic_cast<ElemType*>(D);
+	elem = dynamic_cast<ElemType*>(D);
+	ElemFam[globval.Elem_nFam-1].Elem = elem;
 
-	Elem->kind = ElemKind(drift);
-	memset(Elem->name,0,sizeof(partsName));
-	memcpy(Elem->name, (*i).c_str(), (*i).length());
-	Elem->L = val;
+	elem->kind = ElemKind(drift);
+	memset(elem->name,0,sizeof(partsName));
+	memcpy(elem->name, (*i).c_str(), (*i).length());
+	elem->L = val;
       } else {
 	cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam
 	     << "(" << (long)Elem_nFamMax << ")" << endl;
@@ -254,14 +253,14 @@ bool Lattice_Read(const char *fi_)
       //              +   +
       globval.Elem_nFam++;
       if (globval.Elem_nFam <= Elem_nFamMax) {
-	Elem = ElemFam[globval.Elem_nFam-1].Elem;
 	M = new MpoleType::MpoleType();
-	Elem = dynamic_cast<ElemType*>(M);
+	elem = dynamic_cast<ElemType*>(M);
+	ElemFam[globval.Elem_nFam-1].Elem = elem;
 
-	Elem->kind = Mpole;
-	memset(Elem->name,0,sizeof(partsName));
-	memcpy(Elem->name, (*i).c_str(), (*i).length());
-	Elem->L = QL;
+	elem->kind = ElemKind(Mpole);
+	memset(elem->name,0,sizeof(partsName));
+	memcpy(elem->name, (*i).c_str(), (*i).length());
+	elem->L = QL;
 
 
 	M->method = k2;
@@ -320,14 +319,14 @@ bool Lattice_Read(const char *fi_)
 
       globval.Elem_nFam++;
       if (globval.Elem_nFam <= Elem_nFamMax) {
-	Elem = ElemFam[globval.Elem_nFam-1].Elem;
 	M = new MpoleType::MpoleType();
-	Elem = dynamic_cast<ElemType*>(M);
+	elem = dynamic_cast<ElemType*>(M);
+	ElemFam[globval.Elem_nFam-1].Elem = elem;
 
-	Elem->kind = Mpole;
-	memset(Elem->name,0,sizeof(partsName));
-	memcpy(Elem->name, (*i).c_str(), (*i).length());
-	Elem->L = QL;
+	elem->kind = ElemKind(Mpole);
+	memset(elem->name,0,sizeof(partsName));
+	memcpy(elem->name, (*i).c_str(), (*i).length());
+	elem->L = QL;
 
 	M->method = k2;	M->n = k1; M->rollpar = dt;
 	AssignHOM(globval.Elem_nFam, B,BA);
@@ -376,15 +375,15 @@ bool Lattice_Read(const char *fi_)
 
       globval.Elem_nFam++;
       if (globval.Elem_nFam <= Elem_nFamMax) {
-	Elem = ElemFam[globval.Elem_nFam-1].Elem;
 	M = new MpoleType::MpoleType();
-	Elem = dynamic_cast<ElemType*>(M);
+	elem = dynamic_cast<ElemType*>(M);
+	ElemFam[globval.Elem_nFam-1].Elem = elem;
 
-	Elem->kind = Mpole;
-	memset(Elem->name,0,sizeof(partsName));
-	memcpy(Elem->name, (*i).c_str(), (*i).length());
-	//    memcpy(Elem->name, ElementName, sizeof(partsName));
-	Elem->L = QL;
+	elem->kind = ElemKind(Mpole);
+	memset(elem->name,0,sizeof(partsName));
+	memcpy(elem->name, (*i).c_str(), (*i).length());
+	//    memcpy(elem->name, elementName, sizeof(partsName));
+	elem->L = QL;
 
 	M->method = k2; M->n = k1;
 	if (M->L != 0e0)
@@ -420,14 +419,14 @@ bool Lattice_Read(const char *fi_)
 
       globval.Elem_nFam++;
       if (globval.Elem_nFam <= Elem_nFamMax) {
-	Elem = ElemFam[globval.Elem_nFam-1].Elem;
 	C = new CavityType::CavityType();
-	Elem = dynamic_cast<ElemType*>(C);
+	elem = dynamic_cast<ElemType*>(C);
+	ElemFam[globval.Elem_nFam-1].Elem = elem;
 
-	Elem->kind = Cavity;
-	memset(Elem->name,0,sizeof(partsName));
-	memcpy(Elem->name, (*i).c_str(), (*i).length());
-	//    memcpy(Elem->name, ElementName, sizeof(partsName));
+	elem->kind = ElemKind(Cavity);
+	memset(elem->name,0,sizeof(partsName));
+	memcpy(elem->name, (*i).c_str(), (*i).length());
+	//    memcpy(elem->name, elementName, sizeof(partsName));
 
 	C->volt = Vrf; C->freq = Frf; C->phi = QPhi*M_PI/180e0;
 	C->h = harnum;
@@ -464,18 +463,18 @@ bool Lattice_Read(const char *fi_)
 
       globval.Elem_nFam++;
       if (globval.Elem_nFam <= Elem_nFamMax) {
-	Elem = ElemFam[globval.Elem_nFam-1].Elem;
 	M = new MpoleType::MpoleType();
-	Elem = dynamic_cast<ElemType*>(M);
+	elem = dynamic_cast<ElemType*>(M);
+	ElemFam[globval.Elem_nFam-1].Elem = elem;
 
-	Elem->kind = Mpole;
-	memset(Elem->name,0,sizeof(partsName));
-	memcpy(Elem->name, (*i).c_str(), (*i).length());
-	//    memcpy(Elem->name, ElementName, sizeof(partsName));
-	Elem->L = QL;
+	elem->kind = ElemKind(Mpole);
+	memset(elem->name,0,sizeof(partsName));
+	memcpy(elem->name, (*i).c_str(), (*i).length());
+	//    memcpy(elem->name, elementName, sizeof(partsName));
+	elem->L = QL;
 
 	//    SetDBN(&V);
-	if (Elem->L != 0e0)
+	if (elem->L != 0e0)
 	  M->thick = thicktype(thick);
 	else
 	  M->thick = thicktype(thin);
@@ -495,14 +494,14 @@ bool Lattice_Read(const char *fi_)
 
       globval.Elem_nFam++;
       if (globval.Elem_nFam <= Elem_nFamMax) {
-	Elem = ElemFam[globval.Elem_nFam-1].Elem;
 	M = new MpoleType::MpoleType();
-	Elem = dynamic_cast<ElemType*>(M);
+	elem = dynamic_cast<ElemType*>(M);
+	ElemFam[globval.Elem_nFam-1].Elem = elem;
 
-	Elem->kind = Mpole;
-	memset(Elem->name,0,sizeof(partsName));
-	memcpy(Elem->name, (*i).c_str(), (*i).length());
-	//    memcpy(Elem->name, ElementName, sizeof(partsName));
+	elem->kind = ElemKind(Mpole);
+	memset(elem->name,0,sizeof(partsName));
+	memcpy(elem->name, (*i).c_str(), (*i).length());
+	//    memcpy(elem->name, elementName, sizeof(partsName));
 
 	M->thick = thicktype(thin);
 	//    SetDBN(&V);
@@ -518,15 +517,15 @@ bool Lattice_Read(const char *fi_)
 
       globval.Elem_nFam++;
       if (globval.Elem_nFam <= Elem_nFamMax) {
-	Elem = ElemFam[globval.Elem_nFam-1].Elem;
 	M = new MpoleType::MpoleType();
-	Elem = dynamic_cast<ElemType*>(M);
+	elem = dynamic_cast<ElemType*>(M);
+	ElemFam[globval.Elem_nFam-1].Elem = elem;
 
-	memset(Elem->name,0,sizeof(partsName));
-	memcpy(Elem->name, (*i).c_str(), (*i).length());
-	//    memcpy(Elem->name, ElementName, sizeof(partsName));
-	Elem->L = 0e0;
-	Elem->kind = ElemKind(marker);
+	memset(elem->name,0,sizeof(partsName));
+	memcpy(elem->name, (*i).c_str(), (*i).length());
+	//    memcpy(elem->name, elementName, sizeof(partsName));
+	elem->L = 0e0;
+	elem->kind = ElemKind(marker);
 	//    SetDBN(&V);
       } else {
 	cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam
@@ -580,19 +579,19 @@ bool Lattice_Read(const char *fi_)
 
       globval.Elem_nFam++;
       if (globval.Elem_nFam <= Elem_nFamMax) {
-	Elem = ElemFam[globval.Elem_nFam-1].Elem;
 	M = new MpoleType::MpoleType();
-	Elem = dynamic_cast<ElemType*>(M);
+	elem = dynamic_cast<ElemType*>(M);
+	ElemFam[globval.Elem_nFam-1].Elem = elem;
 
-	Elem->kind = Mpole;
-	memset(Elem->name,0,sizeof(partsName));
-	memcpy(Elem->name, (*i).c_str(), (*i).length());
-	//    memcpy(Elem->name, ElementName, sizeof(partsName));
-	Elem->L = QL;
+	elem->kind = ElemKind(Mpole);
+	memset(elem->name,0,sizeof(partsName));
+	memcpy(elem->name, (*i).c_str(), (*i).length());
+	//    memcpy(elem->name, elementName, sizeof(partsName));
+	elem->L = QL;
 
-	if (Elem->L != 0e0) {
+	if (elem->L != 0e0) {
 	  M->thick = thicktype(thick);
-	  M->irho = t * M_PI / 180e0 / Elem->L;
+	  M->irho = t * M_PI / 180e0 / elem->L;
 	} else {
 	  M->thick = thicktype(thin);
 	  M->irho = t * M_PI / 180e0;
@@ -651,16 +650,14 @@ bool Lattice_Read(const char *fi_)
 
       globval.Elem_nFam++;
       if (globval.Elem_nFam <= Elem_nFamMax) {
-	Elem = ElemFam[globval.Elem_nFam-1].Elem;
 	W = new WigglerType::WigglerType();
-	Elem = dynamic_cast<ElemType*>(W);
+	elem = dynamic_cast<ElemType*>(W);
+	ElemFam[globval.Elem_nFam-1].Elem = elem;
 
-	ElemFam = &ElemFam[globval.Elem_nFam-1];
-	Elem = ElemFam->Elem;
-	memset(Elem->name,0,sizeof(partsName));
-	memcpy(Elem->name, (*i).c_str(), (*i).length());
-	//    memcpy(Elem->name, ElementName, sizeof(partsName));
-	Elem->L = QL; Elem->kind = Wigl;
+	memset(elem->name,0,sizeof(partsName));
+	memcpy(elem->name, (*i).c_str(), (*i).length());
+	//    memcpy(elem->name, elementName, sizeof(partsName));
+	elem->L = QL; elem->kind = ElemKind(Wigl);
 
 	W->method = k2; W->n = k1; W->rollpar = dt;
 	//    SetDBN(&V);
@@ -668,8 +665,8 @@ bool Lattice_Read(const char *fi_)
 	W->kxV[0] = QKxV; W->BoBrhoV[0] = QKV;
 	W->kxH[0] = QKxH; W->BoBrhoH[0] = QKH;
 	W->phi[0] = QPhi;
-	//                    AssignHarm(globval.Elem_nFam, &V);
-	//   W = ElemFam[elem-1].Elem.W;
+	//                    AssignHarm(globval.elem_nFam, &V);
+	//   W = elemFam[elem-1].elem.W;
 	W->n_harm += n_harm;
 	// the fundamental is stored in harm[0], etc.
 	for (int k = 1; k < W->n_harm; k++) {
@@ -698,15 +695,15 @@ bool Lattice_Read(const char *fi_)
       if (GLPS_SUCCESS==glps_read(*i,"scaling",val)) scaling = val;
       globval.Elem_nFam++;
       if (globval.Elem_nFam <= Elem_nFamMax) {
-	Elem = ElemFam[globval.Elem_nFam-1].Elem;
 	FM = new FieldMapType::FieldMapType();
-	Elem = dynamic_cast<ElemType*>(FM);
+	elem = dynamic_cast<ElemType*>(FM);
+	ElemFam[globval.Elem_nFam-1].Elem = elem;
 
-	Elem->kind = FieldMap;
-	memset(Elem->name,0,sizeof(partsName));
-	memcpy(Elem->name, (*i).c_str(), (*i).length());
-	//    memcpy(Elem->name, ElementName, sizeof(partsName));
-	Elem->L = QL;
+	elem->kind = ElemKind(FieldMap);
+	memset(elem->name,0,sizeof(partsName));
+	memcpy(elem->name, (*i).c_str(), (*i).length());
+	//    memcpy(elem->name, ElementName, sizeof(partsName));
+	elem->L = QL;
 
 	FM->phi = t*M_PI/180e0;FM->n_step = k1; FM->scl = scaling;
 
@@ -746,14 +743,14 @@ bool Lattice_Read(const char *fi_)
       globval.Elem_nFam++;
       /* Fills up the ID */
       if (globval.Elem_nFam <= Elem_nFamMax) {
-	Elem = ElemFam[globval.Elem_nFam-1].Elem;
 	ID = new InsertionType::InsertionType();
-	Elem = dynamic_cast<ElemType*>(ID);
+	elem = dynamic_cast<ElemType*>(ID);
+	ElemFam[globval.Elem_nFam-1].Elem = elem;
 
-	Elem->kind = Insertion;
-	memset(Elem->name,0,sizeof(partsName));
-	memcpy(Elem->name, (*i).c_str(), (*i).length());
-	//    memcpy(Elem->name, ElementName, sizeof(partsName));
+	elem->kind = ElemKind(Insertion);
+	memset(elem->name,0,sizeof(partsName));
+	memcpy(elem->name, (*i).c_str(), (*i).length());
+	//    memcpy(elem->name, ElementName, sizeof(partsName));
 
 	ID->method = k2; ID->n = k1; ID->scaling = scaling;
 
@@ -770,7 +767,7 @@ bool Lattice_Read(const char *fi_)
 	if (str1.length() > 0) {
 	  strcpy(ID->fname1,str1.c_str());
 	  ID->firstorder = true;
-	  Read_IDfile(ID->fname1, Elem->L, ID->nx, ID->nz,
+	  Read_IDfile(ID->fname1, elem->L, ID->nx, ID->nz,
 		      ID->tabx, ID->tabz, ID->thetax1,
 		      ID->thetaz1, ID->long_comp, ID->B2);
 	  // scale factor from Radia: Tmm to get Tm.
@@ -791,7 +788,7 @@ bool Lattice_Read(const char *fi_)
 	  strcpy(ID->fname2,str2.c_str());
 	  ID->secondorder = true;
 	  // Read Id file for second order kicks
-	  Read_IDfile(ID->fname2, Elem->L, ID->nx, ID->nz,
+	  Read_IDfile(ID->fname2, elem->L, ID->nx, ID->nz,
 		      ID->tabx, ID->tabz, ID->thetax, ID->thetaz,
 		      ID->long_comp, ID->B2);
 	} else {
@@ -846,16 +843,16 @@ bool Lattice_Read(const char *fi_)
       //        GetDBN_(&V);
       globval.Elem_nFam++;
       if (globval.Elem_nFam <= Elem_nFamMax) {
-	Elem = ElemFam[globval.Elem_nFam-1].Elem;
 	Spr = new SpreaderType::SpreaderType();
-	Elem = dynamic_cast<ElemType*>(Spr);
+	elem = dynamic_cast<ElemType*>(Spr);
+	ElemFam[globval.Elem_nFam-1].Elem = elem;
 
-	Elem->kind = ElemKind(Spreader);
-	memset(Elem->name,0,sizeof(partsName));
-	memcpy(Elem->name, (*i).c_str(), (*i).length());
-	//    memcpy(Elem->name, ElementName, sizeof(partsName));
-	if (GLPS_SUCCESS==glps_read(*i,"l",val))  Elem->L = val;
-	//    Elem->L = *V.rnum;
+	elem->kind = ElemKind(Spreader);
+	memset(elem->name,0,sizeof(partsName));
+	memcpy(elem->name, (*i).c_str(), (*i).length());
+	//    memcpy(elem->name, ElementName, sizeof(partsName));
+	if (GLPS_SUCCESS==glps_read(*i,"l",val))  elem->L = val;
+	//    elem->L = *V.rnum;
       } else {
 	cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam
 	     << "(" << (long)Elem_nFamMax << ")" << endl;
@@ -866,15 +863,15 @@ bool Lattice_Read(const char *fi_)
       //      GetDBN_(&V);
       globval.Elem_nFam++;
       if (globval.Elem_nFam <= Elem_nFamMax) {
-	Elem = ElemFam[globval.Elem_nFam-1].Elem;
 	Rec = new RecombinerType::RecombinerType();
-	Elem = dynamic_cast<ElemType*>(Rec);
+	elem = dynamic_cast<ElemType*>(Rec);
+	ElemFam[globval.Elem_nFam-1].Elem = elem;
 
-	Elem->kind = ElemKind(Recombiner);
-	memset(Elem->name,0,sizeof(partsName));
-	memcpy(Elem->name, (*i).c_str(), (*i).length());
-	if (GLPS_SUCCESS==glps_read(*i,"l",val))  Elem->L = val;
-	//    Elem->L = *V.rnum;
+	elem->kind = ElemKind(Recombiner);
+	memset(elem->name,0,sizeof(partsName));
+	memcpy(elem->name, (*i).c_str(), (*i).length());
+	if (GLPS_SUCCESS==glps_read(*i,"l",val))  elem->L = val;
+	//    elem->L = *V.rnum;
       } else {
 	cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam
 	     << "(" << (long)Elem_nFamMax << ")" << endl;
@@ -890,14 +887,14 @@ bool Lattice_Read(const char *fi_)
       if (GLPS_SUCCESS==glps_read(*i,"n",val)) k1 = (long) floor(val+0.5);
       globval.Elem_nFam++;
       if (globval.Elem_nFam <= Elem_nFamMax) {
-	Elem = ElemFam[globval.Elem_nFam-1].Elem;
 	Sol = new SolenoidType::SolenoidType();
-	Elem = dynamic_cast<ElemType*>(Sol);
+	elem = dynamic_cast<ElemType*>(Sol);
+	ElemFam[globval.Elem_nFam-1].Elem = elem;
 
-	Elem->kind = Solenoid;
-	memset(Elem->name,0,sizeof(partsName));
-	memcpy(Elem->name, (*i).c_str(), (*i).length());
-	Elem->L = QL;
+	elem->kind = ElemKind(Solenoid);
+	memset(elem->name,0,sizeof(partsName));
+	memcpy(elem->name, (*i).c_str(), (*i).length());
+	elem->L = QL;
 
 	Sol->n = k1; Sol->BoBrho = QK;
       } else {
@@ -1057,7 +1054,7 @@ long CheckElementtable(const string name)
 
   FORLIM = globval.Elem_nFam;
   for (i = 1; i <= FORLIM; i++) {
-    //  if (!strncmp(ElemFam[i-1].Elem->name, name.c_str(), name.length()))
+   //  if (!strncmp(ElemFam[i-1].Elem->name, name.c_str(), name.length()))
     if (!strcmp(ElemFam[i-1].Elem->name, name.c_str()))
       j = i;
   }
