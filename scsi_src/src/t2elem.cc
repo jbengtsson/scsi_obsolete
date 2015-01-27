@@ -186,21 +186,6 @@ void Drift_Init(int Fnum)
 }
 
 
-static int Updateorder(MpoleType *M)
-{
-  int i, order;
-
-  if (M->irho != 0e0) // Non zero curvature => bend.
-    order = 1;
-  else // Multipole.
-    order = 0;
-  for (i = -HOMmax; i <= HOMmax; i++)
-    if (M->bn[i+HOMmax] != 0e0 && abs(i) > order) order = abs(i);
-
-  return order;
-}
-
-
 void Mpole_Init(int Fnum)
 {
   int         i;
@@ -1539,7 +1524,8 @@ void Mpole_Pass(CellType &Cell, ss_vect<T> &x)
   ElemType   *elem;
   MpoleType  *M;
 
-  M = Cell.Elem;
+  elem = Cell.Elem;
+  M = static_cast<MpoleType*>(elem);
 
   /* Global -> Local */
   GtoL(x, Cell.dS, Cell.droll, M->c0, M->c1, M->s1);
@@ -1652,7 +1638,7 @@ void Marker_Pass(CellType &Cell, ss_vect<T> &X)
 {
   ElemType *elem;
 
-  elem = &Cell.Elem;
+  elem = Cell.Elem;
   /* Global -> Local */
   GtoL(X, Cell.dS, Cell.droll, 0e0, 0e0, 0e0);
   /* Local -> Global */
@@ -1663,11 +1649,10 @@ void Marker_Pass(CellType &Cell, ss_vect<T> &X)
 template<typename T>
 void Cav_Pass(CellType &Cell, ss_vect<T> &X)
 {
-  ElemType    *elem;
   CavityType  *C;
   T           delta;
 
-  C = &Cell.Elem;
+  C = static_cast<CavityType*>(Cell.Elem);
   if (globval.Cavity_on && C->volt != 0e0) {
     delta = -C->volt/(globval.Energy*1e9)
             *sin(2.0*M_PI*C->freq/c0*X[ct_]+C->phi);
@@ -1683,7 +1668,6 @@ void Cav_Pass(CellType &Cell, ss_vect<T> &X)
 template<typename T>
 inline void get_Axy(const WigglerType *W, const double z,
 		    ss_vect<T> &x, T AxoBrho[], T AyoBrho[])
-
 {
   int     i;
   double  ky, kz_n;
@@ -1794,7 +1778,7 @@ inline void get_Axy_map(const FieldMapType *FM, const double z,
 */
 
 template<typename T>
-void Wiggler_pass_EF(const ElemType *elem, ss_vect<T> &x)
+void Wiggler_pass_EF(ElemType *elem, ss_vect<T> &x)
 {
   // First order symplectic integrator for wiggler using expanded Hamiltonian
 
@@ -2021,7 +2005,7 @@ inline void get_Axy_EF3(const WigglerType *W, const double z,
 
 
 template<typename T>
-void Wiggler_pass_EF3(const ElemType *elem, ss_vect<T> &x)
+void Wiggler_pass_EF3(ElemType *elem, ss_vect<T> &x)
 {
   /* Second order symplectic integrator for insertion devices based on:
 
@@ -2033,7 +2017,7 @@ void Wiggler_pass_EF3(const ElemType *elem, ss_vect<T> &x)
   WigglerType *W;
   T           hd, AxoBrho, AyoBrho, dAxoBrho[3], dAyoBrho[3], dpy, dpx, B[3];
 
-  W = static_cast<WigglerType*>(elem);
+  W = static_cast<const WigglerType*>(elem);
 
   h = elem->L/W->n; z = 0e0;
   for (i = 1; i <= W->n; i++) {
@@ -2099,7 +2083,7 @@ void Wiggler_Pass(CellType &Cell, ss_vect<T> &X)
   WigglerType *W;
   ss_vect<T>  X1;
 
-  elem = &Cell.Elem;
+  elem = Cell.Elem;
   W = static_cast<WigglerType*>(elem);
   GtoL(X, Cell.dS, Cell.droll, 0e0, 0e0, 0e0);
   switch (W->method) {
@@ -2786,7 +2770,7 @@ void Insertion_Pass(CellType &Cell, ss_vect<T> &x)
   int           i = 0;
   bool          outoftable = false;
 
-  elem = &Cell.Elem; ID = static_cast<InsertionType*>(elem);
+  elem = Cell.Elem; ID = static_cast<InsertionType*>(elem);
   Nslice = ID->n;
 
   if (ID->linear) {
@@ -2839,7 +2823,7 @@ void Insertion_Pass(CellType &Cell, ss_vect<T> &x)
 
 
 template<typename T>
-void sol_pass(const ElemType &elem, ss_vect<T> &x)
+void sol_pass(ElemType *elem, ss_vect<T> &x)
 {
   int          i;
   double       h, z;
@@ -2847,7 +2831,7 @@ void sol_pass(const ElemType &elem, ss_vect<T> &x)
   T            hd, AxoBrho, AyoBrho, dAxoBrho[3], dAyoBrho[3], dpy, dpx, B[3];
 
   Sol = static_cast<SolenoidType*>(elem);
-  h = elem.L/Sol->n; z = 0e0;
+  h = elem->L/Sol->n; z = 0e0;
 
   for (i = 1; i <= Sol->n; i++) {
     hd = h/(1e0+x[delta_]);
@@ -3250,7 +3234,8 @@ void Mpole_Setdroll(int Fnum, int Knum)
   MpoleType *M;
 
   cell = &Cell[ElemFam[Fnum-1].KidList[Knum-1]];
-  M = static_cast<MpoleType*>(cell->Elem);
+  elem = cell->Elem;
+  M = static_cast<MpoleType*>(elem);
   cell->droll[0] =
     cos(dtor(M->rollpar + M->rollsys + M->rollrms*M->rollrnd));
   cell->droll[1] = sin(
@@ -3363,7 +3348,114 @@ template void rk4_(const CellType &, const ss_vect<tps> &, const ss_vect<tps>,
 		   const double, const double, ss_vect<tps> &,
 		   void (*derivs)(const CellType &, const double,
 				  const ss_vect<tps> &, ss_vect<tps> &));
+
+
 template void FieldMap_pass_RK(CellType &, ss_vect<double> &, int k);
 template void FieldMap_pass_RK(CellType &, ss_vect<tps> &, int k);
 template void FieldMap_pass_SI(CellType &, ss_vect<double> &, int k);
 template void FieldMap_pass_SI(CellType &, ss_vect<tps> &, int k);
+
+
+template void GtoL(ss_vect<double> &, Vector2 &, Vector2 &,
+		   const double, const double, const double);
+
+template void GtoL(ss_vect<tps> &, Vector2 &, Vector2 &,
+		   const double, const double, const double);
+
+template void LtoG(ss_vect<tps> &, Vector2 &, Vector2 &,
+		   double, double, double);
+
+template void LtoG(ss_vect<double> &, Vector2 &, Vector2 &,
+		   double, double, double);
+
+template void p_rot(double, ss_vect<double> &);
+
+template void p_rot(double, ss_vect<tps> &);
+
+template void get_B2(const double, const double [], const ss_vect<double> &,
+		     double &, double &);
+
+template void get_B2(const double, const tps [], const ss_vect<tps> &,
+		     tps &, tps &);
+
+template void radiate(ss_vect<double> &, const double, const double,
+		      const double []);
+
+template void radiate(ss_vect<tps> &, const double, const double,
+		      const tps []);
+
+template void radiate_ID(ss_vect<double> &, const double, const double &);
+
+template void radiate_ID(ss_vect<tps> &, const double, const tps &);
+
+template void Drift(double, ss_vect<double> &);
+
+template void Drift(double, ss_vect<tps> &);
+
+template void Marker_Pass(CellType &, ss_vect<double> &);
+
+template void Marker_Pass(CellType &, ss_vect<tps> &);
+
+template void Drift_Pass(CellType &, ss_vect<double> &);
+
+template void Drift_Pass(CellType &, ss_vect<tps> &);
+
+template void bend_fringe(double, ss_vect<double> &);
+
+template void bend_fringe(double, ss_vect<tps> &);
+
+template void EdgeFocus(double, double, double, ss_vect<double> &);
+
+template void EdgeFocus(double, double, double, ss_vect<tps> &);
+
+template void quad_fringe(double, ss_vect<double> &);
+
+template void quad_fringe(double, ss_vect<tps> &);
+
+template void thin_kick(int, double [], double, double, double,
+			ss_vect<double> &);
+
+template void thin_kick(int, double [], double, double, double,
+			ss_vect<tps> &);
+
+template void Mpole_Pass(CellType &, ss_vect<double> &);
+
+template void Mpole_Pass(CellType &, ss_vect<tps> &);
+
+template void Cav_Pass(CellType &, ss_vect<double> &);
+
+template void Cav_Pass(CellType &, ss_vect<tps> &);
+
+template void Wiggler_pass_EF(ElemType *, ss_vect<double> &);
+
+template void Wiggler_pass_EF(ElemType *, ss_vect<tps> &);
+
+template void Wiggler_pass_EF2(int, double, double, double, double,
+			       double, double, double, ss_vect<double> &);
+
+template void Wiggler_pass_EF2(int, double, double, double, double,
+			       double, double, double, ss_vect<tps> &);
+
+template void Wiggler_pass_EF3(ElemType *, ss_vect<double> &);
+
+template void Wiggler_pass_EF3(ElemType *, ss_vect<tps> &);
+
+template void Wiggler_Pass(CellType &, ss_vect<double> &);
+
+template void Wiggler_Pass(CellType &, ss_vect<tps> &);
+
+template void Insertion_Pass(CellType &, ss_vect<double> &);
+
+template void Insertion_Pass(CellType &, ss_vect<tps> &);
+
+template void FieldMap_Pass(CellType &, ss_vect<double> &);
+
+template void FieldMap_Pass(CellType &, ss_vect<tps> &);
+
+template void sol_pass(ElemType *, ss_vect<double> &);
+
+template void sol_pass(ElemType *, ss_vect<tps> &);
+
+template void Solenoid_Pass(CellType &, ss_vect<double> &);
+
+template void Solenoid_Pass(CellType &, ss_vect<tps> &);

@@ -1006,36 +1006,39 @@ void AssignHOM(long elem,  double *B, bool * BA )
   }
 */
 
-bool CheckWiggler( long i)
+bool CheckWiggler(long i)
 {
-  bool         Result;
-  double       a, Lambda, L, diff;
-  long         NN;
-  ElemFamType  *ElemFam;
-  ElemType     *Elem;
-  WigglerType  *M;
+  bool        result;
+  double      a, Lambda, L, diff;
+  long        NN;
+  ElemType    *elem;
+  WigglerType *W;
 
-  Result = false;
-  ElemFam = &ElemFam[i-1];
-  Elem = ElemFam->Elem;
-  Lambda = M->lambda;
-  L = Elem->L; a = L/Lambda;
+  result = false;
+  elem = ElemFam[i-1].Elem;
+
+  W = static_cast<WigglerType*>(elem);
+
+  Lambda = W->lambda; L = elem->L; a = L/Lambda;
   NN = (long)floor(a+0.01+0.5);
   diff = fabs((L-NN*Lambda)/L);
   if (diff < 1e-5) return true;
-  cerr << endl << ">>> Incorrect definition of " << Elem->name << endl;
-  cerr         << "    L      ( total length ) = " << L << endl;           //%20.12f [m]\n", L);
-  cerr         << "    Lambda ( wave  length ) = " << Lambda << endl;      //%20.12f [m]\n", L);
-  cerr         << "    # of Period = L /Lambda = " << L/Lambda << "?????" << endl;     //
+  cerr << endl << ">>> Incorrect definition of " << elem->name << endl;
+  cerr << "    L      ( total length ) = " << L << endl;
+  //%20.12f [m]\n", L);
+  cerr         << "    Lambda ( wave  length ) = " << Lambda << endl;
+  //%20.12f [m]\n", L);
+  cerr << "    # of Period = L /Lambda = " << L/Lambda << "?????" << endl;
+
   return false;
 }
-/*
-  static void CheckWiggler(long i, struct LOC_Lat_DealElement *LINK)
-  {
-  if (!Lat_CheckWiggler(LINK->fo, i, LINK->LINK))
-  longjmp(LINK->_JL9999, 1);
-  }
-*/
+
+
+// static void CheckWiggler(long i, struct LOC_Lat_DealElement *LINK)
+// {
+//   if (!Lat_CheckWiggler(LINK->fo, i, LINK->LINK))
+//     longjmp(LINK->_JL9999, 1);
+// }
 
 
 long CheckElementtable(const string name)
@@ -1128,8 +1131,8 @@ double Circumference()
 
 void RegisterKids()
 {
-  long i, FORLIM;
-  ElemFamType *ElemFam;
+  long        i, FORLIM;
+  ElemFamType *elemfam;
 
   if (setjmp(env0)) return;
   if (globval.Elem_nFam <= Elem_nFamMax) {
@@ -1144,17 +1147,16 @@ void RegisterKids()
 
   FORLIM = globval.Cell_nLoc;
   for (i = 1; i <= FORLIM; i++) {
-    ElemFam = &ElemFam[Cell[i].Fnum - 1];
-    ElemFam->nKid++;
-    if (ElemFam->nKid <= nKidMax) {
-      ElemFam->KidList[ElemFam->nKid - 1] = i;
-      Cell[i].Knum = ElemFam->nKid;
-    } else
-      {
+    elemfam = &ElemFam[Cell[i].Fnum-1];
+    elemfam->nKid++;
+    if (elemfam->nKid <= nKidMax) {
+      elemfam->KidList[elemfam->nKid-1] = i;
+      Cell[i].Knum = elemfam->nKid;
+    } else  {
 	cerr << "Elem_nFamMax exceeded: "
-	     << ElemFam->nKid << "(" << nKidMax << ")" << endl;
+	     << elemfam->nKid << "(" << nKidMax << ")" << endl;
 	longjmp(env0, 1);
-      }
+    }
   }
 }
 

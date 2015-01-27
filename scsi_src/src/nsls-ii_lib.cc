@@ -1260,12 +1260,12 @@ void misalign_sys_girders(const int gs, const int ge,
   misalign_sys_fam(gs, dx_sys, dy_sys, dr_sys);
   misalign_sys_fam(ge, dx_sys, dy_sys, dr_sys);
 
-  M_gs = static_cast<MpoleType*>(Cell[loc_gs].Elem);
-  M_ge = static_cast<MpoleType*>(Cell[loc_ge].Elem);
-
   for (i = 1; i <= n_girders; i++) {
     loc_gs = Elem_GetPos(gs, i); loc_ge = Elem_GetPos(ge, i);
     s_gs = Cell[loc_gs].S; s_ge = Cell[loc_ge].S;
+
+    M_gs = static_cast<MpoleType*>(Cell[loc_gs].Elem);
+    M_ge = static_cast<MpoleType*>(Cell[loc_ge].Elem);
 
     // roll for a rigid boby
     // Note, girders needs to be introduced as gs->ge pairs
