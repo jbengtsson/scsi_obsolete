@@ -256,24 +256,28 @@ bool GetCOD(long imax, double eps, double dP, long &lastpos)
 
 void Cell_Init(void)
 {
-  long         i;
-  double       Stotal;
-  ElemFamType  *elemfam;
-  ElemType     *elem;
+  long       i;
+  double     Stotal;
+  ElemType   *elem;
+  MarkerType *Mrk;
 
-  char  first_name[] = "begin          ";
+  const char first_name[] = "begin          ";
 
   if (debug)
-    printf("**  Cell_Init\n");
+    printf("** Cell_Init\n");
 
-  SI_init();  /* Initializes the constants for symplectic integrator */
+  SI_init();
+
+  // Initialize the first element (marker) in lattice.
+  Mrk = new MarkerType::MarkerType();
+  elem = dynamic_cast<ElemType*>(Mrk);
+  Cell[0].Elem = elem;
+  elem->kind = ElemKind(marker);
 
   memcpy(Cell[0].Elem->name, first_name, sizeof(first_name));
 
   for (i = 1; i <= globval.Elem_nFam; i++) {
-    elemfam  = &ElemFam[i-1]; /* Get 1 of all elements stored in ElemFam
-				  array */
-    elem = elemfam->Elem; // For switch structure: choice on element type
+    elem = ElemFam[i-1].Elem;
     if (debug)
       printf("Cell_Init, i:=%3ld: %*s\n", i, SymbolLength, elem->name);
     switch (elem->kind) {
@@ -323,9 +327,10 @@ void Cell_Init(void)
     }
   }
 
-  /* Computes s-location of each element in the structure */
+  // Evaluate the elementw s-location.
   Stotal = 0e0;
   for (i = 0; i <= globval.Cell_nLoc; i++) {
+    printf("%ld\n", i);
     Stotal += Cell[i].Elem->L; Cell[i].S = Stotal;
   }
 }
