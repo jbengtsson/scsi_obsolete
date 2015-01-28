@@ -26,7 +26,7 @@ void GetCODEPS();  /* define COD precision */
 void GetDP();      /* define energy offset */
 bool CheckWiggler(long i);
 void ClearHOM(double *B, bool *BA);
-void AssignHOM(long elem,  double *B, bool * BA );
+void AssignHOM(long elem,  double *B, bool *BA);
 long CheckElementtable(const string name);
 // void AssignHarm(long elem, int *harm, double * kxV, double * BoBrhoV, double * kxH, double * BoBrhoH, double * phi);
 
@@ -249,7 +249,6 @@ bool Lattice_Read(const char *fi_)
       //    case dbnsym:
       //      GetDBN_(&V);
       //      break;
-
       //              +   +
       globval.Elem_nFam++;
       if (globval.Elem_nFam <= Elem_nFamMax) {
@@ -263,18 +262,16 @@ bool Lattice_Read(const char *fi_)
 	elem->L = QL;
 
 
-	M->method = k2;
-	M->n = k1;
-	if (M->L != 0e0)
-	  M->irho = t * M_PI / 180e0 / M->L;
-	else
-	  M->irho = t * M_PI / 180e0;
+	M->method = k2;	M->n = k1;
+	M->irho = (M->L != 0e0)? t*M_PI/180e0/M->L : t*M_PI/180e0;
 	M->tx1 = t1; M->tx2 = t2; M->gap = gap;
-	M->n_design = Dip;
+	M->n_design = Dip; M->order = Dip;
+	M->bnpar[HOMmax+Quad] = QK;
+	if (QK != 0e0) M->order = Quad;
+	M->rollpar = dt;
 	AssignHOM(globval.Elem_nFam, B, BA);
 	//      SetDBN(&V);
 	//          +   +   +   +
-	M->bnpar[HOMmax+2] = QK; M->rollpar = dt;
       } else {
 	cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam
 	     << "(" << (long)Elem_nFamMax << ")" << endl;
@@ -328,10 +325,11 @@ bool Lattice_Read(const char *fi_)
 	memcpy(elem->name, (*i).c_str(), (*i).length());
 	elem->L = QL;
 
-	M->method = k2;	M->n = k1; M->rollpar = dt;
-	AssignHOM(globval.Elem_nFam, B,BA);
+	M->method = k2;	M->n = k1;
+	M->n_design = Quad;  M->order = Quad; M->bnpar[HOMmax+Quad] = QK;
+	M->rollpar = dt;
+	AssignHOM(globval.Elem_nFam, B, BA);
 	//    SetDBN(&V);
-	M->n_design = Quad; M->bnpar[HOMmax+2] = QK;
       } else {
 	cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam
 	     << "(" << (long)Elem_nFamMax << ")" << endl;
@@ -386,14 +384,11 @@ bool Lattice_Read(const char *fi_)
 	elem->L = QL;
 
 	M->method = k2; M->n = k1;
-	if (M->L != 0e0)
-	  M->thick = thicktype(thick);
-	else
-	  M->thick = thicktype(thin);
-	M->rollpar = dt; M->n_design = Sext;
+	M->thick = (M->L != 0e0)? thicktype(thick) : thicktype(thin);
+	M->n_design = Sext; M->order = Sext; M->bnpar[HOMmax+Sext] = QK;
+	M->rollpar = dt;
 	AssignHOM(globval.Elem_nFam, B, BA);
 	//    SetDBN(&V);
-	M->bnpar[HOMmax + 3] = QK;
       } else {
 	cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam
 	     << "(" << (long)Elem_nFamMax << ")" << endl;
@@ -474,13 +469,8 @@ bool Lattice_Read(const char *fi_)
 	elem->L = QL;
 
 	//    SetDBN(&V);
-	if (elem->L != 0e0)
-	  M->thick = thicktype(thick);
-	else
-	  M->thick = thicktype(thin);
-	M->method = k2;
-	M->n = k1;
-	M->rollpar = dt;
+	M->thick = (elem->L != 0e0)? thicktype(thick) : thicktype(thin);
+	M->method = k2;	M->n = k1; M->rollpar = dt;
       } else {
 	cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam
 	     << "(" << (long)Elem_nFamMax << ")" << endl;
@@ -562,17 +552,15 @@ bool Lattice_Read(const char *fi_)
 	longjmp(env0, 1);
 
       if (GLPS_SUCCESS==glps_read(*i,"hom",vec))
-	for (int k=0; k<(int)vec.size()/3;k++)
-	  {
-	    long order = (long) floor(vec[3*k] + 0.5);
-	    if (order < 1 || order > HOMmax) {
-	      cerr << "invalide value detected" << endl;
-	      longjmp(env0, 1);
-	    }
-	    BA[order+HOMmax] = true; BA[HOMmax-order] = true;
-	    B[order+HOMmax] = vec[3*k+1]; B[HOMmax-order] = vec[3*k+2];
+	for (int k=0; k<(int)vec.size()/3;k++) {
+	  long order = (long) floor(vec[3*k] + 0.5);
+	  if (order < 1 || order > HOMmax) {
+	    cerr << "invalide value detected" << endl;
+	    longjmp(env0, 1);
 	  }
-
+	  BA[order+HOMmax] = true; BA[HOMmax-order] = true;
+	  B[order+HOMmax] = vec[3*k+1]; B[HOMmax-order] = vec[3*k+2];
+	}
 
       //    case dbnsym:
       //      GetDBN_(&V);
@@ -598,8 +586,8 @@ bool Lattice_Read(const char *fi_)
 	  M->irho = t * M_PI / 180e0;
 	}
 	M->n = k1; M->method = k2; M->tx1 = t1; M->tx2 = t2; M->gap = gap;
-	M->rollpar = dt; M->n_design = M->order;
-	AssignHOM(globval.Elem_nFam, B,BA);
+	AssignHOM(globval.Elem_nFam, B, BA);
+	M->n_design = M->order; M->rollpar = dt;
 	//    SetDBN(&V);
       } else {
 	cerr << "Elem_nFamMax exceeded: " << globval.Elem_nFam
@@ -643,8 +631,6 @@ bool Lattice_Read(const char *fi_)
 	    phi[n] = vec[6*n+5];
 	  }
 
-
-
       //   case dbnsym:
       //     GetDBN_(&V);
       //     break;
@@ -687,7 +673,7 @@ bool Lattice_Read(const char *fi_)
 	longjmp(env0, 1);
       }
       break;
-    case  10: //Fieldmap
+    case  10: //FieldMap
       QL = 0e0; k1 = 0;
       if (GLPS_SUCCESS==glps_read(*i,"l",val)) QL = val;
       if (GLPS_SUCCESS==glps_read(*i,"t",val)) t = val;
@@ -721,8 +707,7 @@ bool Lattice_Read(const char *fi_)
 	longjmp(env0, 1);
       }
       break;
-
-    case   11: // insertion
+    case   11: // Insertion
       QK  = 0e0; QKxV = 0e0; QKS = 0e0;
       k1  = 1;
       k2  = 1;       // linear interpolation by default
@@ -973,7 +958,7 @@ void ClearHOM(double *B, bool *BA)
 }
 
 
-void AssignHOM(long elem,  double *B, bool * BA )
+void AssignHOM(long elem,  double *B, bool *BA)
 {
   long      i;
   MpoleType *M;

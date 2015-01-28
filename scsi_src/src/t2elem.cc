@@ -155,8 +155,8 @@ void Marker_Init(int Fnum)
   MarkerType  *Mrk;
 
   elemfam = &ElemFam[Fnum-1];
-  for (i = 0; i < elemfam->nKid; i++) {
-    cell = &Cell[elemfam->KidList[i]];
+  for (i = 1; i <= elemfam->nKid; i++) {
+    cell = &Cell[elemfam->KidList[i-1]];
     Mrk = new MarkerType::MarkerType();
     cell->Elem = dynamic_cast<ElemType*>(Mrk);
     // Copying of struct/class is provided by compiler.
@@ -2896,15 +2896,15 @@ void SI_init(void)
   c_1 = 1e0/(2e0*(2e0-thirdroot(2e0))); c_2 = 0.5e0 - c_1;
   d_1 = 2e0*c_1; d_2 = 1e0 - 2e0*d_1;
 
-  // classical radiation
+  // Classical radiation.
   // C_gamma = 4*pi*r_e [m]/(3*(m_e [GeV/c^2] *c^2)^3)
   C_gamma = 4.0*M_PI*r_e/(3.0*cube(1e-9*m_e));
   // P_gamma = e^2*c^3/(2*pi)*C_gamma*(E [GeV])^2*(B [T])^2
   // p_s = P_s/P, E = P*c, B/(Brho) = p/e
   cl_rad = C_gamma*cube(globval.Energy)/(2.0*M_PI);
 
-  // eletron rest mass [GeV]: slightly off???
-//  m_e_ = 0.5110034e-03;
+  // Eletron rest mass [GeV]: slightly off???
+  //  m_e_ = 0.5110034e-03;
   // quantum fluctuations
   C_u = 55.0/(24.0*sqrt(3.0));
   q_fluct =
