@@ -29,8 +29,6 @@ void Recombiner_Init(int Fnum);
 void Solenoid_Init(int Fnum);
 
 
-double det_mat(const int n, double **A);
-
 template<typename T>
 T get_p_s(const ss_vect<T> &);
 

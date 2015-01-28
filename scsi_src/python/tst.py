@@ -17,13 +17,15 @@ print globval.radiation
 
 sys.stdout.write('\n')
 for k in range(0, 5):
-    sys.stdout.write('%14.6e %14.6e\n' % (Cell[k].Beta[X_], Cell[k].Beta[Y_]))
-
+    sys.stdout.write('%10s %10s %14.6e %14.6e\n' %
+                     (pyscsi.gv.Cell[k].Elem.name,
+                      Cell[k].Elem.name, Cell[k].Beta[X_], Cell[k].Beta[Y_]))
 
 Fnum = pyscsi.ElemIndex('SL1G2C01A'); loc = pyscsi.Elem_GetPos(Fnum, 1)
 
 print
-print Cell[loc].Elem.name, Cell[loc].Elem.kind
+print loc
+print pyscsi.gv.Cell[loc].Elem.name, Cell[loc].Elem.kind
 print Cell[loc].Elem.deref('M').method, Cell[loc].Elem.deref('M').n
 print Cell[loc].Elem.deref('M').order, Cell[loc].Elem.deref('M').n_design, \
       Cell[loc].Elem.deref('M').thick, \
