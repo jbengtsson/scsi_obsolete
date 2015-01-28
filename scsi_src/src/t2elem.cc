@@ -191,7 +191,7 @@ void Drift_Init(int Fnum)
 
 void Mpole_Init(int Fnum)
 {
-  int         i;
+  int         i, j;
   ElemFamType *elemfam;
   CellType    *cell;
   MpoleType   *M;
@@ -206,6 +206,9 @@ void Mpole_Init(int Fnum)
     // Initialize Galilean misalignment group.
     cell->droll[0] = 1e0; cell->droll[1] = 0e0;
     cell->dS[0] = 0e0; cell->dS[1] = 0e0;
+    // Initialize total multipole strengths.
+    for (j = Dip; j <= M->order; j++)
+      Mpole_Setbn(Fnum, i, j);
   }
 }
 
@@ -3101,11 +3104,6 @@ void MulLsMat(Matrix &A, Matrix &B)
 
 void Mpole_Setbn(int Fnum, int Knum, int Order)
 {
-  /* called by Cell_SetdP
-     Compute full multipole composent as sum of design, systematic
-     and random part
-     Set multipole order to Order if multipole (Order >2)                     */
-
   MpoleType *M;
 
   M = static_cast<MpoleType*>(Cell[ElemFam[Fnum-1].KidList[Knum-1]].Elem);
