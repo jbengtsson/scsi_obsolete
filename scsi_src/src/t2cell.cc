@@ -273,13 +273,20 @@ void Cell_Init(void)
   elem = dynamic_cast<ElemType*>(Mrk);
   Cell[0].Elem = elem;
   elem->kind = ElemKind(marker);
-
   memcpy(Cell[0].Elem->name, first_name, sizeof(first_name));
+  elem->L = 0e0;
+  // Initialize Galilean misalignment group.
+  Cell[0].droll[0] = 1e0; Cell[0].droll[1] = 0e0;
+  Cell[0].dS[0] = 0e0; Cell[0].dS[1] = 0e0;
+
+  if (debug) printf("Cell_Init: %3ld %*s %2d %5.3f\n",
+		    0L, SymbolLength, elem->name, elem->kind, elem->L);
 
   for (i = 1; i <= globval.Elem_nFam; i++) {
     elem = ElemFam[i-1].Elem;
     if (debug)
-      printf("Cell_Init, i:=%3ld: %*s\n", i, SymbolLength, elem->name);
+      printf("Cell_Init: %3ld %*s %2d %5.3f\n",
+	     i, SymbolLength, elem->name, elem->kind, elem->L);
     switch (elem->kind) {
     case drift:
       Drift_Init(i);
@@ -327,10 +334,9 @@ void Cell_Init(void)
     }
   }
 
-  // Evaluate the elementw s-location.
+  // Evaluate the elements s-location.
   Stotal = 0e0;
   for (i = 0; i <= globval.Cell_nLoc; i++) {
-    printf("%ld\n", i);
     Stotal += Cell[i].Elem->L; Cell[i].S = Stotal;
   }
 }

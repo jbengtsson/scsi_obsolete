@@ -521,6 +521,7 @@ bool Lattice_Read(const char *fi_)
 	elem = dynamic_cast<ElemType*>(M);
 	ElemFam[globval.Elem_nFam-1].Elem = elem;
 
+	elem->kind = ElemKind(marker);
 	memset(elem->name,0,sizeof(partsName));
 	memcpy(elem->name, (*i).c_str(), (*i).length());
 	//    memcpy(elem->name, elementName, sizeof(partsName));
@@ -1041,7 +1042,7 @@ bool CheckWiggler(long i)
 long CheckElementtable(const string name)
 {
   /* globval.Elem_nFam = Number of parts in a Element */
-  long  i, j, FORLIM;
+  long int i, j;
 
   j = 0;
   if (globval.Elem_nFam > Elem_nFamMax) {
@@ -1052,9 +1053,8 @@ long CheckElementtable(const string name)
 
   //  if (strstr(LINK->line,"insertion") != NULL) return 0;
 
-  FORLIM = globval.Elem_nFam;
-  for (i = 1; i <= FORLIM; i++) {
-   //  if (!strncmp(ElemFam[i-1].Elem->name, name.c_str(), name.length()))
+  for (i = 1; i <= globval.Elem_nFam; i++) {
+    //  if (!strncmp(ElemFam[i-1].Elem->name, name.c_str(), name.length()))
     if (!strcmp(ElemFam[i-1].Elem->name, name.c_str()))
       j = i;
   }

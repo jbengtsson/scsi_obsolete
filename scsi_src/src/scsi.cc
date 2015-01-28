@@ -125,7 +125,7 @@ template void Cell_Pass(const long, const long, ss_vect<tps> &, long &);
 globvalrec globval;
 
 statusrec status;
-bool trace, traceID;
+bool trace, traceID, debug = false;
 bool cellconcat;
 
 /* Random stuff */

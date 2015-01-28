@@ -18,8 +18,6 @@
 # define LONG_MIN   (~LONG_MAX)
 #endif
 
-#define debug           false
-
 #define S_SIZE 200 // Max size for file name of a lattice file.
 
 #define nv_             6
@@ -104,7 +102,7 @@ typedef struct statusrec{
 
 extern bool  stable;
 extern bool  ErrFlag;
-extern bool  trace, traceID;
+extern bool  trace, traceID, debug;
 
 extern str80  finame,   /* input  data file  */
               foname,   /* output data file */

@@ -101,7 +101,8 @@ InsertionType::InsertionType(void)
     tabz[j] = 0e0;
 
   // filenames
-  strcpy(fname1,""); strcpy(fname2,"");
+
+  strcpy(fname1, ""); strcpy(fname2, "");
 
 //  kx = 0e0;
   for (j = 0; j <= 1; j++) {
@@ -124,7 +125,7 @@ FieldMapType::FieldMapType(void)
 
 SpreaderType::SpreaderType(void)
 {
-  int     k;
+  int k;
 
   for (k = 0; k < Spreader_max; k++)
     Cell_ptrs[k] = NULL;
@@ -149,16 +150,17 @@ SolenoidType::SolenoidType(void)
 void Marker_Init(int Fnum)
 {
   int         i;
-  ElemFamType *elamfam;
-  ElemType    *elem;
+  ElemFamType *elemfam;
   CellType    *cell;
+  MarkerType  *Mrk;
 
-  elamfam = &ElemFam[Fnum-1];
-  for (i = 0; i < elamfam->nKid; i++) {
-    cell = &Cell[elamfam->KidList[i]];
-    elem = dynamic_cast<ElemType*>(new MarkerType::MarkerType());
+  elemfam = &ElemFam[Fnum-1];
+  for (i = 0; i < elemfam->nKid; i++) {
+    cell = &Cell[elemfam->KidList[i]];
+    Mrk = new MarkerType::MarkerType();
+    cell->Elem = dynamic_cast<ElemType*>(Mrk);
     // Copying of struct/class is provided by compiler.
-    cell->Elem = elamfam->Elem;
+    *Mrk = *static_cast<MarkerType*>(elemfam->Elem);
     // Initialize Galilean misalignment group.
     cell->droll[0] = 1e0; cell->droll[1] = 0e0;
     cell->dS[0] = 0e0; cell->dS[1] = 0e0;
@@ -169,16 +171,17 @@ void Marker_Init(int Fnum)
 void Drift_Init(int Fnum)
 {
   int         i;
-  CellType    *cell;
   ElemFamType *elemfam;
-  ElemType    *elem;
+  CellType    *cell;
+  DriftType   *D;
 
   elemfam = &ElemFam[Fnum-1];
   for (i = 1; i <= elemfam->nKid; i++) {
     cell = &Cell[elemfam->KidList[i-1]];
-    elem = dynamic_cast<ElemType*>(new DriftType::DriftType());
+    D = new DriftType::DriftType();
+    cell->Elem = dynamic_cast<ElemType*>(D);
     // Copying of struct/class is provided by compiler.
-    *elem = *elemfam->Elem;
+    *D = *static_cast<DriftType*>(elemfam->Elem);
     // Initialize Galilean misalignment group.
     cell->droll[0] = 1e0; cell->droll[1] = 0e0;
     cell->dS[0] = 0e0; cell->dS[1] = 0e0;
@@ -190,15 +193,16 @@ void Mpole_Init(int Fnum)
 {
   int         i;
   ElemFamType *elemfam;
-  ElemType    *elem;
   CellType    *cell;
+  MpoleType   *M;
 
   elemfam = &ElemFam[Fnum-1];
   for (i = 1; i <= elemfam->nKid; i++) {
     cell = &Cell[elemfam->KidList[i-1]];
-    elem = dynamic_cast<ElemType*>(new MpoleType::MpoleType());
+    M = new MpoleType::MpoleType();
+    cell->Elem = dynamic_cast<ElemType*>(M);
     // Copying of struct/class is provided by compiler.
-    *elem = *elemfam->Elem;
+    *M = *static_cast<MpoleType*>(elemfam->Elem);
     // Initialize Galilean misalignment group.
     cell->droll[0] = 1e0; cell->droll[1] = 0e0;
     cell->dS[0] = 0e0; cell->dS[1] = 0e0;
@@ -210,15 +214,16 @@ void Cav_Init(int Fnum)
 {
   int         i;
   ElemFamType *elemfam;
-  ElemType    *elem;
   CellType    *cell;
+  CavityType  *C;
 
   elemfam = &ElemFam[Fnum-1];
   for (i = 1; i <= elemfam->nKid; i++) {
     cell = &Cell[elemfam->KidList[i-1]];
-    elem = dynamic_cast<ElemType*>(new CavityType::CavityType());
+    C = new CavityType::CavityType();
+    cell->Elem = dynamic_cast<ElemType*>(C);
     // Copying of struct/class is provided by compiler.
-    *elem = *elemfam->Elem;
+    *C = *static_cast<CavityType*>(elemfam->Elem);
     // Initialize Galilean misalignment group.
     cell->droll[0] = 1e0; cell->droll[1] = 0e0;
     cell->dS[0] = 0e0; cell->dS[1] = 0e0;
@@ -230,15 +235,16 @@ void Wiggler_Init(int Fnum)
 {
   int         i;
   ElemFamType *elemfam;
-  ElemType    *elem;
   CellType    *cell;
+  WigglerType *W;
 
   elemfam = &ElemFam[Fnum-1];
   for (i = 1; i <= elemfam->nKid; i++) {
     cell = &Cell[elemfam->KidList[i-1]];
-    elem = dynamic_cast<ElemType*>(new WigglerType::WigglerType());
+    W = new WigglerType::WigglerType();
+    cell->Elem = dynamic_cast<ElemType*>(W);
     // Copying of struct/class is provided by compiler.
-    *elem = *elemfam->Elem;
+    *W = *static_cast<WigglerType*>(elemfam->Elem);
     // Initialize Galilean misalignment group.
     cell->droll[0] = 1e0; cell->droll[1] = 0e0;
     cell->dS[0] = 0e0; cell->dS[1] = 0e0;
@@ -248,17 +254,18 @@ void Wiggler_Init(int Fnum)
 
 void Insertion_Init(int Fnum)
 {
-  int         i;
-  ElemFamType *elemfam;
-  ElemType    *elem;
-  CellType    *cell;
+  int           i;
+  ElemFamType   *elemfam;
+  CellType      *cell;
+  InsertionType *ID;
 
   elemfam = &ElemFam[Fnum-1];
   for (i = 1; i <= elemfam->nKid; i++) {
     cell = &Cell[elemfam->KidList[i-1]];
-    elem = dynamic_cast<ElemType*>(new InsertionType::InsertionType());
+    ID = new InsertionType::InsertionType();
+    cell->Elem = dynamic_cast<ElemType*>(ID);
     // Copying of struct/class is provided by compiler.
-    *elem = *elemfam->Elem;
+    *ID = *static_cast<InsertionType*>(elemfam->Elem);
     // Initialize Galilean misalignment group.
     cell->droll[0] = 1e0; cell->droll[1] = 0e0;
     cell->dS[0] = 0e0; cell->dS[1] = 0e0;
@@ -268,17 +275,18 @@ void Insertion_Init(int Fnum)
 
 void FieldMap_Init(int Fnum)
 {
-  int         i;
-  ElemFamType *elemfam;
-  ElemType    *elem;
-  CellType    *cell;
+  int          i;
+  ElemFamType  *elemfam;
+  CellType     *cell;
+  FieldMapType *FM;
 
   elemfam = &ElemFam[Fnum-1];
   for (i = 1; i <= elemfam->nKid; i++) {
     cell = &Cell[elemfam->KidList[i-1]];
-    elem = dynamic_cast<ElemType*>(new FieldMapType::FieldMapType());
+    FM = new FieldMapType::FieldMapType();
+    cell->Elem = dynamic_cast<ElemType*>(FM);
     // Copying of struct/class is provided by compiler.
-    *elem = *elemfam->Elem;
+    *FM = *static_cast<FieldMapType*>(elemfam->Elem);
     // Initialize Galilean misalignment group.
     cell->droll[0] = 1e0; cell->droll[1] = 0e0;
     cell->dS[0] = 0e0; cell->dS[1] = 0e0;
@@ -288,17 +296,18 @@ void FieldMap_Init(int Fnum)
 
 void Spreader_Init(int Fnum)
 {
-  int         i;
-  ElemFamType *elemfam;
-  ElemType    *elem;
-  CellType    *cell;
+  int          i;
+  ElemFamType  *elemfam;
+  CellType     *cell;
+  SpreaderType *Spr;
 
   elemfam = &ElemFam[Fnum-1];
   for (i = 1; i <= elemfam->nKid; i++) {
     cell = &Cell[elemfam->KidList[i-1]];
-    elem = dynamic_cast<ElemType*>(new SpreaderType::SpreaderType());
+    Spr = new SpreaderType::SpreaderType();
+    cell->Elem = dynamic_cast<ElemType*>(Spr);
     // Copying of struct/class is provided by compiler.
-    *elem = *elemfam->Elem;
+    *Spr = *static_cast<SpreaderType*>(elemfam->Elem);
     // Initialize Galilean misalignment group.
     cell->droll[0] = 1e0; cell->droll[1] = 0e0;
     cell->dS[0] = 0e0; cell->dS[1] = 0e0;
@@ -308,17 +317,18 @@ void Spreader_Init(int Fnum)
 
 void Recombiner_Init(int Fnum)
 {
-  int         i;
-  ElemFamType *elemfam;
-  ElemType    *elem;
-  CellType    *cell;
+  int            i;
+  ElemFamType    *elemfam;
+  CellType       *cell;
+  RecombinerType *Rec;
 
   elemfam = &ElemFam[Fnum-1];
   for (i = 1; i <= elemfam->nKid; i++) {
     cell = &Cell[elemfam->KidList[i-1]];
-    elem = dynamic_cast<ElemType*>(new RecombinerType::RecombinerType());
+    Rec = new RecombinerType::RecombinerType();
+    cell->Elem = dynamic_cast<ElemType*>(Rec);
     // Copying of struct/class is provided by compiler.
-    *elem = *elemfam->Elem;
+    *Rec = *static_cast<RecombinerType*>(elemfam->Elem);
     // Initialize Galilean misalignment group.
     cell->droll[0] = 1e0; cell->droll[1] = 0e0;
     cell->dS[0] = 0e0; cell->dS[1] = 0e0;
@@ -328,17 +338,18 @@ void Recombiner_Init(int Fnum)
 
 void Solenoid_Init(int Fnum)
 {
-  int         i;
-  ElemFamType *elemfam;
-  ElemType    *elem;
-  CellType    *cell;
+  int          i;
+  ElemFamType  *elemfam;
+  CellType     *cell;
+  SolenoidType *Sol;
 
   elemfam = &ElemFam[Fnum-1];
   for (i = 1; i <= elemfam->nKid; i++) {
     cell = &Cell[elemfam->KidList[i-1]];
-    elem = dynamic_cast<ElemType*>(new SolenoidType::SolenoidType());
+    Sol = new SolenoidType::SolenoidType();
+    cell->Elem = dynamic_cast<ElemType*>(Sol);
     // Copying of struct/class is provided by compiler.
-    *elem = *elemfam->Elem;
+    *Sol = *static_cast<SolenoidType*>(elemfam->Elem);
     // Initialize Galilean misalignment group.
     cell->droll[0] = 1e0; cell->droll[1] = 0e0;
     cell->dS[0] = 0e0; cell->dS[1] = 0e0;
@@ -1086,6 +1097,17 @@ void LtoG(ss_vect<T> &X, Vector2 &S, Vector2 &R,
 
 
 template<typename T>
+void Marker_Pass(CellType &Cell, ss_vect<T> &x)
+{
+  ElemType *elem;
+
+  elem = Cell.Elem;
+  GtoL(x, Cell.dS, Cell.droll, 0e0, 0e0, 0e0);
+  LtoG(x, Cell.dS, Cell.droll, 0e0, 0e0, 0e0);
+}
+
+
+template<typename T>
 inline T get_p_s(const ss_vect<T> &x)
 {
   T  p_s, p_s2;
@@ -1124,81 +1146,6 @@ void Drift(double L, ss_vect<T> &x)
 
 template<typename T>
 void Drift_Pass(CellType &Cell, ss_vect<T> &x) { Drift(Cell.Elem->L, x); }
-
-
-void zero_mat(const int n, double** A)
-{
-  int  i, j;
-
-  for (i = 1; i <= n; i++)
-    for (j = 1; j <= n; j++)
-      A[i][j] = 0e0;
-}
-
-
-void identity_mat(const int n, double** A)
-{
-  int  i, j;
-
-  for (i = 1; i <= n; i++)
-    for (j = 1; j <= n; j++)
-      A[i][j] = (i == j)? 1e0 : 0e0;
-}
-
-
-double det_mat_gsl(const int n, gsl_matrix *tmpA)
-{
-  double det;
-  int signum;
-  gsl_permutation *p = gsl_permutation_alloc(n);
-
-  gsl_linalg_LU_decomp(tmpA , p , &signum);
-  det = gsl_linalg_LU_det(tmpA , signum);
-  gsl_permutation_free(p);
-  gsl_matrix_free(tmpA);
-
-  return det;
-}
-
-
-double det_mat(const int n, double **A)
-{
-  gsl_matrix *tmpA = gsl_matrix_alloc(n,n);
-  int ii,jj;
-  for (ii=1; ii <=n; ii++) {
-    for (jj=1; jj <=n; jj++){
-      gsl_matrix_set (tmpA, ii-1, jj-1, A[ii][jj]);
-    }
-  }
-
-  double d = det_mat_gsl(n,tmpA);
-  return d;
-}
-
-
-double trace_mat(const int n, double **A)
-{
-  int     i;
-  double  d;
-
-  d = 0e0;
-  for (i = 1; i <= n; i++)
-    d += A[i][i];
-
-  return d;
-}
-
-double trace_mat_gsl(const int n, gsl_matrix *m)
-{
-  int     i;
-  double  d;
-
-  d = 0e0;
-  for (i = 0; i < n; i++)
-    d += gsl_matrix_get(m, i, i);
-
-  return d;
-}
 
 
 // partial template-class specialization
@@ -1630,19 +1577,6 @@ void Mpole_Pass(CellType &Cell, ss_vect<T> &x)
 
   /* Local -> Global */
   LtoG(x, Cell.dS, Cell.droll, M->c0, M->c1, M->s1);
-}
-
-
-template<typename T>
-void Marker_Pass(CellType &Cell, ss_vect<T> &X)
-{
-  ElemType *elem;
-
-  elem = Cell.Elem;
-  /* Global -> Local */
-  GtoL(X, Cell.dS, Cell.droll, 0e0, 0e0, 0e0);
-  /* Local -> Global */
-  LtoG(X, Cell.dS, Cell.droll, 0e0, 0e0, 0e0);
 }
 
 
