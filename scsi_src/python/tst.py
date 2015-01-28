@@ -22,21 +22,23 @@ for k in range(0, 5):
                       Cell[k].Beta[X_], Cell[k].Beta[Y_]))
 
 Fnum = pyscsi.ElemIndex('SL1G2C01A'); loc = pyscsi.Elem_GetPos(Fnum, 1)
+
 print
 print Fnum, loc
 
-exit()
+M = cast(Cell[loc].Elem, POINTER(MpoleType))
 
 print
 print Cell[loc].Elem.contents.name, Cell[loc].Elem.contents.kind
-print Cell[loc].Elem.contents.deref('M').method
-print Cell[loc].Elem.deref('M').method, Cell[loc].Elem.deref('M').n
-print Cell[loc].Elem.deref('M').order, Cell[loc].Elem.deref('M').n_design, \
-      Cell[loc].Elem.deref('M').thick, \
-      Cell[loc].Elem.deref('M').bnpar[HOMmax+Sext]
+print M.contents.method, M.contents.n
+print M.contents.order, M.contents.n_design, \
+      M.contents.thick, \
+      M.contents.bnpar[HOMmax+Sext]
 
 Fnum = pyscsi.ElemIndex('CAV'); loc = pyscsi.Elem_GetPos(Fnum, 1)
 
+C = cast(pointer(Cell[loc].Elem.contents), POINTER(CavityType))
+
 print
-print Cell[loc].Elem.name, Cell[loc].Elem.kind
-print Cell[loc].Elem.deref('C').volt, Cell[loc].Elem.deref('C').freq
+print Cell[loc].Elem.contents.name, Cell[loc].Elem.contents.kind
+print C.contents.volt, C.contents.freq

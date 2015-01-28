@@ -41,13 +41,36 @@ HOMmax     = 21
 mpolArray  = c_double*(2*HOMmax+1)
 thicktype  = c_long
 
-class MarkerType(Structure):
+class ElemType(Structure):
+    _fields_ = [('name',  partsName),
+                ('L',     c_double),
+                ('kind',  PartsKind)]
+
+class CellType(Structure):
+    _fields_ = [('Fnum',     c_int),
+                ('Knum',     c_int),
+                ('S',        c_double),
+                ('next_ptr', POINTER(c_void_p)),
+                ('Elem',     POINTER(ElemType)),
+                ('dS',       Vector2),
+                ('droll',    Vector2),
+                ('Nu',       Vector2),
+                ('Alpha',    Vector2),
+                ('Beta',     Vector2),
+                ('Eta',      Vector2),
+                ('Etap',     Vector2),
+                ('BeamPos',  Vector),
+                ('A',        Matrix),
+                ('sigma',    Matrix),
+                ('maxampl',  Vector2*PLANES)]
+
+class MarkerType(ElemType):
     _fields_ = []
 
-class DriftType(Structure):
+class DriftType(ElemType):
     _fields_ = []
 
-class MpoleType(Structure):
+class MpoleType(ElemType):
     _fields_ = [('method',   c_int),
                 ('n',        c_int),
 
@@ -77,48 +100,11 @@ class MpoleType(Structure):
                 ('c1',       c_double),
                 ('s1',       c_double)]
 
-class CavityType (Structure):
+class CavityType (ElemType):
     _fields_ = [('volt', c_double),
                 ('freq', c_double),
                 ('phi',   c_double),
                 ('h',    c_int)]
-
-class ElemType(Structure):
-    def deref(self, type):
-        if type == 'Mrk':
-            return cast(self.U, POINTER(MarkerType))[0]
-        if type == 'D':
-            return cast(self.U, POINTER(DriftType))[0]
-        elif type == 'M':
-            return cast(self.U, POINTER(MpoleType))[0]
-        elif type == 'C':
-            return cast(self.U, POINTER(CavityType))[0]
-        else:
-            print "deref: undef. type:", type
-            exit(1)
-
-    _fields_ = [('name',  partsName),
-                ('L',     c_double),
-                ('kind',  PartsKind),
-                ('U',     POINTER(c_void_p))]
-
-class CellType(Structure):
-    _fields_ = [('Fnum',     c_int),
-                ('Knum',     c_int),
-                ('S',        c_double),
-                ('next_ptr', POINTER(c_void_p)),
-                ('Elem',     POINTER(ElemType)),
-                ('dS',       Vector2),
-                ('droll',    Vector2),
-                ('Nu',       Vector2),
-                ('Alpha',    Vector2),
-                ('Beta',     Vector2),
-                ('Eta',      Vector2),
-                ('Etap',     Vector2),
-                ('BeamPos',  Vector),
-                ('A',        Matrix),
-                ('sigma',    Matrix),
-                ('maxampl',  Vector2*PLANES)]
 
 class globvalrec(Structure):
     _fields_ = [('dPcommon',    c_double),
