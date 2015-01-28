@@ -107,7 +107,7 @@ class CellType(Structure):
                 ('Knum',     c_int),
                 ('S',        c_double),
                 ('next_ptr', POINTER(c_void_p)),
-                ('Elem',     ElemType),
+                ('Elem',     POINTER(ElemType)),
                 ('dS',       Vector2),
                 ('droll',    Vector2),
                 ('Nu',       Vector2),

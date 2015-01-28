@@ -261,7 +261,7 @@ void Cell_Init(void)
   ElemType   *elem;
   MarkerType *Mrk;
 
-  const char first_name[] = "begin          ";
+  const char first_name[] = "begin";
 
   if (debug)
     printf("** Cell_Init\n");
