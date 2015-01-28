@@ -25,8 +25,11 @@ Fnum = pyscsi.ElemIndex('SL1G2C01A'); loc = pyscsi.Elem_GetPos(Fnum, 1)
 print
 print Fnum, loc
 
+exit()
+
 print
 print Cell[loc].Elem.contents.name, Cell[loc].Elem.contents.kind
+print Cell[loc].Elem.contents.deref('M').method
 print Cell[loc].Elem.deref('M').method, Cell[loc].Elem.deref('M').n
 print Cell[loc].Elem.deref('M').order, Cell[loc].Elem.deref('M').n_design, \
       Cell[loc].Elem.deref('M').thick, \
