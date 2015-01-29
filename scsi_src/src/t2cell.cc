@@ -46,6 +46,7 @@ inline bool CheckAmpl(const ss_vect<T> &x, const long int loc)
 }
 
 
+// obsolete
 template<typename T>
 void Elem_Pass(const long i, ss_vect<T> &x)
 {

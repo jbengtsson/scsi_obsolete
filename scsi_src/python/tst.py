@@ -37,6 +37,8 @@ print M.contents.order, M.contents.n_design, \
 
 Fnum = pyscsi.ElemIndex('CAV'); loc = pyscsi.Elem_GetPos(Fnum, 1)
 
+print ElemIndex
+
 C = cast(pointer(Cell[loc].Elem.contents), POINTER(CavityType))
 
 print

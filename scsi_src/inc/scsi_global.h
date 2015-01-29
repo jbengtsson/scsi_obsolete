@@ -16,7 +16,7 @@ struct CellType {
   double    S;               // Ring location.
   CellType  *next_ptr;       // Pointer to next cell (for ERLs, etc.)
   ElemType  *Elem;           // Pointer to the particular element.
-  // Place holder for global properties.
+  // Place holders for global properties.
   Vector2   dS,              // Transverse displacement
             droll;           // droll = (cos(roll), sin(roll))
   Vector2   Nu,              // Phase advances
@@ -35,9 +35,12 @@ struct CellType {
 // Element base class.
 class ElemType {
  public:
-  partsName name;        // Element name
-  double    L;           // Length[m]
-  ElemKind  kind;        // Element type enumerator.
+  partsName name;                             // Name.
+  double    L;                                // Length[m]
+  ElemKind  kind;                             // Type (enumerator).
+
+  /* virtual bool Elem_Pass(const long i, ss_vect<double> &) = 0; */
+  /* virtual bool Elem_Pass(const long i, ss_vect<tps> &) = 0; */
 };
 
 
@@ -63,6 +66,9 @@ class MarkerType : public ElemType {
 class DriftType : public ElemType {
  public:
   DriftType();
+
+  /* virtual bool Elem_Pass(const long i, ss_vect<double> &) { Drift(L, x); }; */
+  /* virtual bool Elem_Pass(const long i, ss_vect<tps> &) { Drift(L, x); */
 };
 
 

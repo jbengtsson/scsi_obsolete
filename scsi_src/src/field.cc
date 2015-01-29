@@ -186,5 +186,3 @@ operator<<(std::basic_ostream<CharT, Traits> &os, const ss_vect<tps> &a)
 template std::basic_ostream<char, std::char_traits<char> >&
 operator<<(std::basic_ostream<char, std::char_traits<char> > &,
 	   const ss_vect<tps> &);
-
-
