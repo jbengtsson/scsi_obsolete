@@ -15,7 +15,7 @@ def rd_lines(file_name):
     str = file_name.split('.')[0]+'.lat'
     f = open(str, 'w')
     for line in open(home_dir+file_name):
-        line = line.strip('\n').lower()
+        line = line.strip('\r\n').lower()
 #        print '%s' % (line)
         if not line.rstrip():
             # Blank line.
