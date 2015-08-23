@@ -56,12 +56,11 @@ def parse_line(line, outf):
     else:
 #        tokens = re.split(r'[,\s]\s*', line_lc)
         tokens = re.split(r'[,:\s]\s*', line_lc)
-#        print tokens
         if line_lc <= ':':
             # Definition.
             if tokens[1] == 'twiss':
                 # Ignore.
-                ;
+                pass
         elif tokens[1] == 'charge':
             # Charge definition.
             outf.write('{ %s }\n' % (line_lc))
@@ -97,7 +96,6 @@ def rd_lines(file_name):
             # Line
             line = line.strip('&')
             line += (inf.readline()).strip('\r\n')
-            print line
 
         parse_line(line, outf)
 
