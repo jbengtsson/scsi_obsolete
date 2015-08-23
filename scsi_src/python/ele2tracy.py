@@ -61,7 +61,7 @@ def parse_line(line, outf):
             # Definition.
             if tokens[1] == 'twiss':
                 # Ignore.
-                a = 1
+                ;
         elif tokens[1] == 'charge':
             # Charge definition.
             outf.write('{ %s }\n' % (line_lc))
@@ -98,7 +98,6 @@ def rd_lines(file_name):
             line = line.strip('&')
             line += (inf.readline()).strip('\r\n')
             print line
-#        print '%s' % (line)
 
         parse_line(line, outf)
 
