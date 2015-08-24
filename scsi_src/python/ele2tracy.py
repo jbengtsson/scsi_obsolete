@@ -21,7 +21,6 @@ ele2tracy = {
     'csrcsbend' : 'Bending',
     'quad'      : 'Quadrupole',
     'sext'      : 'Sextupole',
-    'line'      : '',
     'freq'      : 'Frequency'
     }
 
@@ -157,8 +156,7 @@ def parse_line(line, outf):
                 print line_lc
                 print tokens
                 exit()
-                outf.write('not defined\n')
-                outf.write('%s;\n' % (line_lc))
+
 
 def prt_decl(outf):
     outf.write('define lattice; ringtype = 1;\n')
@@ -173,7 +171,7 @@ def prt_decl(outf):
     outf.write('\n')
 
 
-def parse_lines(file_name):
+def transl_file(file_name):
     str = file_name.split('.')[0]+'.lat'
     inf = open(home_dir+file_name, 'r')
     outf = open(str, 'w')
@@ -195,4 +193,4 @@ def parse_lines(file_name):
     outf.write('end;\n')
 
 
-parse_lines('lattice2p0_v1_20150522.lte')
+transl_file('lattice2p0_v1_20150522.lte')
