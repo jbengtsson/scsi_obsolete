@@ -11,6 +11,7 @@ ele2tracy = {
     'mark'      : 'Marker',
     'watch'     : 'Marker',
     'ematrix'   : 'Marker',
+    'twiss'     : 'Marker',
     'rfca'      : 'Cavity',
     'drif'      : 'Drift',
     'drift'     : 'Drift',
@@ -23,13 +24,24 @@ ele2tracy = {
     }
 
 
+def is_number(s):
+    try:
+        float(s)
+        return True
+    except ValueError:
+        pass
+
+
 def parse_rpnc(stack):
     # Reverse Polish Notation calculator.
     arg = stack.pop()
     if arg in '+-*/':
         op = arg
         arg = parse_rpnc(stack)
-        return parse_rpnc(stack) + (' %s %s' % (op, arg))
+        if op == '*' and is_number(arg) and float(arg) < 0.0:
+            return parse_rpnc(stack) + (' %s (%s)' % (op, arg))
+        else:
+            return parse_rpnc(stack) + (' %s %s' % (op, arg))
     else:
         return ('%s' % (arg))
 
@@ -57,16 +69,18 @@ def parse_definition(line, tokens):
     for k in range(len(tokens)):
         # Remove white space; unless a string.
         if not tokens[k].startswith('"'):
-            tokens[k] = re.sub('[\s*]', '', tokens[k])
+            tokens[k] = re.sub('[\s]', '', tokens[k])
     str = ''
-    if tokens[1] == 'twiss':
-        pass
+    if tokens[1] == 'mark':
+        str = '%s: %s;' % (tokens[0], ele2tracy[tokens[1]])
     elif tokens[1] == 'charge':
         str = '%s: %s; { %s }' % (tokens[0], ele2tracy[tokens[1]], line)
-    elif tokens[1] == 'mark':
-        str = '%s: %s;' % (tokens[0], ele2tracy[tokens[1]])
     elif tokens[1] == 'watch':
-        str = '%s: %s;' % (tokens[0], ele2tracy[tokens[1]])
+        str = '%s: %s; { watch }' % (tokens[0], ele2tracy[tokens[1]])
+    elif tokens[1] == 'ematrix':
+        str = '%s: %s; { ematrix }' % (tokens[0], ele2tracy[tokens[1]])
+    elif tokens[1] == 'twiss':
+        str = '%s: %s; { twiss }' % (tokens[0], ele2tracy[tokens[1]])
     elif tokens[1] == 'drift' or  tokens[1] == 'drif':
         loc_l = tokens.index('l')
         str = '%s: %s, L = %s;' % \
@@ -127,8 +141,6 @@ def parse_definition(line, tokens):
         for k in range(3, n-1):
             str += ', %s' % (tokens[k])
         str += ', %s;' % (get_arg(tokens[n-1].strip(')')))
-    elif tokens[1] == 'ematrix':
-        pass
     else:
         print '*** undefined token'
         print line
@@ -183,11 +195,11 @@ def transl_file(file_name):
         parse_line(line, outf)
         line = inf.readline()
     outf.write('\n')
-    outf.write('cell: ring, symmetry = 1;\n')
+    outf.write('cell: latticelinac1down2, symmetry = 1;\n')
     outf.write('\n')
     outf.write('end;\n')
 
 
 home_dir = '/home/bengtsson/vladimir/'
 
-transl_file('lattice2p0_v1_20150522.lte')
+transl_file('lattice2p0_v1_20150522_2.lte')
