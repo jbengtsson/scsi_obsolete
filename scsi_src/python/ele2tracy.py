@@ -9,18 +9,20 @@ home_dir = '/home/bengtsson/vladimir/'
 
 # Elegant -> Tracy-2,3 dictionary.
 ele2tracy = {
-    'charge'    : 'N/A',
-    'mark'      : 'marker',
-    'watch'     : 'marker',
-    'ematrix'   : 'marker',
-    'rfca'      : 'cavity',
-    'drif'      : 'drift',
-    'drift'     : 'drift',
-    'csrdrif'   : 'drift',
-    'csrcsbend' : 'bending',
-    'quad'      : 'quadrupole',
-    'sext'      : 'sextupole',
-    'line'      : ''
+    'charge'    : 'Marker',
+    'mark'      : 'Marker',
+    'watch'     : 'Marker',
+    'ematrix'   : 'Marker',
+    'rfca'      : 'Cavity',
+    'drif'      : 'Drift',
+    'drift'     : 'Drift',
+    'csrdrif'   : 'Drift',
+    'rcol'      : 'Drift',
+    'csrcsbend' : 'Bending',
+    'quad'      : 'Quadrupole',
+    'sext'      : 'Sextupole',
+    'line'      : '',
+    'freq'      : 'Frequency'
     }
 
 
@@ -42,6 +44,10 @@ def parse_decl(decl):
     return ('%s = ' % (lhs)) + parse_rpnc(stack)
 
 
+def get_index(tokens, token):
+    return tokens.index(token) if token in tokens else None
+
+
 def parse_line(line, outf):
     line_lc = line.lower()
     if not line_lc.rstrip():
@@ -52,37 +58,85 @@ def parse_line(line, outf):
         outf.write('{ %s }\n' % (line.strip('!')))
     elif line_lc.startswith('%'):
         # Declaration.
-        outf.write('%s;\n' % (parse_decl(line.strip('%'))))
+        outf.write('%s;\n' % (parse_decl(line_lc.strip('%'))))
     else:
 #        tokens = re.split(r'[,\s]\s*', line_lc)
-        tokens = re.split(r'[,:\s]\s*', line_lc)
-        if line_lc <= ':':
+        tokens = re.split(r'[,:=]\s*', line_lc.replace(' ', ''))
+        if line_lc.find(':') != -1:
             # Definition.
             if tokens[1] == 'twiss':
-                # Ignore.
                 pass
-        elif tokens[1] == 'charge':
-            # Charge definition.
-            outf.write('{ %s }\n' % (line_lc))
-        elif tokens[1] == 'mark':
-            outf.write('%s %s;\n' % (tokens[0], ele2tracy[tokens[1]]))
-        elif tokens[1] == 'watch':
-            outf.write('%s %s;\n' % (tokens[0], ele2tracy[tokens[1]]))
-        elif tokens[1] == 'rfca':
-            outf.write('%s %s;\n' % (tokens[0], ele2tracy[tokens[1]]))
-            print line_lc
-            print tokens
-            print tokens.index('rfca')
-            exit()
-        elif tokens[1] == 'line':
-            str = line_lc.split('=')[1]
-            outf.write('%s %s;\n' % (tokens[0], str.strip('()')))
-        else:
-            print line_lc
-            print tokens
-            exit()
-            outf.write('not defined\n')
-            outf.write('%s;\n' % (line_lc))
+            elif tokens[1] == 'charge':
+                # Charge definition.
+                outf.write('{ %s }\n' % (line_lc))
+                outf.write('%s: %s;\n' % (tokens[0], ele2tracy[tokens[1]]))
+            elif tokens[1] == 'mark':
+                outf.write('%s: %s;\n' % (tokens[0], ele2tracy[tokens[1]]))
+            elif tokens[1] == 'watch':
+                outf.write('%s: %s;\n' % (tokens[0], ele2tracy[tokens[1]]))
+            elif tokens[1] == 'drift' or  tokens[1] == 'drif':
+                loc_l = tokens.index('l')
+                outf.write('%s: %s, L = %s;\n' %
+                           (tokens[0], ele2tracy[tokens[1]], tokens[loc_l+1]))
+            elif tokens[1] == 'csrdrif' or tokens[1] == 'csrdrift':
+                loc_l = tokens.index('l')
+                outf.write('%s: %s, L = %s;\n' %
+                           (tokens[0], ele2tracy[tokens[1]], tokens[loc_l+1]))
+            elif tokens[1] == 'rcol':
+                loc_l = tokens.index('l')
+                outf.write('%s: %s, L = %s;\n' %
+                           (tokens[0], ele2tracy[tokens[1]], tokens[loc_l+1]))
+            elif tokens[1] == 'csrcsbend':
+                loc_l = tokens.index('l')
+                loc_phi = tokens.index('angle')
+                loc_e1 = get_index(tokens, 'e1')
+                loc_e2 = get_index(tokens, 'e2')
+                loc_k = get_index(tokens, 'k')
+                outf.write(
+                    '%s: %s, L = %s, T = %s' %
+                    (tokens[0], ele2tracy[tokens[1]], tokens[loc_l+1],
+                     tokens[loc_phi+1]))
+                if loc_e1:
+                    outf.write(', T1 = %s' % (tokens[loc_e1+1]))
+                if loc_e2:
+                    outf.write(', T2 = %s' % (tokens[loc_e2+1]))
+                if loc_k:
+                    outf.write(', K = %s' % (tokens[loc_k+1]))
+                outf.write(', N = Nbend, Method = 4;\n')
+            elif tokens[1] == 'quad':
+                loc_l = tokens.index('l')
+                loc_k = tokens.index('k1')
+                outf.write('%s: %s, L = %s, K = %s, N = Nquad, Method = 4;\n' %
+                           (tokens[0], ele2tracy[tokens[1]], tokens[loc_l+1],
+                            tokens[loc_k+1]))
+            elif tokens[1] == 'sext':
+                loc_l = tokens.index('l')
+                loc_k = tokens.index('k2')
+                outf.write('%s: %s, L = %s, K = %s, N = Nsext, Method = 4;\n' %
+                           (tokens[0], ele2tracy[tokens[1]], tokens[loc_l+1],
+                            tokens[loc_k+1]))
+            elif tokens[1] == 'rfca':
+                loc_l = tokens.index('l')
+                loc_f = tokens.index('freq')
+                loc_v = tokens.index('volt')
+                outf.write('%s: %s, L = %s, Frequency = %s, Voltage = %s;\n' %
+                           (tokens[0], ele2tracy[tokens[1]], tokens[loc_l+1],
+                            tokens[loc_f+1], tokens[loc_v+1]))
+            elif tokens[1] == 'line':
+                outf.write('%s: %s' % (tokens[0], tokens[2].strip('(')))
+                n = len(tokens)
+                for k in range(3, n-1):
+                    outf.write(', %s' % (tokens[k]))
+                outf.write(', %s;\n' % (tokens[n-1].strip(')')))
+            elif tokens[1] == 'ematrix':
+                pass
+            else:
+                print '*** not defined'
+                print line_lc
+                print tokens
+                exit()
+                outf.write('not defined\n')
+                outf.write('%s;\n' % (line_lc))
 
 
 def rd_lines(file_name):
