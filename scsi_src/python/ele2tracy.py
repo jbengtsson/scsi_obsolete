@@ -5,22 +5,110 @@ import StringIO
 
 # Module to translate from ELEGANT to Tracy-2,3 lattice.
 
+
+def marker(line, tokens):
+    return  '%s: Marker;' % (tokens[0])
+
+def marker_twiss(line, tokens):
+    return marker(line, tokens) + ' { twiss }'
+
+def marker_charge(line, tokens):
+    return marker(line, tokens) + ' { %s }' % (line)
+
+def marker_watch(line, tokens):
+    return marker(line, tokens) + ' { watch }'
+
+def marker_ematrix(line, tokens):
+    return marker(line, tokens) + ' { ematrix }'
+
+def drift(line, tokens):
+    loc_l = tokens.index('l')
+    str = '%s: Drift, L = %s;' % (tokens[0], get_arg(tokens[loc_l+1]))
+    return str
+
+def rcol(line, tokens):
+    return drift(line, tokens) + ' { rcol }'
+    return str
+
+def bend(line, tokens):
+    loc_l = tokens.index('l')
+    loc_phi = tokens.index('angle')
+    loc_e1 = get_index(tokens, 'e1')
+    loc_e2 = get_index(tokens, 'e2')
+    loc_k = get_index(tokens, 'k')
+    str = '%s: Bending, L = %s, T = %s' % \
+        (tokens[0], get_arg(tokens[loc_l+1]), get_arg(tokens[loc_phi+1]))
+    if loc_e1: str += ', T1 = %s' % (get_arg(tokens[loc_e1+1]))
+    if loc_e2: str += ', T2 = %s' % (get_arg(tokens[loc_e2+1]))
+    if loc_k:  str += ', K = %s' % (get_arg(tokens[loc_k+1]))
+    str += ', N = Nbend, Method = 4;'
+    return str
+
+def quad(line, tokens):
+    loc_l = tokens.index('l')
+    loc_k = tokens.index('k1')
+    str = '%s: Quadrupole, L = %s, K = %s, N = Nquad, Method = 4;' % \
+        (tokens[0], get_arg(tokens[loc_l+1]),
+         get_arg(tokens[loc_k+1]))
+    return str
+
+def sext(line, tokens):
+    loc_l = tokens.index('l')
+    loc_k = tokens.index('k2')
+    str = '%s: Sextupole, L = %s, K = %s, N = Nsext, Method = 4;' % \
+        (tokens[0], get_arg(tokens[loc_l+1]),
+         get_arg(tokens[loc_k+1]))
+    return str
+
+def cavity(line, tokens):
+    loc_l = tokens.index('l')
+    loc_f = tokens.index('freq')
+    loc_v = tokens.index('volt')
+    loc_phi = tokens.index('phase')
+    cav_name = tokens[0]+'_c'
+    str = '%s: Cavity, Frequency = %s, Voltage = %s' % \
+        (cav_name, get_arg(tokens[loc_f+1]), get_arg(tokens[loc_v+1]))
+    if loc_phi: str += ', phi = %s' % (get_arg(tokens[loc_phi+1]))
+    str += ';\n'
+    drift_name = tokens[0]+'_d'
+    str += '%s: Drift, L = %s;\n' % \
+        (drift_name, get_arg(tokens[loc_l+1])+'/2.0')
+    str += '%s: %s, %s, %s;' % \
+        (tokens[0], drift_name, cav_name, drift_name)
+    return str
+
+def line(line, tokens):
+    n_elem = 10 # No of elements per line.
+    n = len(tokens)
+    tokens[2] = tokens[2].strip('(')
+    tokens[n-1] = tokens[n-1].strip(')')
+    str = '%s: ' % (tokens[0])
+    if n >= n_elem: str += '\n  '
+    for k in range(2, n):
+        if (k-1) % (n_elem+1) == 0: str += '\n  '
+        if k < n-1:
+            str += '%s, ' % (tokens[k])
+        else:
+            str += '%s;' % (tokens[k])
+    return str
+
+
 # Elegant -> Tracy-2,3 dictionary.
 ele2tracy = {
-    'charge'    : 'Marker',
-    'mark'      : 'Marker',
-    'watch'     : 'Marker',
-    'ematrix'   : 'Marker',
-    'twiss'     : 'Marker',
-    'rfca'      : 'Cavity',
-    'drif'      : 'Drift',
-    'drift'     : 'Drift',
-    'csrdrif'   : 'Drift',
-    'rcol'      : 'Drift',
-    'csrcsbend' : 'Bending',
-    'quad'      : 'Quadrupole',
-    'sext'      : 'Sextupole',
-    'freq'      : 'Frequency'
+    'charge'    : marker_charge,
+    'mark'      : marker,
+    'watch'     : marker_watch,
+    'ematrix'   : marker_ematrix,
+    'twiss'     : marker_twiss,
+    'drif'      : drift,
+    'drift'     : drift,
+    'csrdrif'   : drift,
+    'rcol'      : drift,
+    'csrcsbend' : bend,
+    'quad'      : quad,
+    'sext'      : sext,
+    'rfca'      : cavity,
+    'line'      : line
     }
 
 
@@ -66,90 +154,13 @@ def get_arg(str):
 
 
 def parse_definition(line, tokens):
+    n_elem = 10; # No of elements per line.
+
     for k in range(len(tokens)):
         # Remove white space; unless a string.
         if not tokens[k].startswith('"'):
             tokens[k] = re.sub('[\s]', '', tokens[k])
-    str = ''
-    if tokens[1] == 'mark':
-        str = '%s: %s;' % (tokens[0], ele2tracy[tokens[1]])
-    elif tokens[1] == 'charge':
-        str = '%s: %s; { %s }' % (tokens[0], ele2tracy[tokens[1]], line)
-    elif tokens[1] == 'watch':
-        str = '%s: %s; { watch }' % (tokens[0], ele2tracy[tokens[1]])
-    elif tokens[1] == 'ematrix':
-        str = '%s: %s; { ematrix }' % (tokens[0], ele2tracy[tokens[1]])
-    elif tokens[1] == 'twiss':
-        str = '%s: %s; { twiss }' % (tokens[0], ele2tracy[tokens[1]])
-    elif tokens[1] == 'drift' or  tokens[1] == 'drif':
-        loc_l = tokens.index('l')
-        str = '%s: %s, L = %s;' % \
-            (tokens[0], ele2tracy[tokens[1]], get_arg(tokens[loc_l+1]))
-    elif tokens[1] == 'csrdrif' or tokens[1] == 'csrdrift':
-        loc_l = tokens.index('l')
-        str = '%s: %s, L = %s;' % \
-            (tokens[0], ele2tracy[tokens[1]], get_arg(tokens[loc_l+1]))
-    elif tokens[1] == 'rcol':
-        loc_l = tokens.index('l')
-        str = '%s: %s, L = %s;' % \
-            (tokens[0], ele2tracy[tokens[1]], get_arg(tokens[loc_l+1]))
-    elif tokens[1] == 'csrcsbend':
-        loc_l = tokens.index('l')
-        loc_phi = tokens.index('angle')
-        loc_e1 = get_index(tokens, 'e1')
-        loc_e2 = get_index(tokens, 'e2')
-        loc_k = get_index(tokens, 'k')
-        str = '%s: %s, L = %s, T = %s' % \
-            (tokens[0], ele2tracy[tokens[1]], get_arg(tokens[loc_l+1]),
-             get_arg(tokens[loc_phi+1]))
-        if loc_e1:
-            str += ', T1 = %s' % (get_arg(tokens[loc_e1+1]))
-        if loc_e2:
-            str += ', T2 = %s' % (get_arg(tokens[loc_e2+1]))
-        if loc_k:
-            str += ', K = %s' % (get_arg(tokens[loc_k+1]))
-        str += ', N = Nbend, Method = 4;'
-    elif tokens[1] == 'quad':
-        loc_l = tokens.index('l')
-        loc_k = tokens.index('k1')
-        str = '%s: %s, L = %s, K = %s, N = Nquad, Method = 4;' % \
-            (tokens[0], ele2tracy[tokens[1]], get_arg(tokens[loc_l+1]),
-             get_arg(tokens[loc_k+1]))
-    elif tokens[1] == 'sext':
-        loc_l = tokens.index('l')
-        loc_k = tokens.index('k2')
-        str = '%s: %s, L = %s, K = %s, N = Nsext, Method = 4;' % \
-            (tokens[0], ele2tracy[tokens[1]], get_arg(tokens[loc_l+1]),
-             get_arg(tokens[loc_k+1]))
-    elif tokens[1] == 'rfca':
-        loc_l = tokens.index('l')
-        loc_f = tokens.index('freq')
-        loc_v = tokens.index('volt')
-        loc_phi = tokens.index('phase')
-        cav_name = tokens[0]+'_c'
-        str = '%s: %s, Frequency = %s, Voltage = %s' % \
-            (cav_name, ele2tracy[tokens[1]], get_arg(tokens[loc_f+1]),
-             get_arg(tokens[loc_v+1]))
-        if loc_phi:
-            str += ', phi = %s' % (get_arg(tokens[loc_phi+1]))
-        str += ';\n'
-        drift_name = tokens[0]+'_d'
-        str += '%s: Drift, L = %s;\n' % \
-            (drift_name, get_arg(tokens[loc_l+1])+'/2.0')
-        str += '%s: %s, %s, %s;' % \
-            (tokens[0], drift_name, cav_name, drift_name)
-    elif tokens[1] == 'line':
-        str = '%s: %s' % (tokens[0], tokens[2].strip('('))
-        n = len(tokens)
-        for k in range(3, n-1):
-            str += ', %s' % (tokens[k])
-        str += ', %s;' % (get_arg(tokens[n-1].strip(')')))
-    else:
-        print '*** undefined token'
-        print line
-        print tokens
-        exit(1)
-    return str
+    return ele2tracy[tokens[1]](line, tokens)
 
 
 def parse_line(line, outf):
@@ -198,7 +209,7 @@ def transl_file(file_name):
         parse_line(line, outf)
         line = inf.readline()
     outf.write('\n')
-    outf.write('cell: latticelinac1down2, symmetry = 1;\n')
+    outf.write('cell: Ring, symmetry = 1;\n')
     outf.write('\n')
     outf.write('end;\n')
 
