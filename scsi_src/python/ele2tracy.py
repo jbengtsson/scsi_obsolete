@@ -127,12 +127,15 @@ def parse_definition(line, tokens):
         loc_v = tokens.index('volt')
         loc_phi = tokens.index('phase')
         cav_name = tokens[0]+'_c'
-        str = '%s: %s, Frequency = %s, Voltage = %s;\n' % \
+        str = '%s: %s, Frequency = %s, Voltage = %s' % \
             (cav_name, ele2tracy[tokens[1]], get_arg(tokens[loc_f+1]),
-        get_arg(tokens[loc_v+1]))
+             get_arg(tokens[loc_v+1]))
+        if loc_phi:
+            str += ', phi = %s' % (get_arg(tokens[loc_phi+1]))
+        str += ';\n'
         drift_name = tokens[0]+'_d'
         str += '%s: Drift, L = %s;\n' % \
-            (drift_name, get_arg(tokens[loc_l+1])+'/2')
+            (drift_name, get_arg(tokens[loc_l+1])+'/2.0')
         str += '%s: %s, %s, %s;' % \
             (tokens[0], drift_name, cav_name, drift_name)
     elif tokens[1] == 'line':
