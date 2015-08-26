@@ -161,8 +161,7 @@ def parse_definition(line, tokens):
     try:
         str = ele2tracy[tokens[1]](line, tokens)
     except KeyError:
-        print
-        print '*** undefined token!'
+        print '\n*** undefined token!'
         exit(1)
     return str
 
