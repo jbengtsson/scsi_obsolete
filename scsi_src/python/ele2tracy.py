@@ -158,7 +158,13 @@ def parse_definition(line, tokens):
         # Remove white space; unless a string.
         if not tokens[k].startswith('"'):
             tokens[k] = re.sub('[\s]', '', tokens[k])
-    return ele2tracy[tokens[1]](line, tokens)
+    try:
+        str = ele2tracy[tokens[1]](line, tokens)
+    except KeyError:
+        print
+        print '*** undefined token!'
+        exit(1)
+    return str
 
 
 def parse_line(line, outf):
