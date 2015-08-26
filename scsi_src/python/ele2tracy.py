@@ -23,12 +23,10 @@ def marker_ematrix(line, tokens):
 
 def drift(line, tokens):
     loc_l = tokens.index('l')
-    str = '%s: Drift, L = %s;' % (tokens[0], get_arg(tokens[loc_l+1]))
-    return str
+    return '%s: Drift, L = %s;' % (tokens[0], get_arg(tokens[loc_l+1]))
 
 def rcol(line, tokens):
     return drift(line, tokens) + ' { rcol }'
-    return str
 
 def bend(line, tokens):
     loc_l = tokens.index('l')
@@ -196,7 +194,7 @@ def prt_decl(outf):
 
 def transl_file(file_name):
     str = file_name.split('.')[0]+'.lat'
-    inf = open(home_dir+file_name, 'r')
+    inf = open(file_name, 'r')
     outf = open(str, 'w')
     prt_decl(outf)
     line = inf.readline()
@@ -209,11 +207,11 @@ def transl_file(file_name):
         parse_line(line, outf)
         line = inf.readline()
     outf.write('\n')
-    outf.write('cell: Ring, symmetry = 1;\n')
+    outf.write('cell: ring, symmetry = 1;\n')
     outf.write('\n')
     outf.write('end;\n')
 
 
 home_dir = '/home/bengtsson/vladimir/'
 
-transl_file('lattice2p0_v1_20150522_2.lte')
+transl_file(home_dir+'lattice2p0_v1_20150522_2.lte')
