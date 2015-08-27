@@ -6,6 +6,10 @@ import StringIO
 # Module to translate from ELEGANT to Tracy-2,3 lattice.
 
 
+def get_index(tokens, token):
+    return tokens.index(token) if token in tokens else None
+
+
 def marker(line, tokens):
     return  '%s: Marker;' % (tokens[0])
 
@@ -29,20 +33,27 @@ def rcol(line, tokens):
     return drift(line, tokens) + ' { rcol }'
 
 def bend(line, tokens):
+    # CSBEND is modeled by a symplectic integrator.
     loc_l = tokens.index('l')
     loc_phi = tokens.index('angle')
     loc_e1 = get_index(tokens, 'e1')
     loc_e2 = get_index(tokens, 'e2')
-    loc_k = get_index(tokens, 'k')
+    loc_k = get_index(tokens, 'k1')
+    loc_n = get_index(tokens, 'n_kicks')
     str = '%s: Bending, L = %s, T = %s' % \
         (tokens[0], get_arg(tokens[loc_l+1]), get_arg(tokens[loc_phi+1]))
     if loc_e1: str += ', T1 = %s' % (get_arg(tokens[loc_e1+1]))
     if loc_e2: str += ', T2 = %s' % (get_arg(tokens[loc_e2+1]))
     if loc_k:  str += ', K = %s' % (get_arg(tokens[loc_k+1]))
-    str += ', N = Nbend, Method = 4;'
+    if loc_n != None:
+        str += ', N = %s, Method = 4;' % (tokens[loc_n+1])
+    else:
+        #Default is 4.
+        str += ', N = 4, Method = 4;'
     return str
 
 def quad(line, tokens):
+    # QUAD is modeled by a third order Taylor expansion.
     loc_l = tokens.index('l')
     loc_k = tokens.index('k1')
     str = '%s: Quadrupole, L = %s, K = %s, N = Nquad, Method = 4;' % \
@@ -53,7 +64,9 @@ def quad(line, tokens):
 def sext(line, tokens):
     loc_l = tokens.index('l')
     loc_k = tokens.index('k2')
-    str = '%s: Sextupole, L = %s, K = %s, N = Nsext, Method = 4;' % \
+    # The field expansion is a power series for Tracy-2,3 vs. a Taylor expansion
+    # for Elegant; i.e., like in MAD-8.
+    str = '%s: Sextupole, L = %s, K = %s/2.0, N = Nsext, Method = 4;' % \
         (tokens[0], get_arg(tokens[loc_l+1]),
          get_arg(tokens[loc_k+1]))
     return str
@@ -137,10 +150,6 @@ def parse_decl(decl):
     lhs = stack.pop()
     op = stack.pop()
     return ('%s = ' % (lhs)) + parse_rpnc(stack)
-
-
-def get_index(tokens, token):
-    return tokens.index(token) if token in tokens else None
 
 
 def get_arg(str):
