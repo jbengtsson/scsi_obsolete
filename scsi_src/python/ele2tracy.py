@@ -162,6 +162,7 @@ def parse_definition(line, tokens):
         str = ele2tracy[tokens[1]](line, tokens)
     except KeyError:
         print '\n*** undefined token!'
+        print line
         exit(1)
     return str
 
@@ -219,4 +220,4 @@ def transl_file(file_name):
 
 home_dir = '/home/bengtsson/vladimir/'
 
-transl_file(home_dir+'lattice2p0_v1_20150522_2.lte')
+transl_file(home_dir+'S2EBarc1.lte')
