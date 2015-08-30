@@ -34,17 +34,22 @@ def rcol(line, tokens):
 
 def bend(line, tokens):
     # CSBEND is modeled by a symplectic integrator.
+    # Angles are in [rad] for Elegant and degress for Tracy-2,3.
     loc_l = tokens.index('l')
     loc_phi = tokens.index('angle')
     loc_e1 = get_index(tokens, 'e1')
     loc_e2 = get_index(tokens, 'e2')
     loc_k = get_index(tokens, 'k1')
     loc_n = get_index(tokens, 'n_kicks')
-    str = '%s: Bending, L = %s, T = %s' % \
-        (tokens[0], get_arg(tokens[loc_l+1]), get_arg(tokens[loc_phi+1]))
-    if loc_e1: str += ', T1 = %s' % (get_arg(tokens[loc_e1+1]))
-    if loc_e2: str += ', T2 = %s' % (get_arg(tokens[loc_e2+1]))
-    if loc_k:  str += ', K = %s' % (get_arg(tokens[loc_k+1]))
+    str = '%s: Bending, L = %s, T = %8.6f' % \
+        (tokens[0], get_arg(tokens[loc_l+1]),
+         math.degrees(float(get_arg(tokens[loc_phi+1]))))
+    if loc_e1: str += ', T1 = %8.6f' % \
+            (float(math.degrees(float(get_arg(tokens[loc_e1+1])))))
+    if loc_e2: str += ', T2 = %8.6f' % \
+                 (float(math.degrees(float(get_arg(tokens[loc_e2+1])))))
+    if loc_k:  str += ', K = %s' % \
+                 (float(get_arg(tokens[loc_k+1])))
     if loc_n != None:
         str += ', N = %s, Method = 4;' % (tokens[loc_n+1])
     else:
