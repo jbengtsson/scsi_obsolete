@@ -102,11 +102,17 @@ def line(line, tokens, decls):
     str = '%s: ' % (tokens[0])
     if n >= n_elem: str += '\n  '
     for k in range(2, n):
+        reverse = tokens[k].startswith('-')
+        if reverse:
+            tokens[k] = tokens[k].strip('-')
+            str += 'inv('
         if (k-1) % (n_elem+1) == 0: str += '\n  '
+        str += tokens[k]
+        if reverse: str += ')'
         if k < n-1:
-            str += '%s, ' % (tokens[k])
+            str += ', '
         else:
-            str += '%s;' % (tokens[k])
+            str += ';'
     return str
 
 
@@ -195,11 +201,14 @@ def parse_line(line, outf, decls):
         # Declaration.
         outf.write('%s;\n' % (parse_decl(line_lc.strip('%'), decls)))
     else:
-        tokens = re.split(r'[,:=]', line_lc)
         if line_lc.find(':') != -1:
             # Definition.
+            tokens = re.split(r'[,:=]', line_lc)
             outf.write('%s\n' % (parse_definition(line_lc, tokens, decls)))
-
+        else:
+            print '\n*** undefined statement!'
+            print line
+            exit(1)
 
 def prt_decl(outf):
     outf.write('define lattice; ringtype = 1;\n')
