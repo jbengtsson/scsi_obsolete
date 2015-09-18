@@ -237,10 +237,9 @@ def transl_file(file_name, decls):
             line += (inf.readline()).strip('\r\n')
         parse_line(line, outf, decls)
         line = inf.readline()
-    outf.write('\n')
-    outf.write('cell: line, symmetry = 1;\n')
-    outf.write('\n')
-    outf.write('end;\n')
+    outf.write('\nline: lattice1;\n')
+    outf.write('\ncell: line, symmetry = 1;\n')
+    outf.write('\nend;\n')
 
 
 home_dir = ''
