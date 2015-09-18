@@ -2,6 +2,7 @@ import math
 import numpy
 import re
 import StringIO
+import sys
 
 # Module to translate from ELEGANT to Tracy-2,3 lattice.
 
@@ -10,29 +11,29 @@ def get_index(tokens, token):
     return tokens.index(token) if token in tokens else None
 
 
-def marker(line, tokens):
+def marker(line, tokens, decls):
     return  '%s: Marker;' % (tokens[0])
 
-def marker_twiss(line, tokens):
-    return marker(line, tokens) + ' { twiss }'
+def marker_twiss(line, tokens, decls):
+    return marker(line, tokens, decls) + ' { twiss }'
 
-def marker_charge(line, tokens):
-    return marker(line, tokens) + ' { %s }' % (line)
+def marker_charge(line, tokens, decls):
+    return marker(line, tokens, decls) + ' { %s }' % (line)
 
-def marker_watch(line, tokens):
-    return marker(line, tokens) + ' { watch }'
+def marker_watch(line, tokens, decls):
+    return marker(line, tokens, decls) + ' { watch }'
 
-def marker_ematrix(line, tokens):
-    return marker(line, tokens) + ' { ematrix }'
+def marker_ematrix(line, tokens, decls):
+    return marker(line, tokens, decls) + ' { ematrix }'
 
-def drift(line, tokens):
+def drift(line, tokens, decls):
     loc_l = tokens.index('l')
-    return '%s: Drift, L = %s;' % (tokens[0], get_arg(tokens[loc_l+1]))
+    return '%s: Drift, L = %s;' % (tokens[0], get_arg(tokens[loc_l+1], decls))
 
-def rcol(line, tokens):
-    return drift(line, tokens) + ' { rcol }'
+def rcol(line, tokens, decls):
+    return drift(line, tokens, decls) + ' { rcol }'
 
-def bend(line, tokens):
+def bend(line, tokens, decls):
     # CSBEND is modeled by a symplectic integrator.
     # Angles are in [rad] for Elegant and degress for Tracy-2,3.
     loc_l = tokens.index('l')
@@ -41,15 +42,14 @@ def bend(line, tokens):
     loc_e2 = get_index(tokens, 'e2')
     loc_k = get_index(tokens, 'k1')
     loc_n = get_index(tokens, 'n_kicks')
-    str = '%s: Bending, L = %s, T = %8.6f' % \
-        (tokens[0], get_arg(tokens[loc_l+1]),
-         math.degrees(float(get_arg(tokens[loc_phi+1]))))
-    if loc_e1: str += ', T1 = %8.6f' % \
-            (float(math.degrees(float(get_arg(tokens[loc_e1+1])))))
-    if loc_e2: str += ', T2 = %8.6f' % \
-                 (float(math.degrees(float(get_arg(tokens[loc_e2+1])))))
-    if loc_k:  str += ', K = %s' % \
-                 (float(get_arg(tokens[loc_k+1])))
+    str = '%s: Bending, L = %s, T = %s*180.0/pi' % \
+        (tokens[0], get_arg(tokens[loc_l+1], decls),
+         get_arg(tokens[loc_phi+1], decls))
+    if loc_e1: str += ', T1 = %s*180.0/pi' % \
+            (get_arg(tokens[loc_e1+1], decls))
+    if loc_e2: str += ', T2 = %s*180.0/pi' % \
+                 (get_arg(tokens[loc_e2+1], decls))
+    if loc_k:  str += ', K = %s' %  (get_arg(tokens[loc_k+1], decls))
     if loc_n != None:
         str += ', N = %s, Method = 4;' % (tokens[loc_n+1])
     else:
@@ -57,43 +57,44 @@ def bend(line, tokens):
         str += ', N = 4, Method = 4;'
     return str
 
-def quad(line, tokens):
+def quad(line, tokens, decls):
     # QUAD is modeled by a third order Taylor expansion.
     loc_l = tokens.index('l')
     loc_k = tokens.index('k1')
     str = '%s: Quadrupole, L = %s, K = %s, N = Nquad, Method = 4;' % \
-        (tokens[0], get_arg(tokens[loc_l+1]),
-         get_arg(tokens[loc_k+1]))
+        (tokens[0], get_arg(tokens[loc_l+1], decls),
+         get_arg(tokens[loc_k+1], decls))
     return str
 
-def sext(line, tokens):
+def sext(line, tokens, decls):
     loc_l = tokens.index('l')
     loc_k = tokens.index('k2')
     # The field expansion is a power series for Tracy-2,3 vs. a Taylor expansion
     # for Elegant; i.e., like in MAD-8.
     str = '%s: Sextupole, L = %s, K = %s/2.0, N = Nsext, Method = 4;' % \
-        (tokens[0], get_arg(tokens[loc_l+1]),
-         get_arg(tokens[loc_k+1]))
+        (tokens[0], get_arg(tokens[loc_l+1], decls),
+         get_arg(tokens[loc_k+1], decls))
     return str
 
-def cavity(line, tokens):
+def cavity(line, tokens, decls):
     loc_l = tokens.index('l')
     loc_f = tokens.index('freq')
     loc_v = tokens.index('volt')
     loc_phi = tokens.index('phase')
     cav_name = tokens[0]+'_c'
     str = '%s: Cavity, Frequency = %s, Voltage = %s' % \
-        (cav_name, get_arg(tokens[loc_f+1]), get_arg(tokens[loc_v+1]))
-    if loc_phi: str += ', phi = %s' % (get_arg(tokens[loc_phi+1]))
+        (cav_name, get_arg(tokens[loc_f+1], decls),
+         get_arg(tokens[loc_v+1], decls))
+    if loc_phi: str += ', phi = %s' % (get_arg(tokens[loc_phi+1], decls))
     str += ';\n'
     drift_name = tokens[0]+'_d'
     str += '%s: Drift, L = %s;\n' % \
-        (drift_name, get_arg(tokens[loc_l+1])+'/2.0')
+        (drift_name, get_arg(tokens[loc_l+1], decls)+'/2.0')
     str += '%s: %s, %s, %s;' % \
         (tokens[0], drift_name, cav_name, drift_name)
     return str
 
-def line(line, tokens):
+def line(line, tokens, decls):
     n_elem = 10 # No of elements per line.
     n = len(tokens)
     tokens[2] = tokens[2].strip('(')
@@ -150,22 +151,23 @@ def parse_rpnc(stack):
         return ('%s' % (arg))
 
 
-def parse_decl(decl):
+def parse_decl(decl, decls):
     stack = (decl.strip('%')).split()
     lhs = stack.pop()
     op = stack.pop()
+    decls.append(lhs)
     return ('%s = ' % (lhs)) + parse_rpnc(stack)
 
 
-def get_arg(str):
-    if str.find('"') == -1:
+def get_arg(str, decls):
+    if (str in decls) or (str.find('"') == -1):
         arg = str
     else:
         arg = parse_rpnc((str.strip('"')).split())
     return arg
 
 
-def parse_definition(line, tokens):
+def parse_definition(line, tokens, decls):
     n_elem = 10; # No of elements per line.
 
     for k in range(len(tokens)):
@@ -173,7 +175,7 @@ def parse_definition(line, tokens):
         if not tokens[k].startswith('"'):
             tokens[k] = re.sub('[\s]', '', tokens[k])
     try:
-        str = ele2tracy[tokens[1]](line, tokens)
+        str = ele2tracy[tokens[1]](line, tokens, decls)
     except KeyError:
         print '\n*** undefined token!'
         print line
@@ -181,7 +183,7 @@ def parse_definition(line, tokens):
     return str
 
 
-def parse_line(line, outf):
+def parse_line(line, outf, decls):
     line_lc = line.lower()
     if not line_lc.rstrip():
         # Blank line.
@@ -191,12 +193,12 @@ def parse_line(line, outf):
         outf.write('{ %s }\n' % (line.strip('!')))
     elif line_lc.startswith('%'):
         # Declaration.
-        outf.write('%s;\n' % (parse_decl(line_lc.strip('%'))))
+        outf.write('%s;\n' % (parse_decl(line_lc.strip('%'), decls)))
     else:
         tokens = re.split(r'[,:=]', line_lc)
         if line_lc.find(':') != -1:
             # Definition.
-            outf.write('%s\n' % (parse_definition(line_lc, tokens)))
+            outf.write('%s\n' % (parse_definition(line_lc, tokens, decls)))
 
 
 def prt_decl(outf):
@@ -212,7 +214,7 @@ def prt_decl(outf):
     outf.write('\n')
 
 
-def transl_file(file_name):
+def transl_file(file_name, decls):
     str = file_name.split('.')[0]+'.lat'
     inf = open(file_name, 'r')
     outf = open(str, 'w')
@@ -224,14 +226,16 @@ def transl_file(file_name):
             # Line
             line = line.strip('&')
             line += (inf.readline()).strip('\r\n')
-        parse_line(line, outf)
+        parse_line(line, outf, decls)
         line = inf.readline()
     outf.write('\n')
-    outf.write('cell: ring, symmetry = 1;\n')
+    outf.write('cell: line, symmetry = 1;\n')
     outf.write('\n')
     outf.write('end;\n')
 
 
-home_dir = '/home/bengtsson/vladimir/'
+home_dir = ''
 
-transl_file(home_dir+'S2EBarc1.lte')
+decls = []
+
+transl_file(home_dir+sys.argv[1], decls)
