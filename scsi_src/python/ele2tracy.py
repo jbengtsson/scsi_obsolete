@@ -218,7 +218,7 @@ def parse_line(line, outf, decls):
 def prt_decl(outf):
     outf.write('define lattice; ringtype = 1;\n')
     outf.write('\n')
-    outf.write('Energy = ???; { Beam Energy [GeV] }\n')
+    outf.write('Energy = ???; { Total beam energy [GeV] }\n')
     outf.write('\n')
     outf.write('dP = 1e-8; CODeps = 1e-14;\n')
     outf.write('\n')
