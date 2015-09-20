@@ -53,8 +53,7 @@ def bend(line, tokens, decls):
     if loc_n != None:
         str += ', N = %s, Method = 4;' % (tokens[loc_n+1])
     else:
-        #Default is 4.
-        str += ', N = 4, Method = 4;'
+        str += ', N = Nbend4, Method = 4;'
     return str
 
 def quad(line, tokens, decls):
@@ -217,7 +216,7 @@ def prt_decl(outf):
     outf.write('\n')
     outf.write('dP = 1e-8; CODeps = 1e-14;\n')
     outf.write('\n')
-    outf.write('Meth = 4; Nbend = 4; Nquad = 4; Nsext = 2;\n')
+    outf.write('Meth = 4; Nquad = 100; Nsext = 2;\n')
     outf.write('\n')
     outf.write('pi = 4.0*arctan(1.0); c0 = 2.99792458e8;\n')
     outf.write('\n')
@@ -237,7 +236,7 @@ def transl_file(file_name, decls):
             line += (inf.readline()).strip('\r\n')
         parse_line(line, outf, decls)
         line = inf.readline()
-    outf.write('\nline: lattice1;\n')
+    outf.write('\nline: ???;\n')
     outf.write('\ncell: line, symmetry = 1;\n')
     outf.write('\nend;\n')
 
