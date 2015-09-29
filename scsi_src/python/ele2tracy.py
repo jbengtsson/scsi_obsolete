@@ -87,7 +87,7 @@ def cavity(line, tokens, decls):
         (cav_name, get_arg(tokens[loc_f+1], decls),
          get_arg(tokens[loc_v+1], decls))
     if loc_phi: str += ', phi = %s' % \
-       (get_arg(tokens[loc_phi+1], decls)+' + 180.0')
+       ('-'+get_arg(tokens[loc_phi+1], decls))
     if loc_entryf: str += ', rf_focus1 = %s' % \
        (get_arg(tokens[loc_entryf+1], decls))
     if loc_exitf: str += ', rf_focus2 = %s' % \
@@ -218,9 +218,7 @@ def parse_line(line, outf, decls):
 
 def prt_decl(outf):
     outf.write('define lattice; ringtype = 1;\n')
-    outf.write('\nm_e = 0.511e-3;               { Electron mass [Gev]. }\n')
-    outf.write('E_k = 10e-3;                  { Kinetic beam energy [GeV]. }\n')
-    outf.write('Energy = sqrt(m_e**2+E_k**2); { Total beam energy [GeV] }\n')
+    outf.write('\nEnergy = 10e-3; { Beam momentum [GeV]. }\n')
     outf.write('\ndP = 1e-8; CODeps = 1e-14;\n')
     outf.write('\nMeth = 4; Nquad = 100; Nsext = 2;\n')
     outf.write('\npi = 4.0*arctan(1.0); c0 = 2.99792458e8;\n\n')
@@ -240,7 +238,7 @@ def transl_file(file_name, decls):
             line += (inf.readline()).strip('\r\n')
         parse_line(line, outf, decls)
         line = inf.readline()
-    outf.write('\nline: ???;\n')
+    outf.write('\nline: linac1upchicane1;\n')
     outf.write('\ncell: line, symmetry = 1;\n')
     outf.write('\nend;\n')
 
