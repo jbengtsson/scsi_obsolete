@@ -92,8 +92,6 @@ def cavity(line, tokens, decls):
        (get_arg(tokens[loc_entryf+1], decls))
     if loc_exitf: str += ', rf_focus2 = %s' % \
        (get_arg(tokens[loc_exitf+1], decls))
-    if loc_exitf: str += ', rf_focus2 = %s' % \
-       (get_arg(tokens[loc_exitf+1], decls))
     str +=', n = 1;'
     return str
 
