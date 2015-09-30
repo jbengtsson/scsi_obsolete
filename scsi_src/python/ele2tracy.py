@@ -82,22 +82,19 @@ def cavity(line, tokens, decls):
     loc_phi = tokens.index('phase')
     loc_entryf = tokens.index('end1_focus')
     loc_exitf = tokens.index('end2_focus')
-    cav_name = tokens[0]+'_c'
-    str = '%s: Cavity, Frequency = %s, Voltage = %s' % \
-        (cav_name, get_arg(tokens[loc_f+1], decls),
-         get_arg(tokens[loc_v+1], decls))
+    str = '%s: Cavity, L = %s, Frequency = %s, Voltage = %s' % \
+          (tokens[0], get_arg(tokens[loc_l+1], decls),
+           get_arg(tokens[loc_f+1], decls),
+           get_arg(tokens[loc_v+1], decls))
     if loc_phi: str += ', phi = %s' % \
-       ('-'+get_arg(tokens[loc_phi+1], decls))
+       (get_arg(tokens[loc_phi+1], decls))
     if loc_entryf: str += ', rf_focus1 = %s' % \
        (get_arg(tokens[loc_entryf+1], decls))
     if loc_exitf: str += ', rf_focus2 = %s' % \
        (get_arg(tokens[loc_exitf+1], decls))
-    str += ';\n'
-    drift_name = tokens[0]+'_d'
-    str += '%s: Drift, L = %s;\n' % \
-        (drift_name, get_arg(tokens[loc_l+1], decls)+'/2.0')
-    str += '%s: %s, %s, %s;' % \
-        (tokens[0], drift_name, cav_name, drift_name)
+    if loc_exitf: str += ', rf_focus2 = %s' % \
+       (get_arg(tokens[loc_exitf+1], decls))
+    str +=', n = 1;'
     return str
 
 def line(line, tokens, decls):
