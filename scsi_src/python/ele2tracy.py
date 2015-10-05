@@ -50,7 +50,7 @@ def bend(line, tokens, decls):
     if loc_e2: str += ', T2 = %s*180.0/pi' % \
                  (get_arg(tokens[loc_e2+1], decls))
     if loc_k:  str += ', K = %s' %  (get_arg(tokens[loc_k+1], decls))
-    if loc_n != None:
+    if False and loc_n != None:
         str += ', N = %s, Method = 4;' % (tokens[loc_n+1])
     else:
         str += ', N = Nbend4, Method = 4;'
@@ -215,7 +215,7 @@ def prt_decl(outf):
     outf.write('define lattice; ringtype = 1;\n')
     outf.write('\nEnergy = 10e-3; { Beam momentum [GeV]. }\n')
     outf.write('\ndP = 1e-8; CODeps = 1e-14;\n')
-    outf.write('\nMeth = 4; Nquad = 100; Nsext = 2;\n')
+    outf.write('\nMeth = 4; Nbend = 100; Nquad = 100; Nsext = 2;\n')
     outf.write('\npi = 4.0*arctan(1.0); c0 = 2.99792458e8;\n\n')
 
 
