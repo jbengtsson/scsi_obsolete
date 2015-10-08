@@ -53,7 +53,7 @@ def bend(line, tokens, decls):
     if False and loc_n != None:
         str += ', N = %s, Method = 4;' % (tokens[loc_n+1])
     else:
-        str += ', N = Nbend4, Method = 4;'
+        str += ', N = Nbend, Method = 4;'
     return str
 
 def quad(line, tokens, decls):
